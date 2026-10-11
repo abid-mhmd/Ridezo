@@ -8,6 +8,9 @@ async function bootstrap() {
     bufferLogs: true,
   });
 
+    console.log('[Startup] NestJS application created.');
+
+
   app.useLogger(app.get(Logger));
   app.setGlobalPrefix('api');
   app.useGlobalPipes(

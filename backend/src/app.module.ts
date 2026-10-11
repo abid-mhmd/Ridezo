@@ -61,6 +61,8 @@ import { AppService } from './app.service.js';
     MongooseModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         uri: configService.getOrThrow<string>('MONGODB_URI'),
+        serverSelectionTimeoutMS: 10000,
+        connectTimeoutMS: 10000,
       }),
       inject: [ConfigService],
     }),
