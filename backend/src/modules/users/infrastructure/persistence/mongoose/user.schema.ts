@@ -1,41 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
+import {
+  AccountStatus,
+  IdentityVerificationStatus,
+  UserRole,
+} from '../../../domain/enums/user.enums.js';
 
-export enum UserRole {
-  USER = 'user',
-  ADMIN = 'admin',
-}
-
-export enum AccountStatus {
-  ACTIVE = 'active',
-  SUSPENDED = 'suspended',
-  DEACTIVATED = 'deactivated',
-}
-
-export enum IdentityVerificationStatus {
-  UNVERIFIED = 'unverified',
-  PENDING = 'pending',
-  VERIFIED = 'verified',
-  REJECTED = 'rejected',
-}
-
-export type UserDocument = HydratedDocument<User>;
-
-@Schema({ _id: false })
-export class IdentityVerification {
-  @Prop({
-    type: String,
-    enum: IdentityVerificationStatus,
-    default: IdentityVerificationStatus.UNVERIFIED,
-  })
-  status!: IdentityVerificationStatus;
-
-  @Prop({ type: Date, default: null })
-  verifiedAt!: Date | null;
-}
-
-export const IdentityVerificationSchema =
-  SchemaFactory.createForClass(IdentityVerification);
+export type UserDocument = HydratedDocument<User> & {
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 @Schema({ _id: false })
 export class UserLocation {
@@ -52,69 +26,74 @@ export class UserLocation {
 export const UserLocationSchema = SchemaFactory.createForClass(UserLocation);
 
 @Schema({ _id: false })
-export class UserPreferences {
-  @Prop({ type: MongooseSchema.Types.Mixed, default: {} })
-  ridePreferences!: Record<string, unknown>;
+export class IdentityVerification {
+  @Prop({
+    type: String,
+    enum: IdentityVerificationStatus,
+    default: IdentityVerificationStatus.NOT_STARTED,
+  })
+  status: IdentityVerificationStatus;
+
+  @Prop({ type: Date, default: null })
+  verifiedAt: Date | null;
 }
 
-export const UserPreferencesSchema =
-  SchemaFactory.createForClass(UserPreferences);
+export const IdentityVerificationSchema =
+  SchemaFactory.createForClass(IdentityVerification);
 
-@Schema({
-  collection: 'users',
-  timestamps: true,
-  versionKey: false,
-})
+@Schema({ timestamps: true, versionKey: false })
 export class User {
   @Prop({
     type: String,
     required: true,
     trim: true,
+    minlength: 1,
+    maxlength: 50,
   })
-  firstName!: string;
+  firstName: string;
 
   @Prop({
     type: String,
     required: true,
     trim: true,
+    minLength: 1,
+    maxlength: 50,
   })
-  lastName!: string;
-
-  @Prop({
-    type: String,
-    required: true,
-    lowercase: true,
-    trim: true,
-  })
-  email!: string;
-
-  @Prop({
-    type: String,
-    trim: true,
-    default: null,
-  })
-  phone!: string | null;
-
+  lastName: string;
   @Prop({
     type: String,
     required: true,
     select: false,
   })
-  passwordHash!: string;
+  passwordHash: string;
+
+  @Prop({
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+    maxlength: 254,
+  })
+  email: string;
 
   @Prop({
     type: String,
     trim: true,
-    maxlength: 500,
-    default: '',
+    default: undefined,
   })
-  about!: string;
+  phone?: string;
 
   @Prop({
     type: String,
-    default: null,
+    trim: true,
+    maxLength: 500,
+    default: '',
   })
-  profilePhoto!: string | null;
+  about: string;
+
+  @Prop({ type: String, default: '' })
+  profilePhoto: string;
 
   @Prop({
     type: String,
@@ -122,7 +101,7 @@ export class User {
     default: UserRole.USER,
     required: true,
   })
-  role!: UserRole;
+  role: UserRole;
 
   @Prop({
     type: String,
@@ -130,50 +109,28 @@ export class User {
     default: AccountStatus.ACTIVE,
     required: true,
   })
-  accountStatus!: AccountStatus;
+  accountStatus: AccountStatus;
 
-  @Prop({
-    type: Boolean,
-    default: false,
-  })
-  emailVerified!: boolean;
+  @Prop({ type: Boolean, default: false })
+  emailVerified: boolean;
 
-  @Prop({
-    type: Boolean,
-    default: false,
-  })
-  phoneVerified!: boolean;
+  @Prop({ type: Boolean, default: false })
+  phoneVerified: boolean;
 
   @Prop({
     type: IdentityVerificationSchema,
     default: () => ({}),
   })
-  identityVerification!: IdentityVerification;
+  identityVerification: IdentityVerification;
 
-  @Prop({
-    type: UserLocationSchema,
-    default: null,
-  })
-  location!: UserLocation | null;
+  @Prop({ type: UserLocationSchema, default: undefined })
+  location: UserLocation;
 
-  @Prop({
-    type: [String],
-    default: [],
-  })
-  languages!: string[];
+  @Prop({ type: [String], default: [] })
+  languages: string[];
 
-  @Prop({
-    type: UserPreferencesSchema,
-    default: () => ({}),
-  })
-  preferences!: UserPreferences;
-
-  @Prop({
-    type: Number,
-    min: 0,
-    default: 0,
-  })
-  completedRideCount!: number;
+  @Prop({ type: Number, min: 0, default: 0 })
+  completedRideCount: number;
 
   @Prop({
     type: Number,
@@ -181,18 +138,16 @@ export class User {
     max: 5,
     default: 0,
   })
-  rating!: number;
+  rating: number;
 
-  @Prop({
-    type: Number,
-    min: 0,
-    default: 0,
-  })
-  reviewCount!: number;
+  @Prop({ type: Number, min: 0, default: 0 })
+  reviewCount: number;
 
-  createdAt!: Date;
+  @Prop()
+  createdAt: Date;
 
-  updatedAt!: Date;
+  @Prop()
+  updatedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -201,10 +156,5 @@ UserSchema.index({ email: 1 }, { unique: true });
 
 UserSchema.index(
   { phone: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      phone: { $type: 'string' },
-    },
-  },
+  { unique: true, partialFilterExpression: { phone: { $type: 'string' } } },
 );
