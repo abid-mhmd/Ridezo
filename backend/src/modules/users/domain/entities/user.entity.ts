@@ -1,14 +1,18 @@
-import { AccountStatus , IdentityVerificationStatus , UserRole } from "../enums/user.enums.js";
+import {
+  AccountStatus,
+  IdentityVerificationStatus,
+  UserRole,
+} from '../enums/user.enums.js';
 
 export interface UserLocation {
-    city?:string,
-    state?:string,
-    country?:string
+  city?: string;
+  state?: string;
+  country?: string;
 }
 
 export interface IdentityVerification {
-    status: IdentityVerificationStatus,
-    verifiedAt:Date | null;
+  status: IdentityVerificationStatus;
+  verifiedAt: Date | null;
 }
 
 export interface UserEntity {
