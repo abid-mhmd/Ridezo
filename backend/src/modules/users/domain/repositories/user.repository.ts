@@ -1,5 +1,7 @@
 import type { UserEntity } from '../entities/user.entity.js';
 
+export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
+
 export type CreateUserData = Omit<UserEntity, 'id' | 'createdAt' | 'updatedAt'>;
 
 export interface UserRepository {
