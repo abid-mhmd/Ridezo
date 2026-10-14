@@ -14,7 +14,7 @@ export class EmailAlreadyRegisteredError extends Error {
   }
 }
 
-export class RegisteredUseCase {
+export class RegisterUserUseCase {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,

@@ -7,9 +7,11 @@ import { Argon2PasswordHasher } from './infrastructure/pre/security/argon2-passw
 
 import type { UserRepository } from '../users/domain/repositories/user.repository.js';
 import type { PasswordHasher } from './application/ports/passwordhasher.js';
+import { AuthController } from './presentation/auth.controller.js';
 
 @Module({
   imports: [UsersModule],
+  controllers: [AuthController],
   providers: [
     {
       provide: PASSWORD_HASHER,
