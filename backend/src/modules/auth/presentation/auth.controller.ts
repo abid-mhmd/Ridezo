@@ -11,7 +11,7 @@ import {
   EmailAlreadyRegisteredError,
   RegisterUserUseCase,
 } from '../application/use-cases/register-user.use-case.js';
-import  { RegisterUserDto } from '../application/dto/register-user.dto.js';
+import { RegisterUserDto } from '../application/dto/register-user.dto.js';
 
 @Controller('auth')
 export class AuthController {

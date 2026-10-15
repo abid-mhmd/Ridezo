@@ -12,7 +12,7 @@ export type CreateUserData = Pick<
       | 'id'
       | 'firstName'
       | 'lastName'
-      | 'emial'
+      | 'email'
       | 'passwordHash'
       | 'createdAt'
       | 'updatedAt'
