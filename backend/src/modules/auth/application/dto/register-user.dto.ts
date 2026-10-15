@@ -12,6 +12,7 @@ export class RegisterUserDto {
   lastName: string;
 
   @IsEmail()
+  @IsNotEmpty()
   @MaxLength(254)
   email: string;
 
