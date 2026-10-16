@@ -40,4 +40,14 @@ export class RedisService implements OnModuleDestroy, OnModuleInit {
   async delete(key: string): Promise<void> {
     await this.redis.del(key);
   }
+
+  async incrementWithExpiry(key: string, ttlSeconds: number): Promise<number> {
+    const result = await this.redis.incr(key);
+
+    if (result === 1) {
+      await this.redis.expire(key, ttlSeconds);
+    }
+
+    return result;
+  }
 }

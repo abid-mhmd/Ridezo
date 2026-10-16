@@ -7,8 +7,12 @@ import { RedisService } from '../../../../../../infrastructure/redis/redis.servi
 export class RedisOtpStorage implements OtpStorage {
   constructor(private readonly redisService: RedisService) {}
 
-  async save(email: string, otp: string, ttlSeconds: number): Promise<void> {
-    await this.redisService.set(this.getKey(email), otp, ttlSeconds);
+  async save(
+    email: string,
+    otpHash: string,
+    ttlSeconds: number,
+  ): Promise<void> {
+    await this.redisService.set(this.getKey(email), otpHash, ttlSeconds);
   }
 
   async find(email: string): Promise<string | null> {
@@ -21,5 +25,11 @@ export class RedisOtpStorage implements OtpStorage {
 
   private getKey(email: string): string {
     return `auth:email-otp:${email.trim().toLowerCase()}`;
+  }
+
+  async incrementAttempts(email: string, ttlSeconds: number): Promise<number> {
+    const key = `${this.getKey(email)}:attempts`;
+
+    return this.redisService.incrementWithExpiry(key, ttlSeconds);
   }
 }

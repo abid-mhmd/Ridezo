@@ -76,4 +76,10 @@ export class MongooseUserRepository implements UserRepository {
       updatedAt: user.updatedAt,
     };
   }
+
+  async markEmailVerified(id: string): Promise<void> {
+    await this.userModel
+      .updateOne({ _id: id }, { $set: { emailVerified: true } })
+      .exec();
+  }
 }
