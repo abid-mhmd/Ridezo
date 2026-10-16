@@ -23,4 +23,5 @@ export interface UserRepository {
   findByEmail(email: string): Promise<UserEntity | null>;
   existsByEmail(email: string): Promise<boolean>;
   create(user: CreateUserData): Promise<UserEntity>;
+  markEmailVerified(id: string): Promise<void>;
 }

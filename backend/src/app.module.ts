@@ -8,6 +8,7 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { RedisModule } from './infrastructure/redis/redis.module.js';
 
 @Module({
   imports: [
@@ -20,6 +21,13 @@ import { AuthModule } from './modules/auth/auth.module.js';
 
         PORT: Joi.number().port().default(3000),
         MONGODB_URI: Joi.string().required(),
+        REDIS_URL: Joi.string().uri().required(),
+        SMTP_HOST: Joi.string().required(),
+        SMTP_PORT: Joi.number().port().required(),
+        SMTP_USER: Joi.string().email().required(),
+        SMTP_PASSWORD: Joi.string().required(),
+        SMTP_FROM: Joi.string().required(),
+        OTP_HASH_SECRET: Joi.string().min(64).required(),
       }),
     }),
     LoggerModule.forRoot({
@@ -70,6 +78,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
     }),
     UsersModule,
     AuthModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],
