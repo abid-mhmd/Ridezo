@@ -8,6 +8,7 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { RedisModule } from './infrastructure/redis/redis.module.js';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 
         PORT: Joi.number().port().default(3000),
         MONGODB_URI: Joi.string().required(),
+        REDIS_URL: Joi.string().uri().required(),
       }),
     }),
     LoggerModule.forRoot({
@@ -70,6 +72,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
     }),
     UsersModule,
     AuthModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],
