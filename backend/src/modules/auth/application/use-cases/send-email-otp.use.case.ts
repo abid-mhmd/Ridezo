@@ -35,7 +35,8 @@ export class SendEmailOtpUseCase {
     const otp = this.otpGenrator.generate();
     const otpHash = this.otpHasher.hash(normalizedEmail, otp);
 
-    await this.otpStorage.save(normalizedEmail, otp, OTP_EXPIRY_SECONDS);
+    await this.otpStorage.save(normalizedEmail, otpHash, OTP_EXPIRY_SECONDS);
     await this.emailSender.sendVerificationOtp(normalizedEmail, otp);
   }
 }
+

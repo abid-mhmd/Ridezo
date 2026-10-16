@@ -1,13 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-
 import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
-
 import { OTP_STORAGE } from '../ports/otp-storage.js';
-
 import type { OtpStorage } from '../ports/otp-storage.js';
-
 import { OtpHasherService } from '../services/otp-hasher.service.js';
 
 export class InvalidEmailOtpError extends Error {
