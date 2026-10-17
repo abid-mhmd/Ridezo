@@ -152,8 +152,6 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
-UserSchema.index({ email: 1 }, { unique: true });
-
 UserSchema.index(
   { phone: 1 },
   { unique: true, partialFilterExpression: { phone: { $type: 'string' } } },
