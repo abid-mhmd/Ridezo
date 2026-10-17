@@ -50,4 +50,14 @@ export class RedisService implements OnModuleDestroy, OnModuleInit {
 
     return result;
   }
+
+  async setIfNotExists(
+    key: string,
+    value: string,
+    ttlSeconds: number,
+  ): Promise<boolean> {
+    const result = await this.redis.set(key, value, 'EX', ttlSeconds, 'NX');
+
+    return result === 'OK';
+  }
 }

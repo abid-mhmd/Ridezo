@@ -6,4 +6,6 @@ export interface OtpStorage {
   find(email: string): Promise<string | null>;
   delete(email: string): Promise<void>;
   incrementAttempts(email: string, ttlSeconds: number): Promise<number>;
+  acquireResendCooldown(email: string, ttlSeconds: number): Promise<boolean>;
+  releaseResendCooldown(email: string): Promise<void>;
 }

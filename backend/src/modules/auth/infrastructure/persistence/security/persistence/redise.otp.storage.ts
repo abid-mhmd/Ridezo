@@ -20,7 +20,10 @@ export class RedisOtpStorage implements OtpStorage {
   }
 
   async delete(email: string): Promise<void> {
-    await this.redisService.delete(this.getKey(email));
+    await Promise.all([
+      this.redisService.delete(this.getKey(email)),
+      this.redisService.delete(`${this.getKey(email)}:attempts`),
+    ]);
   }
 
   private getKey(email: string): string {
@@ -31,5 +34,20 @@ export class RedisOtpStorage implements OtpStorage {
     const key = `${this.getKey(email)}:attempts`;
 
     return this.redisService.incrementWithExpiry(key, ttlSeconds);
+  }
+
+  async acquireResendCooldown(
+    email: string,
+    ttlSeconds: number,
+  ): Promise<boolean> {
+    return this.redisService.setIfNotExists(
+      `${this.getKey(email)}:resend-cooldown`,
+      '1',
+      ttlSeconds,
+    );
+  }
+
+  async releaseResendCooldown(email: string): Promise<void> {
+    await this.redisService.delete(`${this.getKey(email)}:resend-cooldown`);
   }
 }

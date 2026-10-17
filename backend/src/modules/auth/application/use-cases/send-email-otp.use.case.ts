@@ -9,6 +9,7 @@ import type { UserRepository } from '../../../users/domain/repositories/user.rep
 import { OtpHasherService } from '../services/otp-hasher.service.js';
 
 const OTP_EXPIRY_SECONDS = 300;
+const OTP_RESEND_COOLDOWN_SECONDS = 60;
 
 @Injectable()
 export class SendEmailOtpUseCase {
@@ -32,6 +33,15 @@ export class SendEmailOtpUseCase {
     if (!user || user.emailVerified) {
       return;
     }
+
+    const cooldownAcquired = await this.otpStorage.acquireResendCooldown(
+      normalizedEmail,
+      OTP_RESEND_COOLDOWN_SECONDS,
+    );
+
+    if (!cooldownAcquired) {
+      return;
+    }
     const otp = this.otpGenrator.generate();
     const otpHash = this.otpHasher.hash(normalizedEmail, otp);
 
@@ -39,4 +49,3 @@ export class SendEmailOtpUseCase {
     await this.emailSender.sendVerificationOtp(normalizedEmail, otp);
   }
 }
-
