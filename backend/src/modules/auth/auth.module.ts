@@ -17,6 +17,7 @@ import { EMAIL_SENDER } from './application/ports/email.sender.js';
 import { NodemailerEmailSender } from './infrastructure/email/nodemailer-email-sender.js';
 import { OtpHasherService } from './application/services/otp-hasher.service.js';
 import { VerifyEmailOtpUseCase } from './application/use-cases/verify-email-otp.use-case.js';
+import { LoginUserUseCase } from './application/use-cases/login-user.use-case.js';
 
 @Module({
   imports: [UsersModule, RedisModule],
@@ -46,6 +47,7 @@ import { VerifyEmailOtpUseCase } from './application/use-cases/verify-email-otp.
     SendEmailOtpUseCase,
     OtpHasherService,
     VerifyEmailOtpUseCase,
+    LoginUserUseCase,
   ],
   exports: [RegisterUserUseCase],
 })

@@ -82,4 +82,17 @@ export class MongooseUserRepository implements UserRepository {
       .updateOne({ _id: id }, { $set: { emailVerified: true } })
       .exec();
   }
+
+  async findByEmailForAuthentication(
+    email: string,
+  ): Promise<UserEntity | null> {
+    const normalizedEmail = email.trim().toLocaleLowerCase();
+
+    const user = await this.userModel
+      .findOne({ email: normalizedEmail })
+      .select(`+passwordHash`)
+      .exec();
+
+    return user ? this.toEntity(user) : null;
+  }
 }
