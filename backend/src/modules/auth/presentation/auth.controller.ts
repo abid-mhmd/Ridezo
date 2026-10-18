@@ -28,7 +28,7 @@ import {
   EmailNotVerifiedError,
   LoginUserUseCase,
 } from '../application/use-cases/login-user.use-case.js';
-import type { LoginUserDto } from '../application/dto/login-user.dto.js';
+import { LoginUserDto } from '../application/dto/login-user.dto.js';
 import { JwtService } from '@nestjs/jwt';
 import { error } from 'console';
 
