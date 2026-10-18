@@ -28,6 +28,8 @@ import { RedisModule } from './infrastructure/redis/redis.module.js';
         SMTP_PASSWORD: Joi.string().required(),
         SMTP_FROM: Joi.string().required(),
         OTP_HASH_SECRET: Joi.string().min(64).required(),
+        JWT_ACCESS_SECRET: Joi.string().min(64).required(),
+        JWT_ACCESS_EXPIRES_IN: Joi.string().default('15m'),
       }),
     }),
     LoggerModule.forRoot({

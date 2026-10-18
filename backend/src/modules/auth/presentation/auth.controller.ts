@@ -22,6 +22,15 @@ import {
   TooManyOtpAttemptsError,
   VerifyEmailOtpUseCase,
 } from '../application/use-cases/verify-email-otp.use-case.js';
+import { UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import {
+  InvalidCredentialsError,
+  EmailNotVerifiedError,
+  LoginUserUseCase,
+} from '../application/use-cases/login-user.use-case.js';
+import type { LoginUserDto } from '../application/dto/login-user.dto.js';
+import { JwtService } from '@nestjs/jwt';
+import { error } from 'console';
 
 @Controller('auth')
 export class AuthController {
@@ -34,6 +43,11 @@ export class AuthController {
 
     @Inject(VerifyEmailOtpUseCase)
     private readonly verifyEmailOtpUseCase: VerifyEmailOtpUseCase,
+
+    @Inject(LoginUserUseCase)
+    private readonly loginUserUseCase: LoginUserUseCase,
+
+    private readonly jwtService: JwtService,
   ) {}
 
   @Post('register')
@@ -69,6 +83,7 @@ export class AuthController {
       message: `If the request is eligible, a verfication code will be sent.`,
     };
   }
+
   @Post('verify-email-otp')
   @HttpCode(HttpStatus.OK)
   async verifyEmailOtp(@Body() input: VerifyEmailOtpDto) {
@@ -89,5 +104,41 @@ export class AuthController {
 
       throw error;
     }
+  }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() input: LoginUserDto) {
+    try {
+      const user = await this.loginUserUseCase.execute(input);
+
+      const accessToken = await this.jwtService.signAsync({
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+      });
+
+      return {
+        message: 'Login successfull',
+        accessToken,
+        expiresIn: 900,
+        user: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role,
+        },
+      };
+    } catch (error) {
+      if (error instanceof InvalidCredentialsError) {
+        throw new UnauthorizedException('Invalid email or password');
+      }
+
+      if (error instanceof EmailNotVerifiedError) {
+        throw new ForbiddenException('Please verify email before loggin in.');
+      }
+    }
+    throw error;
   }
 }

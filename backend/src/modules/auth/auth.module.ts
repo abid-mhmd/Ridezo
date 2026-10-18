@@ -18,9 +18,26 @@ import { NodemailerEmailSender } from './infrastructure/email/nodemailer-email-s
 import { OtpHasherService } from './application/services/otp-hasher.service.js';
 import { VerifyEmailOtpUseCase } from './application/use-cases/verify-email-otp.use-case.js';
 import { LoginUserUseCase } from './application/use-cases/login-user.use-case.js';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { number } from 'joi';
 
 @Module({
-  imports: [UsersModule, RedisModule],
+  imports: [
+    UsersModule,
+    RedisModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
+        signOptions: {
+          expiresIn: (configService.get<string>('JWT_ACCESS_EXPIRES_IN') ??
+            '15m') as `${number}${'s' | 'm' | 'h' | 'd'}`,
+        },
+      }),
+    }),
+  ],
   controllers: [AuthController],
   providers: [
     {
