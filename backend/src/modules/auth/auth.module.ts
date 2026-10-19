@@ -20,6 +20,8 @@ import { VerifyEmailOtpUseCase } from './application/use-cases/verify-email-otp.
 import { LoginUserUseCase } from './application/use-cases/login-user.use-case.js';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PASSWORD_RESET_STORAGE } from './application/ports/password-reset-storage.js';
+import { RedisPasswordResetStorage } from './infrastructure/persistence/security/persistence/redis-password-reset-storage.js';
 
 @Module({
   imports: [
@@ -50,6 +52,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     {
       provide: EMAIL_SENDER,
       useClass: NodemailerEmailSender,
+    },
+    {
+      provide: PASSWORD_RESET_STORAGE,
+      useClass: RedisPasswordResetStorage,
     },
     {
       provide: RegisterUserUseCase,

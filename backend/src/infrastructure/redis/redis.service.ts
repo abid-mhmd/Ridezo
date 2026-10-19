@@ -60,4 +60,8 @@ export class RedisService implements OnModuleDestroy, OnModuleInit {
 
     return result === 'OK';
   }
+
+  async getAndDelete(key: string): Promise<string | null> {
+    return this.redis.getdel(key);
+  }
 }
