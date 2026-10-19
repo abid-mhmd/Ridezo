@@ -33,8 +33,13 @@ import { JwtService } from '@nestjs/jwt';
 import { Get, Req, UseGuards } from '@nestjs/common';
 import { AccessTokenPayload, JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import type { Request } from 'express';
-import  { ForgotPasswordDto } from '../application/dto/forgot-password.dto.js';
+import { ForgotPasswordDto } from '../application/dto/forgot-password.dto.js';
 import { RequestPasswordResetOtpUseCase } from '../application/use-cases/request-password-reset.use-case-otp.js';
+import { VerifyPasswordResetOtpUseCase } from '../application/use-cases/verify-password-reset-otp.use-case.js';
+import {
+  InvalidPasswordResetOtpError,
+  TooManyPasswordResetAttemptsError,
+} from '../application/use-cases/verify-password-reset-otp.use-case.js';
 import { error } from 'console';
 
 @Controller('auth')
@@ -54,6 +59,9 @@ export class AuthController {
 
     @Inject(RequestPasswordResetOtpUseCase)
     private readonly requestPasswordResetOtpUseCase: RequestPasswordResetOtpUseCase,
+
+    @Inject(VerifyPasswordResetOtpUseCase)
+    private readonly verifyPasswordResetOtpUseCase: VerifyPasswordResetOtpUseCase,
 
     private readonly jwtService: JwtService,
   ) {}
@@ -177,5 +185,26 @@ export class AuthController {
       message:
         'If an account exists with this email, a password-reset OTP has been sent.',
     };
+  }
+
+  @Post('verify-reset-otp')
+  @HttpCode(HttpStatus.OK)
+  async verifyPasswordResetOtp(@Body() input: VerifyEmailOtpDto) {
+    try {
+      return await this.verifyPasswordResetOtpUseCase.execute(
+        input.email,
+        input.otp,
+      );
+    } catch (error) {
+      if (
+        error instanceof InvalidPasswordResetOtpError ||
+        error instanceof TooManyPasswordResetAttemptsError
+      ) {
+        throw new UnauthorizedException(
+          'Invalid or expired password-reset OTP.',
+        );
+      }
+      throw error;
+    }
   }
 }

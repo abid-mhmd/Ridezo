@@ -23,6 +23,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RequestPasswordResetOtpUseCase } from './application/use-cases/request-password-reset.use-case-otp.js';
 import { PASSWORD_RESET_STORAGE } from './application/ports/password-reset-storage.js';
 import { RedisPasswordResetStorage } from './infrastructure/persistence/security/persistence/redis.password-reset.storage.js';
+import { VerifyPasswordResetOtpUseCase } from './application/use-cases/verify-password-reset-otp.use-case.js';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { RedisPasswordResetStorage } from './infrastructure/persistence/security
     VerifyEmailOtpUseCase,
     LoginUserUseCase,
     RequestPasswordResetOtpUseCase,
+    VerifyPasswordResetOtpUseCase,
   ],
   exports: [RegisterUserUseCase],
 })

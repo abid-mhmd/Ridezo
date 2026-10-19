@@ -65,11 +65,22 @@ export class RedisPasswordResetStorage implements PasswordResetStorage {
     await this.redisService.delete(this.getCooldownKey(email));
   }
 
+  async incrementAttempts(email: string, ttlSeconds: number): Promise<number> {
+    return this.redisService.incrementWithExpiry(
+      this.getAttemptsKey(email),
+      ttlSeconds,
+    );
+  }
+
   private getKey(email: string): string {
     return `auth:password-reset:${email.trim().toLowerCase()}`;
   }
 
   private getCooldownKey(email: string): string {
     return `${this.getKey(email)}:cooldown`;
+  }
+
+  private getAttemptsKey(email: string): string {
+    return `${this.getKey(email)}:attempts`;
   }
 }

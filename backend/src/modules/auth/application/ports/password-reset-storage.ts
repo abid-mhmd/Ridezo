@@ -14,4 +14,5 @@ export interface PasswordResetStorage {
   delete(email: string): Promise<void>;
   acquireCooldown(email: string, ttlSeconds: number): Promise<boolean>;
   releaseCooldown(email: string): Promise<void>;
+  incrementAttempts(email: string, ttlSeconds: number): Promise<number>;
 }
