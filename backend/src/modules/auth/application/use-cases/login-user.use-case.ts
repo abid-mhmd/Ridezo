@@ -1,0 +1,50 @@
+import { Inject, Injectable } from '@nestjs/common';
+import type { UserEntity } from '../../../users/domain/entities/user.entity.js';
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
+import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+import { PASSWORD_HASHER } from '../ports/passwordhasher.js';
+import type { PasswordHasher } from '../ports/passwordhasher.js';
+import { LoginUserDto } from '../dto/login-user.dto.js';
+
+export class InvalidCredentialsError extends Error {
+  constructor() {
+    super('Invalid email or password.');
+    this.name = 'InvalidCredentialsError';
+  }
+}
+
+export class EmailNotVerifiedError extends Error {
+  constructor() {
+    super('Please Verfy your email before logging in.');
+    this.name = 'EmailNotVerfiedError';
+  }
+}
+
+@Injectable()
+export class LoginUserUseCase {
+  constructor(
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: UserRepository,
+    @Inject(PASSWORD_HASHER)
+    private readonly passwordHasher: PasswordHasher,
+  ) {}
+
+  async execute(input: LoginUserDto): Promise<UserEntity> {
+    const email = input.email.trim().toLowerCase();
+    const user = await this.userRepository.findByEmailForAuthentication(email);
+    if (!user) {
+      throw new InvalidCredentialsError();
+    }
+    const passwordIsValid = await this.passwordHasher.verify(
+      input.password,
+      user.passwordHash,
+    );
+    if (!passwordIsValid) {
+      throw new InvalidCredentialsError();
+    }
+    if (!user.emailVerified) {
+      throw new EmailNotVerifiedError();
+    }
+    return user;
+  }
+}
