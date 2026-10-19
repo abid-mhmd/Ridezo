@@ -95,4 +95,15 @@ export class MongooseUserRepository implements UserRepository {
 
     return user ? this.toEntity(user) : null;
   }
+
+  async updatePasswordHash(
+    userId: string,
+    passwordHash: string,
+  ): Promise<boolean> {
+    const result = await this.userModel
+      .updateOne({ _id: userId }, { $set: { passwordHash } })
+      .exec();
+
+    return result.matchedCount === 1;
+  }
 }

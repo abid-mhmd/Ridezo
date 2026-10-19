@@ -33,6 +33,8 @@ import { JwtService } from '@nestjs/jwt';
 import { Get, Req, UseGuards } from '@nestjs/common';
 import { AccessTokenPayload, JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import type { Request } from 'express';
+import  { ForgotPasswordDto } from '../application/dto/forgot-password.dto.js';
+import { RequestPasswordResetOtpUseCase } from '../application/use-cases/request-password-reset.use-case-otp.js';
 import { error } from 'console';
 
 @Controller('auth')
@@ -49,6 +51,9 @@ export class AuthController {
 
     @Inject(LoginUserUseCase)
     private readonly loginUserUseCase: LoginUserUseCase,
+
+    @Inject(RequestPasswordResetOtpUseCase)
+    private readonly requestPasswordResetOtpUseCase: RequestPasswordResetOtpUseCase,
 
     private readonly jwtService: JwtService,
   ) {}
@@ -160,6 +165,17 @@ export class AuthController {
         email: user.email,
         role: user.role,
       },
+    };
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() input: ForgotPasswordDto) {
+    await this.requestPasswordResetOtpUseCase.execute(input.email);
+
+    return {
+      message:
+        'If an account exists with this email, a password-reset OTP has been sent.',
     };
   }
 }

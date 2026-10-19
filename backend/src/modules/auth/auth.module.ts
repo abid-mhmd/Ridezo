@@ -20,8 +20,9 @@ import { VerifyEmailOtpUseCase } from './application/use-cases/verify-email-otp.
 import { LoginUserUseCase } from './application/use-cases/login-user.use-case.js';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RequestPasswordResetOtpUseCase } from './application/use-cases/request-password-reset.use-case-otp.js';
 import { PASSWORD_RESET_STORAGE } from './application/ports/password-reset-storage.js';
-import { RedisPasswordResetStorage } from './infrastructure/persistence/security/persistence/redis-password-reset-storage.js';
+import { RedisPasswordResetStorage } from './infrastructure/persistence/security/persistence/redis.password-reset.storage.js';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { RedisPasswordResetStorage } from './infrastructure/persistence/security
     OtpHasherService,
     VerifyEmailOtpUseCase,
     LoginUserUseCase,
+    RequestPasswordResetOtpUseCase,
   ],
   exports: [RegisterUserUseCase],
 })
