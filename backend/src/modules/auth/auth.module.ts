@@ -20,7 +20,6 @@ import { VerifyEmailOtpUseCase } from './application/use-cases/verify-email-otp.
 import { LoginUserUseCase } from './application/use-cases/login-user.use-case.js';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { number } from 'joi';
 
 @Module({
   imports: [

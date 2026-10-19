@@ -30,6 +30,9 @@ import {
 } from '../application/use-cases/login-user.use-case.js';
 import { LoginUserDto } from '../application/dto/login-user.dto.js';
 import { JwtService } from '@nestjs/jwt';
+import { Get, Req, UseGuards } from '@nestjs/common';
+import { AccessTokenPayload, JwtAuthGuard } from './guards/jwt-auth.guard.js';
+import type { Request } from 'express';
 import { error } from 'console';
 
 @Controller('auth')
@@ -140,5 +143,23 @@ export class AuthController {
       }
     }
     throw error;
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  getCurrentUser(@Req() request: Request & { user?: AccessTokenPayload }) {
+    const user = request.user;
+
+    if (!user) {
+      throw new UnauthorizedException('Authetication required.');
+    }
+
+    return {
+      user: {
+        id: user.sub,
+        email: user.email,
+        role: user.role,
+      },
+    };
   }
 }
