@@ -1,27 +1,40 @@
+import { useState } from 'react';
+import LoginPage from './features/auth/pages/loginPage';
+import type { AuthUser } from './features/auth/types/auth.types';
+
 function App() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-ridezo-bg px-6 text-gray-100">
-      <section className="w-full max-w-md rounded-2xl border border-ridezo-border bg-ridezo-surface p-8">
-        <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-ridezo-primary font-bold text-gray-950">
-          R
-        </div>
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
-        <h1 className="text-3xl font-bold tracking-tight">Ridezo</h1>
+  function handleLoginSuccess(token: string, authenticatedUser: AuthUser) {
+    setAccessToken(token);
+    setUser(authenticatedUser);
+  }
 
-        <p className="mt-3 leading-7 text-gray-400">
-          Your journey starts here. Find rides, connect with people, and travel
-          together.
-        </p>
+  if (accessToken && user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-ridezo-bg px-6 text-gray-100">
+        <section className="rounded-2xl border border-ridezo-border bg-ridezo-surface p-8">
+          <h1 className="text-2xl font-bold">Welcome, {user.firstName}!</h1>
 
-        <button
-          type="button"
-          className="mt-6 rounded-lg bg-ridezo-primary px-5 py-3 font-semibold text-gray-950 transition hover:brightness-110"
-        >
-          Get started
-        </button>
-      </section>
-    </main>
-  );
+          <p className="mt-3 text-gray-400">You are signed in to Ridezo.</p>
+
+          <button
+            type="button"
+            className="mt-6 rounded-lg bg-ridezo-primary px-4 py-2 font-semibold text-gray-950"
+            onClick={() => {
+              setAccessToken(null);
+              setUser(null);
+            }}
+          >
+            Sign out
+          </button>
+        </section>
+      </main>
+    );
+  }
+
+  return <LoginPage onLoginSuccess={handleLoginSuccess} />;
 }
 
 export default App;

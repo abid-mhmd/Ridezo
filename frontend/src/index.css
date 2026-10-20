@@ -1,26 +1,31 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
-  --color-ridezo-bg: #0d1117;
-  --color-ridezo-surface: #161b22;
-  --color-ridezo-border: #30363d;
-  --color-ridezo-primary: #e2843b;
-  --color-ridezo-success: #10b981;
-  --color-ridezo-info: #38bdf8;
+  --color-ridezo-bg: #080b12;
+  --color-ridezo-surface: #111722;
+  --color-ridezo-border: #252e3e;
+  --color-ridezo-primary: #8b78ff;
+  --color-ridezo-primary-light: #b6a8ff;
+  --color-ridezo-success: #36e0c0;
+  --color-ridezo-muted: #929bad;
 }
 
 :root {
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
     sans-serif;
   color: #f3f4f6;
-  background: #0d1117;
+  background: #080b12;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
 
 * {
   box-sizing: border-box;
