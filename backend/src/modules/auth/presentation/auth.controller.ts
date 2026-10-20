@@ -33,7 +33,19 @@ import { JwtService } from '@nestjs/jwt';
 import { Get, Req, UseGuards } from '@nestjs/common';
 import { AccessTokenPayload, JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import type { Request } from 'express';
+import { ForgotPasswordDto } from '../application/dto/forgot-password.dto.js';
+import { RequestPasswordResetOtpUseCase } from '../application/use-cases/request-password-reset.use-case-otp.js';
+import { VerifyPasswordResetOtpUseCase } from '../application/use-cases/verify-password-reset-otp.use-case.js';
+import {
+  InvalidPasswordResetOtpError,
+  TooManyPasswordResetAttemptsError,
+} from '../application/use-cases/verify-password-reset-otp.use-case.js';
 import { error } from 'console';
+import { ResetPasswordDto } from '../application/dto/reset-password.dto.js';
+import {
+  ResetPasswordUseCase,
+  InvalidPasswordResetTokenError,
+} from '../application/use-cases/reset-password.use-case.js';
 
 @Controller('auth')
 export class AuthController {
@@ -49,6 +61,15 @@ export class AuthController {
 
     @Inject(LoginUserUseCase)
     private readonly loginUserUseCase: LoginUserUseCase,
+
+    @Inject(RequestPasswordResetOtpUseCase)
+    private readonly requestPasswordResetOtpUseCase: RequestPasswordResetOtpUseCase,
+
+    @Inject(VerifyPasswordResetOtpUseCase)
+    private readonly verifyPasswordResetOtpUseCase: VerifyPasswordResetOtpUseCase,
+
+    @Inject(ResetPasswordUseCase)
+    private readonly resetPasswordUseCase: ResetPasswordUseCase,
 
     private readonly jwtService: JwtService,
   ) {}
@@ -161,5 +182,59 @@ export class AuthController {
         role: user.role,
       },
     };
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() input: ForgotPasswordDto) {
+    await this.requestPasswordResetOtpUseCase.execute(input.email);
+
+    return {
+      message:
+        'If an account exists with this email, a password-reset OTP has been sent.',
+    };
+  }
+
+  @Post('verify-reset-otp')
+  @HttpCode(HttpStatus.OK)
+  async verifyPasswordResetOtp(@Body() input: VerifyEmailOtpDto) {
+    try {
+      return await this.verifyPasswordResetOtpUseCase.execute(
+        input.email,
+        input.otp,
+      );
+    } catch (error) {
+      if (
+        error instanceof InvalidPasswordResetOtpError ||
+        error instanceof TooManyPasswordResetAttemptsError
+      ) {
+        throw new UnauthorizedException(
+          'Invalid or expired password-reset OTP.',
+        );
+      }
+      throw error;
+    }
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() input: ResetPasswordDto) {
+    try {
+      await this.resetPasswordUseCase.execute(
+        input.resetToken,
+        input.newPassword,
+      );
+
+      return {
+        message: 'Password reset successful. Please login again.',
+      };
+    } catch (error) {
+      if (error instanceof InvalidPasswordResetTokenError) {
+        throw new BadRequestException(
+          'Invalid or expired password-reset authorization.',
+        );
+      }
+    }
+    throw error;
   }
 }
