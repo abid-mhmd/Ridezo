@@ -41,6 +41,11 @@ import {
   TooManyPasswordResetAttemptsError,
 } from '../application/use-cases/verify-password-reset-otp.use-case.js';
 import { error } from 'console';
+import { ResetPasswordDto } from '../application/dto/reset-password.dto.js';
+import {
+  ResetPasswordUseCase,
+  InvalidPasswordResetTokenError,
+} from '../application/use-cases/reset-password.use-case.js';
 
 @Controller('auth')
 export class AuthController {
@@ -62,6 +67,9 @@ export class AuthController {
 
     @Inject(VerifyPasswordResetOtpUseCase)
     private readonly verifyPasswordResetOtpUseCase: VerifyPasswordResetOtpUseCase,
+
+    @Inject(ResetPasswordUseCase)
+    private readonly resetPasswordUseCase: ResetPasswordUseCase,
 
     private readonly jwtService: JwtService,
   ) {}
@@ -206,5 +214,27 @@ export class AuthController {
       }
       throw error;
     }
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() input: ResetPasswordDto) {
+    try {
+      await this.resetPasswordUseCase.execute(
+        input.resetToken,
+        input.newPassword,
+      );
+
+      return {
+        message: 'Password reset successful. Please login again.',
+      };
+    } catch (error) {
+      if (error instanceof InvalidPasswordResetTokenError) {
+        throw new BadRequestException(
+          'Invalid or expired password-reset authorization.',
+        );
+      }
+    }
+    throw error;
   }
 }

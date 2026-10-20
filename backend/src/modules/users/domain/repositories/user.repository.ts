@@ -25,5 +25,5 @@ export interface UserRepository {
   create(user: CreateUserData): Promise<UserEntity>;
   markEmailVerified(id: string): Promise<void>;
   findByEmailForAuthentication(email: string): Promise<UserEntity | null>;
-  updatePasswordHash(userId: string, passwordHash: string): Promise<boolean>;
+  updatePasswordHash(userId: string, passwordHash: string): Promise<void>;
 }

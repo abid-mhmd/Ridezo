@@ -24,6 +24,7 @@ import { RequestPasswordResetOtpUseCase } from './application/use-cases/request-
 import { PASSWORD_RESET_STORAGE } from './application/ports/password-reset-storage.js';
 import { RedisPasswordResetStorage } from './infrastructure/persistence/security/persistence/redis.password-reset.storage.js';
 import { VerifyPasswordResetOtpUseCase } from './application/use-cases/verify-password-reset-otp.use-case.js';
+import { ResetPasswordUseCase } from './application/use-cases/reset-password.use-case.js';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { VerifyPasswordResetOtpUseCase } from './application/use-cases/verify-pa
     LoginUserUseCase,
     RequestPasswordResetOtpUseCase,
     VerifyPasswordResetOtpUseCase,
+    ResetPasswordUseCase,
   ],
   exports: [RegisterUserUseCase],
 })

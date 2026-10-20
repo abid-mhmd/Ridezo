@@ -99,11 +99,13 @@ export class MongooseUserRepository implements UserRepository {
   async updatePasswordHash(
     userId: string,
     passwordHash: string,
-  ): Promise<boolean> {
+  ): Promise<void> {
     const result = await this.userModel
       .updateOne({ _id: userId }, { $set: { passwordHash } })
       .exec();
 
-    return result.matchedCount === 1;
+    if (result.matchedCount === 0) {
+      throw new Error('User not found.');
+    }
   }
 }
