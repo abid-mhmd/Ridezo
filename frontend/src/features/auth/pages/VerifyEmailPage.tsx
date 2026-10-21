@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-import { resendEmailOtp, verifyEmailOtp } from '../api/auth.api';
+import {
+  resendEmailOtp,
+  verifyEmailOtp,
+  forgotPassword,
+  verifyResetOtp,
+} from '../api/auth.api';
 
 export default function VerifyEmailPage() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const isPasswordReset = location.pathname === '/verify-reset-otp';
 
   const email = (location.state as { email?: string } | null)?.email;
 
@@ -27,9 +34,11 @@ export default function VerifyEmailPage() {
 
   useEffect(() => {
     if (!email) {
-      navigate('/register', { replace: true });
+      navigate(isPasswordReset ? '/forgot-password' : '/register', {
+        replace: true,
+      });
     }
-  }, [email, navigate]);
+  }, [email, isPasswordReset, navigate]);
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -129,20 +138,45 @@ export default function VerifyEmailPage() {
     const otpString = otpValues.join('');
 
     if (otpString.length !== 6) {
-      setError("The code doesn't match. Check your inbox and try again.");
+      setError('Enter the complete six-digit verification code.');
       return;
     }
 
     setIsVerifying(true);
 
     try {
-      const response = await verifyEmailOtp({ email, otp: otpString });
+      if (isPasswordReset) {
+        const response = await verifyResetOtp({
+          email,
+          otp: otpString,
+        });
 
-      setMessage(response.message || 'Email verified successfully.');
+        if (!response.resetToken) {
+          throw new Error('Unable to verify the code. Please try again.');
+        }
+
+        navigate('/reset-password', {
+          replace: true,
+          state: {
+            resetToken: response.resetToken,
+          },
+        });
+
+        return;
+      }
+
+      const response = await verifyEmailOtp({
+        email,
+        otp: otpString,
+      });
 
       navigate('/login', {
         replace: true,
-        state: { message: 'Your email has been verified. You can now log in.' },
+        state: {
+          message:
+            response.message ||
+            'Your email has been verified. You can now log in.',
+        },
       });
     } catch (err) {
       setError(
@@ -156,19 +190,23 @@ export default function VerifyEmailPage() {
   };
 
   const handleResend = async () => {
-    if (resendCooldown > 0 || isResending) return;
+    if (resendCooldown > 0 || isResending || isVerifying) {
+      return;
+    }
 
     setError('');
     setMessage('');
     setIsResending(true);
 
     try {
-      const response = await resendEmailOtp({ email });
+      const response = isPasswordReset
+        ? await forgotPassword({ email })
+        : await resendEmailOtp({ email });
 
       setOtpValues(['', '', '', '', '', '']);
-      setMessage(
-        response.message || 'A fresh verification code was sent to your email.',
-      );
+
+      setMessage(response.message || 'A new verification code has been sent.');
+
       setResendCooldown(60);
       inputRefs.current[0]?.focus();
     } catch (err) {
@@ -197,10 +235,11 @@ export default function VerifyEmailPage() {
         </a>
 
         <Link
-          to="/register"
+          to={isPasswordReset ? '/forgot-password' : '/register'}
           className="text-xs font-medium text-gray-400 transition hover:text-white"
         >
-          ← &nbsp; Back to registration
+          ← &nbsp;{' '}
+          {isPasswordReset ? 'Back to forgot password' : 'Back to registration'}
         </Link>
       </header>
 
@@ -212,11 +251,14 @@ export default function VerifyEmailPage() {
           </div>
 
           <h1 className="text-xl font-bold tracking-tight text-white">
-            Verify your email
+            {isPasswordReset ? 'Reset your password' : 'Verify your email'}
           </h1>
 
           <p className="mt-1.5 text-xs leading-5 text-ridezo-muted">
-            We sent a 6-digit verification code to
+            {isPasswordReset
+              ? 'Enter the six-digit code sent to reset your password.'
+              : 'We sent a 6-digit verification code to'}
+
             <span className="mt-1 block break-all font-medium text-gray-200">
               {email}
             </span>
@@ -225,7 +267,7 @@ export default function VerifyEmailPage() {
           <form onSubmit={handleVerify} className="mt-6 space-y-5" noValidate>
             <div>
               <label className="mb-2 block text-xs font-medium text-gray-300">
-                Verification code
+                {isPasswordReset ? 'Password reset code' : 'Verification code'}
               </label>
 
               {/* 6 Individual OTP Boxes */}
@@ -276,7 +318,11 @@ export default function VerifyEmailPage() {
               disabled={isVerifying || isResending}
               className="w-full rounded-xl bg-ridezo-primary px-4 py-3 text-xs font-semibold text-[#080B12] transition hover:bg-ridezo-primary-light disabled:cursor-not-allowed disabled:opacity-60 shadow-lg shadow-ridezo-primary/20"
             >
-              {isVerifying ? 'Verifying...' : 'Verify email'}
+              {isVerifying
+                ? 'Verifying...'
+                : isPasswordReset
+                  ? 'Verify reset code'
+                  : 'Verify email'}
             </button>
           </form>
 

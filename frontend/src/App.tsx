@@ -51,6 +51,7 @@ function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/verify-reset-otp" element={<VerifyEmailPage />} />
       </Routes>
     </BrowserRouter>
   );
