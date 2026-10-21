@@ -45,8 +45,13 @@ export default function RegisterPage() {
     setServerError('');
 
     try {
-      const { confirmPassword: _confirmPassword, ...registrationData } = values;
-
+      const registrationData = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password,
+      };
+      
       await registerUser(registrationData);
 
       navigate('/verify-email', {
@@ -217,9 +222,15 @@ export default function RegisterPage() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="text-gray-400 hover:text-white focus:outline-none"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-label={
+                      showPassword ? 'Hide password' : 'Show password'
+                    }
                   >
-                    {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                    {showPassword ? (
+                      <FiEyeOff size={16} />
+                    ) : (
+                      <FiEye size={16} />
+                    )}
                   </button>
                 }
                 {...register('password')}
@@ -237,9 +248,15 @@ export default function RegisterPage() {
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="text-gray-400 hover:text-white focus:outline-none"
-                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    aria-label={
+                      showConfirmPassword ? 'Hide password' : 'Show password'
+                    }
                   >
-                    {showConfirmPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                    {showConfirmPassword ? (
+                      <FiEyeOff size={16} />
+                    ) : (
+                      <FiEye size={16} />
+                    )}
                   </button>
                 }
                 {...register('confirmPassword')}

@@ -28,3 +28,20 @@ export interface RegisterRequest {
 export interface RegisterResponse {
   message: string;
 }
+
+export interface VerifyEmailOtpRequest {
+  email: string;
+  otp: string;
+}
+
+export interface VerifyEmailOtpResponse {
+  message: string;
+}
+
+export interface ResendEmailOtpRequest {
+  email: string;
+}
+
+export interface ResendEmailOtpResponse {
+  message: string;
+}

@@ -6,7 +6,13 @@ interface AuthInputProps extends InputHTMLAttributes<HTMLInputElement> {
   rightElement?: ReactNode;
 }
 
-function AuthInput({ label, error, id, rightElement, ...inputProps }: AuthInputProps) {
+function AuthInput({
+  label,
+  error,
+  id,
+  rightElement,
+  ...inputProps
+}: AuthInputProps) {
   return (
     <div className="space-y-1.5">
       <label htmlFor={id} className="block text-xs font-medium text-gray-300">

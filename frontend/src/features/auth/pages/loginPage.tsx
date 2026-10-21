@@ -183,7 +183,11 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
                         showPassword ? 'Hide password' : 'Show password'
                       }
                     >
-                      {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                      {showPassword ? (
+                        <FiEyeOff size={16} />
+                      ) : (
+                        <FiEye size={16} />
+                      )}
                     </button>
                   }
                   {...register('password')}
