@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { FcGoogle } from 'react-icons/fc';
 
 import AuthInput from '../../../components/AuthInput';
 import { loginUser } from '../api/auth.api';
@@ -55,7 +56,9 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
             <span className="text-base font-bold tracking-tighter">T</span>
           </div>
 
-          <span className="text-base font-bold tracking-tight text-white">Tripzo</span>
+          <span className="text-base font-bold tracking-tight text-white">
+            Tripzo
+          </span>
         </a>
 
         <a
@@ -82,7 +85,9 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
             Every empty seat
             <br />
             is an easier{' '}
-            <span className="bg-gradient-to-r from-ridezo-primary-light to-ridezo-primary bg-clip-text text-transparent">journey.</span>
+            <span className="bg-gradient-to-r from-ridezo-primary-light to-ridezo-primary bg-clip-text text-transparent">
+              journey.
+            </span>
           </h1>
 
           <p className="mt-4 max-w-[450px] text-sm leading-relaxed text-ridezo-muted">
@@ -105,7 +110,9 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
                   <div className="min-w-0">
                     <p className="truncate text-xs font-semibold text-white flex items-center gap-1.5">
                       Kasaragod{' '}
-                      <span className="text-ridezo-primary-light font-bold">→</span>{' '}
+                      <span className="text-ridezo-primary-light font-bold">
+                        →
+                      </span>{' '}
                       Kochi
                     </p>
 
@@ -172,17 +179,44 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
                     className="absolute right-3 top-[34px] text-gray-400 hover:text-white transition focus:outline-none"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-label={
+                      showPassword ? 'Hide password' : 'Show password'
+                    }
                   >
                     {showPassword ? (
                       /* Eye-off Icon */
-                      <svg className="h-8 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      <svg
+                        className="h-8 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                        />
                       </svg>
                     ) : (
-                      <svg className="h-8 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      <svg
+                        className="h-8 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
                       </svg>
                     )}
                   </button>
@@ -221,34 +255,22 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
             <div className="my-5 flex items-center gap-3">
               <div className="h-px flex-1 bg-ridezo-border" />
-              <span className="text-[10px] font-semibold text-gray-500 tracking-wider">OR</span>
+              <span className="text-[10px] font-semibold text-gray-500 tracking-wider">
+                OR
+              </span>
               <div className="h-px flex-1 bg-ridezo-border" />
             </div>
 
             <button
               type="button"
-              disabled
+              onClick={() => {
+                window.location.assign(
+                  `${import.meta.env.VITE_API_URL}/auth/google`,
+                );
+              }}
               className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-ridezo-border bg-white/[0.02] px-4 py-3 text-xs font-medium text-gray-300 transition hover:bg-white/[0.04]"
-              title="Google sign-in is not configured yet"
             >
-              <svg className="h-4 w-4" viewBox="0 0 24 24">
-                <path
-                  fill="#EA4335"
-                  d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.6 3.6 1.7 7.4l3.7 2.9C6.3 7.3 8.9 5 12 5z"
-                />
-                <path
-                  fill="#4285F4"
-                  d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.4 14.7c-.2-.7-.4-1.5-.4-2.7s.2-2 .4-2.7L1.7 6.4C.6 8.6 0 11 0 13.5s.6 4.9 1.7 7.1l3.7-2.9z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.7-2.3-6.6-5.3L1.7 16C3.6 19.8 7.4 23 12 23z"
-                />
-              </svg>
+              <FcGoogle className="h-4 w-4" />
               Continue with Google
             </button>
 

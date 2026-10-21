@@ -30,7 +30,7 @@ import {
 } from '../application/use-cases/login-user.use-case.js';
 import { LoginUserDto } from '../application/dto/login-user.dto.js';
 import { JwtService } from '@nestjs/jwt';
-import { Get, Req, UseGuards } from '@nestjs/common';
+import { Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AccessTokenPayload, JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import type { Request } from 'express';
 import { ForgotPasswordDto } from '../application/dto/forgot-password.dto.js';
@@ -46,6 +46,13 @@ import {
   ResetPasswordUseCase,
   InvalidPasswordResetTokenError,
 } from '../application/use-cases/reset-password.use-case.js';
+import { AuthGuard } from '@nestjs/passport';
+import type { Response } from 'express';
+import {
+  GoogleAuthUseCase,
+  GoogleAccountLinkRequiredError,
+} from '../application/use-cases/google-auth.use-case.js';
+import type { GoogleProfile } from '../application/use-cases/google-auth.use-case.js';
 
 @Controller('auth')
 export class AuthController {
@@ -70,6 +77,9 @@ export class AuthController {
 
     @Inject(ResetPasswordUseCase)
     private readonly resetPasswordUseCase: ResetPasswordUseCase,
+
+    @Inject(GoogleAuthUseCase)
+    private readonly googleAuthUseCase: GoogleAuthUseCase,
 
     private readonly jwtService: JwtService,
   ) {}
@@ -236,5 +246,52 @@ export class AuthController {
       }
     }
     throw error;
+  }
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  googleLogin(): void {
+    // Passport redirects the user to Google.
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(
+    @Req()
+    request: Request & {
+      user?: GoogleProfile;
+    },
+    @Res()
+    response: Response,
+  ) {
+    const profile = request.user;
+
+    if (!profile) {
+      throw new UnauthorizedException('Google authentication failed.');
+    }
+
+    try {
+      const result = await this.googleAuthUseCase.execute(profile);
+
+      return response.status(HttpStatus.OK).json({
+        message: 'Google authentication successful.',
+        accessToken: result.accessToken,
+        user: {
+          id: result.user.id,
+          firstName: result.user.firstName,
+          lastName: result.user.lastName,
+          email: result.user.email,
+          role: result.user.role,
+        },
+      });
+    } catch (error) {
+      if (error instanceof GoogleAccountLinkRequiredError) {
+        return response.status(HttpStatus.CONFLICT).json({
+          message:
+            'An account with this email already exists. Please log in using your existing method.',
+        });
+      }
+
+      throw error;
+    }
   }
 }

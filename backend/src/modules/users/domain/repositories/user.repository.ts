@@ -4,18 +4,12 @@ export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
 
 export type CreateUserData = Pick<
   UserEntity,
-  'firstName' | 'lastName' | 'email' | 'passwordHash'
+  'firstName' | 'lastName' | 'email'
 > &
   Partial<
     Omit<
       UserEntity,
-      | 'id'
-      | 'firstName'
-      | 'lastName'
-      | 'email'
-      | 'passwordHash'
-      | 'createdAt'
-      | 'updatedAt'
+      'id' | 'firstName' | 'lastName' | 'email' | 'createdAt' | 'updatedAt'
     >
   >;
 export interface UserRepository {
@@ -26,4 +20,5 @@ export interface UserRepository {
   markEmailVerified(id: string): Promise<void>;
   findByEmailForAuthentication(email: string): Promise<UserEntity | null>;
   updatePasswordHash(userId: string, passwordHash: string): Promise<void>;
+  findByGoogleId(googleId: string): Promise<UserEntity | null>;
 }

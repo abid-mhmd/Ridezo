@@ -71,6 +71,7 @@ export class MongooseUserRepository implements UserRepository {
       completedRideCount: user.completedRideCount,
       rating: user.rating,
       reviewCount: user.reviewCount,
+      googleId: user.googleId,
 
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
@@ -107,5 +108,11 @@ export class MongooseUserRepository implements UserRepository {
     if (result.matchedCount === 0) {
       throw new Error('User not found.');
     }
+  }
+
+  async findByGoogleId(googleId: string): Promise<UserEntity | null> {
+    const user = await this.userModel.findOne({ googleId }).exec();
+
+    return user ? this.toEntity(user) : null;
   }
 }

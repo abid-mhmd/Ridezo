@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import type { UserEntity } from '../../../users/domain/entities/user.entity.js';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
 import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
@@ -34,6 +34,10 @@ export class LoginUserUseCase {
     const user = await this.userRepository.findByEmailForAuthentication(email);
     if (!user) {
       throw new InvalidCredentialsError();
+    }
+
+    if (!user || !user.passwordHash) {
+      throw new UnauthorizedException('Invalid email or password.');
     }
     const passwordIsValid = await this.passwordHasher.verify(
       input.password,

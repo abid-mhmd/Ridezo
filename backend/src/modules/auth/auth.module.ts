@@ -25,6 +25,9 @@ import { PASSWORD_RESET_STORAGE } from './application/ports/password-reset-stora
 import { RedisPasswordResetStorage } from './infrastructure/persistence/security/persistence/redis.password-reset.storage.js';
 import { VerifyPasswordResetOtpUseCase } from './application/use-cases/verify-password-reset-otp.use-case.js';
 import { ResetPasswordUseCase } from './application/use-cases/reset-password.use-case.js';
+import { PassportModule } from '@nestjs/passport';
+import { GoogleStrategy } from '../../infrastructure/redis/security/google.strategy.js';
+import { GoogleAuthUseCase } from './application/use-cases/google-auth.use-case.js';
 
 @Module({
   imports: [
@@ -41,6 +44,7 @@ import { ResetPasswordUseCase } from './application/use-cases/reset-password.use
         },
       }),
     }),
+    PassportModule.register({ session: false }),
   ],
   controllers: [AuthController],
   providers: [
@@ -76,6 +80,8 @@ import { ResetPasswordUseCase } from './application/use-cases/reset-password.use
     RequestPasswordResetOtpUseCase,
     VerifyPasswordResetOtpUseCase,
     ResetPasswordUseCase,
+    GoogleStrategy,
+    GoogleAuthUseCase,
   ],
   exports: [RegisterUserUseCase],
 })

@@ -19,10 +19,10 @@ export interface UserEntity {
   id: string;
 
   firstName: string;
-  lastName: string;
+  lastName?: string;
   email: string;
   phone?: string;
-  passwordHash: string;
+  passwordHash?: string;
 
   about: string;
   profilePhoto: string;
@@ -41,6 +41,7 @@ export interface UserEntity {
   completedRideCount: number;
   rating: number;
   reviewCount: number;
+  googleId?: string;
 
   createdAt: Date;
   updatedAt: Date;

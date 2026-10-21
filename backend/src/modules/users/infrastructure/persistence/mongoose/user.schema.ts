@@ -54,18 +54,18 @@ export class User {
 
   @Prop({
     type: String,
-    required: true,
     trim: true,
-    minLength: 1,
     maxlength: 50,
+    default: '',
   })
   lastName: string;
+
   @Prop({
     type: String,
-    required: true,
     select: false,
+    default: undefined,
   })
-  passwordHash: string;
+  passwordHash?: string;
 
   @Prop({
     type: String,
@@ -142,6 +142,14 @@ export class User {
 
   @Prop({ type: Number, min: 0, default: 0 })
   reviewCount: number;
+
+  @Prop({
+    type: String,
+    unique: true,
+    sparse: true,
+    trim: true,
+  })
+  googleId: string;
 
   @Prop()
   createdAt: Date;
