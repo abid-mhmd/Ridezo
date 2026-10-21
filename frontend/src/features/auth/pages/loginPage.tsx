@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FcGoogle } from 'react-icons/fc';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 
 import AuthInput from '../../../components/AuthInput';
 import { loginUser } from '../api/auth.api';
@@ -194,15 +195,12 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 />
 
                 <div className="mt-2 text-right">
-                  <button
-                    type="button"
+                  <Link
+                    to="/forgot-password"
                     className="text-[11px] font-medium text-ridezo-primary-light transition hover:text-white"
-                    onClick={() => {
-                      setServerError('Password reset will be connected next.');
-                    }}
                   >
                     Forgot password?
-                  </button>
+                  </Link>
                 </div>
               </div>
 
