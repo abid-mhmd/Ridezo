@@ -1,5 +1,9 @@
 import { useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
 import LoginPage from './features/auth/pages/loginPage';
+import RegisterPage from './features/auth/pages/RegisterPage';
+
 import type { AuthUser } from './features/auth/types/auth.types';
 
 function App() {
@@ -34,7 +38,20 @@ function App() {
     );
   }
 
-  return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/login"
+          element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
+        />
+
+        <Route path="/register" element={<RegisterPage />} />
+
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FcGoogle } from 'react-icons/fc';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 import AuthInput from '../../../components/AuthInput';
 import { loginUser } from '../api/auth.api';
@@ -57,7 +58,7 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
           </div>
 
           <span className="text-base font-bold tracking-tight text-white">
-            Tripzo
+            Ridezo
           </span>
         </a>
 
@@ -85,7 +86,7 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
             Every empty seat
             <br />
             is an easier{' '}
-            <span className="bg-gradient-to-r from-ridezo-primary-light to-ridezo-primary bg-clip-text text-transparent">
+            <span className="bg-[linear-gradient(90deg,#818CF8_0%,#38BDF8_50%,#2DD4BF_100%)] bg-clip-text text-transparent">
               journey.
             </span>
           </h1>
@@ -139,6 +140,7 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
           </div>
         </section>
 
+        {/* Login form */}
         <section className="mx-auto w-full max-w-[420px]">
           <div className="rounded-2xl border border-ridezo-border bg-ridezo-surface p-6 shadow-2xl shadow-black/40 sm:p-8">
             <h2 className="text-xl font-bold tracking-tight text-white">
@@ -146,7 +148,7 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
             </h2>
 
             <p className="mt-1.5 text-xs leading-5 text-ridezo-muted">
-              Sign in to continue your journey with Tripzo.
+              Sign in to continue your journey with ridezo.
             </p>
 
             <form
@@ -165,62 +167,27 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
               />
 
               <div>
-                <div className="relative">
-                  <AuthInput
-                    id="password"
-                    label="Password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                    error={errors.password?.message}
-                    {...register('password')}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-3 top-[34px] text-gray-400 hover:text-white transition focus:outline-none"
-                    aria-label={
-                      showPassword ? 'Hide password' : 'Show password'
-                    }
-                  >
-                    {showPassword ? (
-                      /* Eye-off Icon */
-                      <svg
-                        className="h-8 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                        />
-                      </svg>
-                    ) : (
-                      <svg
-                        className="h-8 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
-                      </svg>
-                    )}
-                  </button>
-                </div>
+                <AuthInput
+                  id="password"
+                  label="Password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  error={errors.password?.message}
+                  rightElement={
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="text-gray-400 hover:text-white transition focus:outline-none"
+                      aria-label={
+                        showPassword ? 'Hide password' : 'Show password'
+                      }
+                    >
+                      {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                    </button>
+                  }
+                  {...register('password')}
+                />
 
                 <div className="mt-2 text-right">
                   <button
@@ -288,7 +255,7 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
               <span className="text-ridezo-success text-[10px]">🛡️</span>
 
               <p className="text-center text-[11px] leading-relaxed text-gray-400">
-                Your account keeps every Tripzo journey connected, verified, and
+                Your account keeps every Ridezo journey connected, verified, and
                 secure.
               </p>
             </div>
@@ -298,7 +265,7 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
       <footer className="border-t border-white/[0.06] px-6 py-5 sm:px-10">
         <div className="mx-auto flex max-w-[1240px] flex-col justify-between gap-4 text-xs text-gray-400 sm:flex-row sm:items-center">
-          <p>© 2026 Tripzo Mobility Technologies. All rights reserved.</p>
+          <p>© 2026 Ridezo Mobility Technologies. All rights reserved.</p>
 
           <nav className="flex flex-wrap gap-6 text-[11px]">
             <a href="/safety" className="transition hover:text-white">
