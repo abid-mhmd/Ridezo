@@ -6,7 +6,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 import AuthInput from '../../../components/AuthInput';
-import { registerUser } from '../api/auth.api';
+import { registerUser, resendEmailOtp } from '../api/auth.api';
 import {
   registerSchema,
   type RegisterFormValues,
@@ -51,8 +51,10 @@ export default function RegisterPage() {
         email: values.email,
         password: values.password,
       };
-      
+
       await registerUser(registrationData);
+
+      await resendEmailOtp({ email: registrationData.email });
 
       navigate('/verify-email', {
         state: { email: registrationData.email },

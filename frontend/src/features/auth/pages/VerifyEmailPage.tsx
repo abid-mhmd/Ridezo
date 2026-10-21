@@ -9,7 +9,14 @@ export default function VerifyEmailPage() {
 
   const email = (location.state as { email?: string } | null)?.email;
 
-  const [otpValues, setOtpValues] = useState<string[]>(['', '', '', '', '', '']);
+  const [otpValues, setOtpValues] = useState<string[]>([
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+  ]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const [error, setError] = useState('');
@@ -44,20 +51,20 @@ export default function VerifyEmailPage() {
 
     // Handle single digit or pasted digits
     const cleanValue = value.replace(/\D/g, '');
-    
+
     if (cleanValue.length > 1) {
       // Handle paste or multi-character entry
       const digits = cleanValue.split('').slice(0, 6);
       const newValues = [...otpValues];
-      
+
       digits.forEach((digit, i) => {
         if (index + i < 6) {
           newValues[index + i] = digit;
         }
       });
-      
+
       setOtpValues(newValues);
-      
+
       // Focus next empty or last box
       const nextIndex = Math.min(index + digits.length, 5);
       inputRefs.current[nextIndex]?.focus();
@@ -74,16 +81,17 @@ export default function VerifyEmailPage() {
     }
   };
 
-  const handleKeyDown = (index: number, event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (
+    index: number,
+    event: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
     if (event.key === 'Backspace') {
       if (!otpValues[index] && index > 0) {
-        // If current box is empty, move to previous box and clear it
         const newValues = [...otpValues];
         newValues[index - 1] = '';
         setOtpValues(newValues);
         inputRefs.current[index - 1]?.focus();
       } else if (otpValues[index]) {
-        // Clear current box
         const newValues = [...otpValues];
         newValues[index] = '';
         setOtpValues(newValues);
@@ -97,7 +105,10 @@ export default function VerifyEmailPage() {
 
   const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
     event.preventDefault();
-    const pastedData = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    const pastedData = event.clipboardData
+      .getData('text')
+      .replace(/\D/g, '')
+      .slice(0, 6);
     if (!pastedData) return;
 
     const newValues = ['', '', '', '', '', ''];
@@ -155,7 +166,9 @@ export default function VerifyEmailPage() {
       const response = await resendEmailOtp({ email });
 
       setOtpValues(['', '', '', '', '', '']);
-      setMessage(response.message || 'A fresh verification code was sent to your email.');
+      setMessage(
+        response.message || 'A fresh verification code was sent to your email.',
+      );
       setResendCooldown(60);
       inputRefs.current[0]?.focus();
     } catch (err) {
@@ -220,7 +233,7 @@ export default function VerifyEmailPage() {
                 {otpValues.map((digit, index) => (
                   <input
                     key={index}
-                    ref={(el) => (inputRefs.current[index] = el)}
+                    ref={(el) => {inputRefs.current[index] = el}}
                     type="text"
                     inputMode="numeric"
                     autoComplete={index === 0 ? 'one-time-code' : 'off'}
