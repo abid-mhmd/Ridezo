@@ -18,8 +18,6 @@ import { NodemailerEmailSender } from './infrastructure/email/nodemailer-email-s
 import { OtpHasherService } from './application/services/otp-hasher.service.js';
 import { VerifyEmailOtpUseCase } from './application/use-cases/verify-email-otp.use-case.js';
 import { LoginUserUseCase } from './application/use-cases/login-user.use-case.js';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RequestPasswordResetOtpUseCase } from './application/use-cases/request-password-reset.use-case-otp.js';
 import { PASSWORD_RESET_STORAGE } from './application/ports/password-reset-storage.js';
 import { RedisPasswordResetStorage } from './infrastructure/persistence/security/persistence/redis.password-reset.storage.js';
@@ -28,22 +26,14 @@ import { ResetPasswordUseCase } from './application/use-cases/reset-password.use
 import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from '../../infrastructure/redis/security/google.strategy.js';
 import { GoogleAuthUseCase } from './application/use-cases/google-auth.use-case.js';
+import { SecurityModule } from '../../infrastructure/redis/security/security.module.js';
+
 
 @Module({
   imports: [
     UsersModule,
     RedisModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-        signOptions: {
-          expiresIn: (configService.get<string>('JWT_ACCESS_EXPIRES_IN') ??
-            '15m') as `${number}${'s' | 'm' | 'h' | 'd'}`,
-        },
-      }),
-    }),
+    SecurityModule,
     PassportModule.register({ session: false }),
   ],
   controllers: [AuthController],
