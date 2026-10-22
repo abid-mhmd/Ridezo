@@ -28,7 +28,6 @@ import { GoogleStrategy } from '../../infrastructure/redis/security/google.strat
 import { GoogleAuthUseCase } from './application/use-cases/google-auth.use-case.js';
 import { SecurityModule } from '../../infrastructure/redis/security/security.module.js';
 
-
 @Module({
   imports: [
     UsersModule,

@@ -7,6 +7,9 @@ import VerifyEmailPage from './features/auth/pages/VerifyEmailPage';
 import ForgotPasswordPage from './features/auth/pages/ForgotPasswordPage';
 import ResetPasswordPage from './features/auth/pages/ResetPasswordPage';
 
+import AppLayout from './layputs/AppLayout';
+import ProfilePage from './features/auth/pages/ProfilePage';
+
 import type { AuthUser } from './features/auth/types/auth.types';
 
 function App() {
@@ -18,42 +21,54 @@ function App() {
     setUser(authenticatedUser);
   }
 
-  if (accessToken && user) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-ridezo-bg px-6 text-gray-100">
-        <section className="rounded-2xl border border-ridezo-border bg-ridezo-surface p-8">
-          <h1 className="text-2xl font-bold">Welcome, {user.firstName}!</h1>
-
-          <p className="mt-3 text-gray-400">You are signed in to Ridezo.</p>
-
-          <button
-            type="button"
-            className="mt-6 rounded-lg bg-ridezo-primary px-4 py-2 font-semibold text-gray-950"
-            onClick={() => {
-              setAccessToken(null);
-              setUser(null);
-            }}
-          >
-            Sign out
-          </button>
-        </section>
-      </main>
-    );
-  }
+  // function handleLogout() {
+  //   setAccessToken(null);
+  //   setUser(null);
+  // }
 
   return (
     <BrowserRouter>
       <Routes>
         <Route
           path="/login"
-          element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
+          element={
+            accessToken && user ? (
+              <Navigate to="/profile" replace />
+            ) : (
+              <LoginPage onLoginSuccess={handleLoginSuccess} />
+            )
+          }
         />
+
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-reset-otp" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+        {/* Authenticated application layout */}
+        <Route
+          element={
+            accessToken && user ? (
+              <AppLayout />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        >
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
+
+        {/* Unknown routes */}
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to={accessToken && user ? '/profile' : '/login'}
+              replace
+            />
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

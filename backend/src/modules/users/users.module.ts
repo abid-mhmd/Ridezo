@@ -10,7 +10,6 @@ import { GetUserProfileUseCase } from './application/use-cases/get-user-profile.
 import { UsersController } from './presentation/users.controller.js';
 import { SecurityModule } from '../../infrastructure/redis/security/security.module.js';
 
-
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -21,7 +20,7 @@ import { SecurityModule } from '../../infrastructure/redis/security/security.mod
     ]),
     SecurityModule,
   ],
-  controllers:[UsersController],
+  controllers: [UsersController],
   providers: [
     {
       provide: USER_REPOSITORY,
