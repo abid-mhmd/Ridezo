@@ -115,9 +115,7 @@ export async function getCurrentUser(): Promise<AuthUser> {
 
 export async function logoutUser(): Promise<void> {
   try {
-    await apiRequest<{ message: string }>('/auth/logout', {
-      method: 'POST',
-    });
+    await apiRequest('/auth/logout', { method: 'POST' });
   } finally {
     setAccessToken(null);
   }

@@ -18,11 +18,14 @@ import {
   ChevronRight,
   Menu,
   X,
+  LogOut,
+  LoaderCircle,
 } from 'lucide-react';
 
 interface SidebarProps {
   userName?: string;
   profilePhoto?: string;
+  onLogout: () => Promise<void>;
 }
 
 const navigationGroups = [
@@ -60,8 +63,23 @@ const navigationGroups = [
 export default function Sidebar({
   userName = 'Traveller',
   profilePhoto,
+  onLogout,
 }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+
+    try {
+      await onLogout();
+    } finally {
+      setIsLoggingOut(false);
+      setIsOpen(false);
+    }
+  }
 
   return (
     <>
@@ -152,8 +170,8 @@ export default function Sidebar({
           ))}
         </nav>
 
-        {/* Account shortcut */}
-        <div className="shrink-0 border-t border-[#252e3e] p-3">
+        {/* Account shortcut and Logout */}
+        <div className="shrink-0 space-y-2 border-t border-[#252e3e] p-3">
           <NavLink
             to="/profile"
             onClick={() => setIsOpen(false)}
@@ -175,6 +193,7 @@ export default function Sidebar({
               <span className="block truncate text-xs font-medium text-white">
                 {userName}
               </span>
+
               <span className="block text-[10px] text-[#36e0c0]">
                 Ridezo Traveller
               </span>
@@ -182,6 +201,22 @@ export default function Sidebar({
 
             <ChevronRight size={15} className="shrink-0 text-[#657086]" />
           </NavLink>
+
+          {/* Logout button */}
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-xs text-[#929bad] transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isLoggingOut ? (
+              <LoaderCircle size={15} className="shrink-0 animate-spin" />
+            ) : (
+              <LogOut size={15} className="shrink-0" />
+            )}
+
+            <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+          </button>
         </div>
       </aside>
     </>

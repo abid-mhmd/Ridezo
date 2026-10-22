@@ -3,10 +3,14 @@ import Navbar from '../components/layout/Navbar';
 import Sidebar from '../components/layout/Sidebar';
 import Footer from '../components/layout/Footer';
 
-export default function AppLayout() {
+interface AppLayoutProps {
+  onLogout: () => Promise<void>;
+}
+
+export default function AppLayout({ onLogout }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-[#080b12] text-white">
-      <Sidebar />
+      <Sidebar onLogout={onLogout} />
 
       <div className="min-h-screen lg:pl-60">
         <Navbar />
