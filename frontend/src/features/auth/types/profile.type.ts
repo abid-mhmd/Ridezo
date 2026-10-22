@@ -15,7 +15,6 @@ export interface UserProfile {
   profilePhoto?: string;
   languages: string[];
   preferences?: UserPreferences;
-  location?: string;
   completedRideCount: number;
   rating: number;
   reviewCount: number;
@@ -24,4 +23,8 @@ export interface UserProfile {
   idVerified: boolean;
   role: string;
   status: string;
+  location?: {
+    city?: string;
+    state?: string;
+  };
 }

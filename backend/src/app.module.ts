@@ -38,6 +38,9 @@ import { RedisModule } from './infrastructure/redis/redis.module.js';
         GOOGLE_CLIENT_SECRET: Joi.string().required(),
         GOOGLE_CALLBACK_URL: Joi.string().uri().required(),
         FRONTEND_URL: Joi.string().uri().required(),
+        CLOUDINARY_CLOUD_NAME: Joi.string().required(),
+        CLOUDINARY_API_KEY: Joi.string().required(),
+        CLOUDINARY_API_SECRET: Joi.string().required(),
       }),
     }),
     LoggerModule.forRoot({

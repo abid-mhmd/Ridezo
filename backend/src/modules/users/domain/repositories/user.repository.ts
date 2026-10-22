@@ -21,4 +21,19 @@ export interface UserRepository {
   findByEmailForAuthentication(email: string): Promise<UserEntity | null>;
   updatePasswordHash(userId: string, passwordHash: string): Promise<void>;
   findByGoogleId(googleId: string): Promise<UserEntity | null>;
+  updateProfile(
+    id: string,
+    data: {
+      firstName?: string;
+      lastName?: string;
+      about?: string;
+      profilePhoto?: string;
+      languages?: string[];
+      preferences?: Record<string, unknown>;
+      location?: {
+        city?: string;
+        state?: string;
+      };
+    },
+  ): Promise<UserEntity | null>;
 }

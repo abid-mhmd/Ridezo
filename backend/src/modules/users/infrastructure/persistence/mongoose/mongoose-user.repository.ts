@@ -115,4 +115,33 @@ export class MongooseUserRepository implements UserRepository {
 
     return user ? this.toEntity(user) : null;
   }
+
+  async updateProfile(
+    id: string,
+    data: {
+      firstName?: string;
+      lastName?: string;
+      about?: string;
+      profilePhoto?: string;
+      languages?: string[];
+      preferences?: Record<string, unknown>;
+      location?: {
+        city?: string;
+        state?: string;
+      };
+    },
+  ): Promise<UserEntity | null> {
+    return this.userModel
+      .findByIdAndUpdate(
+        id,
+        { $set: data },
+        {
+          new: true,
+          runValidators: true,
+        },
+      )
+      .select('-passwordHash')
+      .lean()
+      .exec() as Promise<UserEntity | null>;
+  }
 }

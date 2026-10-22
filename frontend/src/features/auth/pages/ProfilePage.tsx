@@ -151,7 +151,11 @@ export default function ProfilePage() {
               <div className="mt-3.5 flex flex-wrap items-center gap-4 text-xs text-[#929bad]">
                 <span className="flex items-center gap-1.5">
                   <MapPin size={14} className="text-[#8b78ff]" />
-                  {profile.location || 'Kasaragod, Kerala'}
+                  {typeof profile.location === 'string'
+                    ? profile.location
+                    : [profile.location?.city, profile.location?.state]
+                        .filter(Boolean)
+                        .join(', ') || 'Location not added'}
                 </span>
 
                 <span className="flex items-center gap-1.5">
@@ -163,7 +167,7 @@ export default function ProfilePage() {
                   <UserRound size={14} className="text-[#8b78ff]" />
                   {profile.languages?.length > 0
                     ? profile.languages.join(', ')
-                    : 'Malayalam, English, Hindi'}
+                    : ''}
                 </span>
               </div>
             </div>

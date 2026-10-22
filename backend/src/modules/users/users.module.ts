@@ -9,6 +9,8 @@ import { MongooseUserRepository } from './infrastructure/persistence/mongoose/mo
 import { GetUserProfileUseCase } from './application/use-cases/get-user-profile.use-case.js';
 import { UsersController } from './presentation/users.controller.js';
 import { SecurityModule } from '../../infrastructure/redis/security/security.module.js';
+import { UpdateProfileUseCase } from './application/use-cases/update-profile.use-case.js';
+import { UploadProfilePhotoUseCase } from './application/use-cases/upload-profile-photo.use-case.js';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { SecurityModule } from '../../infrastructure/redis/security/security.mod
       useClass: MongooseUserRepository,
     },
     GetUserProfileUseCase,
+    UpdateProfileUseCase,
+    UploadProfilePhotoUseCase,
   ],
   exports: [USER_REPOSITORY],
 })
