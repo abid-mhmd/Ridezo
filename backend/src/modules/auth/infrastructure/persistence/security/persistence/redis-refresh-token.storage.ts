@@ -11,11 +11,7 @@ export class RedisRefreshTokenStorage implements RefreshTokenStorage {
     tokenHash: string,
     ttlSeconds: number,
   ): Promise<void> {
-    await this.redisService.set(
-      this.getKey(sessionId),
-      tokenHash,
-      ttlSeconds,
-    );
+    await this.redisService.set(this.getKey(sessionId), tokenHash, ttlSeconds);
   }
 
   async get(sessionId: string): Promise<string | null> {

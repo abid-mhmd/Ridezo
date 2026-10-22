@@ -1,8 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes } from 'node:crypto';
@@ -40,25 +36,16 @@ export class RefreshAccessTokenUseCase {
     let payload: RefreshTokenPayload;
 
     try {
-      payload =
-        await this.jwtService.verifyAsync<RefreshTokenPayload>(
-          refreshToken,
-          { secret: refreshSecret },
-        );
-    } catch {
-      throw new UnauthorizedException(
-        'Refresh token is invalid or expired.',
+      payload = await this.jwtService.verifyAsync<RefreshTokenPayload>(
+        refreshToken,
+        { secret: refreshSecret },
       );
+    } catch {
+      throw new UnauthorizedException('Refresh token is invalid or expired.');
     }
 
-    if (
-      !payload.sub ||
-      !payload.jti ||
-      payload.tokenType !== 'refresh'
-    ) {
-      throw new UnauthorizedException(
-        'Refresh token is invalid or expired.',
-      );
+    if (!payload.sub || !payload.jti || payload.tokenType !== 'refresh') {
+      throw new UnauthorizedException('Refresh token is invalid or expired.');
     }
 
     const incomingHash = createHash('sha256')
@@ -68,9 +55,7 @@ export class RefreshAccessTokenUseCase {
     const storedHash = await this.refreshTokenStorage.get(payload.jti);
 
     if (!storedHash || storedHash !== incomingHash) {
-      throw new UnauthorizedException(
-        'Refresh token is invalid or expired.',
-      );
+      throw new UnauthorizedException('Refresh token is invalid or expired.');
     }
 
     const user = await this.userRepository.findById(payload.sub);
@@ -78,9 +63,7 @@ export class RefreshAccessTokenUseCase {
     if (!user) {
       await this.refreshTokenStorage.delete(payload.jti);
 
-      throw new UnauthorizedException(
-        'Refresh token is invalid or expired.',
-      );
+      throw new UnauthorizedException('Refresh token is invalid or expired.');
     }
 
     const newSessionId = randomBytes(16).toString('hex');
@@ -114,9 +97,7 @@ export class RefreshAccessTokenUseCase {
     );
 
     if (!rotated) {
-      throw new UnauthorizedException(
-        'Refresh token is invalid or expired.',
-      );
+      throw new UnauthorizedException('Refresh token is invalid or expired.');
     }
 
     const accessToken = await this.jwtService.signAsync({

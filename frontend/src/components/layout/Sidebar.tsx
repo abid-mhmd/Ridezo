@@ -113,20 +113,20 @@ export default function Sidebar({
         ].join(' ')}
       >
         {/* Brand */}
-        <div className="flex h-16 shrink-0 items-center gap-2.5 border-b border-[#252e3e] px-4">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#8b78ff] text-sm font-bold text-white">
-            R
+        <div className="flex h-16 shrink-0 items-center gap-2.5 border-b border-[#252e3e] px-5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#8b78ff] to-[#6c55ff] text-sm font-bold text-white shadow-md shadow-[#8b78ff]/25">
+            T
           </span>
 
-          <span className="text-sm font-semibold tracking-tight text-white">
-            Ridezo
+          <span className="text-base font-bold tracking-tight text-white">
+            Tripzo
           </span>
         </div>
 
         {/* Navigation */}
         <nav
           aria-label="Sidebar navigation"
-          className="flex-1 space-y-6 overflow-y-auto px-3 py-5"
+          className="flex-1 space-y-5 overflow-y-auto px-3 py-4 scrollbar-none"
         >
           {navigationGroups.map((group) => (
             <section key={group.title}>
@@ -134,7 +134,7 @@ export default function Sidebar({
                 {group.title}
               </h2>
 
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {group.items.map((item) => {
                   const Icon = item.icon;
 
@@ -145,21 +145,20 @@ export default function Sidebar({
                       onClick={() => setIsOpen(false)}
                       className={({ isActive }) =>
                         [
-                          'flex items-center gap-3 rounded-lg px-2.5 py-2.5',
-                          'text-xs transition-colors',
+                          'flex items-center gap-3 rounded-xl px-2.5 py-2 text-xs transition-colors',
                           isActive
                             ? 'bg-[#8b78ff]/15 font-medium text-[#b6a8ff]'
                             : 'text-[#929bad] hover:bg-[#161b27] hover:text-white',
                         ].join(' ')
                       }
                     >
-                      <Icon size={15} className="shrink-0" />
+                      <Icon size={16} className="shrink-0" />
 
                       <span className="min-w-0 flex-1">{item.label}</span>
 
                       {item.label === 'Messages' && (
-                        <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-[#252e3e] px-1 text-[9px] text-[#c7cddd]">
-                          0
+                        <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-[#252e3e] px-1 text-[9px] font-medium text-[#c7cddd]">
+                          2
                         </span>
                       )}
                     </NavLink>
@@ -175,7 +174,7 @@ export default function Sidebar({
           <NavLink
             to="/profile"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-2.5 rounded-lg border border-[#252e3e] bg-[#111722] p-2 transition hover:border-[#8b78ff]/40"
+            className="flex items-center gap-2.5 rounded-xl border border-[#252e3e] bg-[#111722] p-2.5 transition hover:border-[#8b78ff]/40"
           >
             {profilePhoto ? (
               <img
@@ -184,7 +183,7 @@ export default function Sidebar({
                 className="h-8 w-8 shrink-0 rounded-full object-cover"
               />
             ) : (
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#252e3e] text-xs font-semibold text-white">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1b2030] text-xs font-semibold text-[#b6a8ff]">
                 {userName.charAt(0).toUpperCase()}
               </span>
             )}
@@ -195,11 +194,11 @@ export default function Sidebar({
               </span>
 
               <span className="block text-[10px] text-[#36e0c0]">
-                Ridezo Traveller
+                Verified Traveller
               </span>
             </span>
 
-            <ChevronRight size={15} className="shrink-0 text-[#657086]" />
+            <ChevronRight size={14} className="shrink-0 text-[#657086]" />
           </NavLink>
 
           {/* Logout button */}
@@ -207,7 +206,7 @@ export default function Sidebar({
             type="button"
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-xs text-[#929bad] transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-xs text-[#929bad] transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoggingOut ? (
               <LoaderCircle size={15} className="shrink-0 animate-spin" />

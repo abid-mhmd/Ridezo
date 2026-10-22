@@ -115,7 +115,7 @@ function App() {
         <Route
           element={
             accessToken && user ? (
-              <AppLayout onLogout={handleLogout}/>
+              <AppLayout onLogout={handleLogout} />
             ) : (
               <Navigate to="/login" replace />
             )

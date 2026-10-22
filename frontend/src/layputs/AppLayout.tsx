@@ -9,13 +9,15 @@ interface AppLayoutProps {
 
 export default function AppLayout({ onLogout }: AppLayoutProps) {
   return (
-    <div className="min-h-screen bg-[#080b12] text-white">
+    <div className="min-h-screen bg-[#080b12] text-white flex flex-col">
+      {/* Sidebar navigation */}
       <Sidebar onLogout={onLogout} />
 
-      <div className="min-h-screen lg:pl-60">
+      {/* Main content wrapper shifted right on large screens to accommodate the fixed sidebar */}
+      <div className="flex flex-1 flex-col min-h-screen lg:pl-60">
         <Navbar />
 
-        <main className="min-h-[calc(100vh-8rem)] p-4 sm:p-6">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
 

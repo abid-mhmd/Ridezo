@@ -15,6 +15,13 @@ export interface IdentityVerification {
   verifiedAt: Date | null;
 }
 
+export interface UserPreferences {
+  smoking?: 'non-smoking' | 'smoking-allowed' | 'no-preference';
+  pets?: 'allowed' | 'not-allowed' | 'no-preference';
+  seatingComfort?: 'window' | 'middle' | 'aisle' | 'no-preference';
+  climateControl?: 'ac-preferred' | 'non-ac-preferred' | 'no-preference';
+}
+
 export interface UserEntity {
   id: string;
 
@@ -37,6 +44,7 @@ export interface UserEntity {
   location?: UserLocation;
 
   languages: string[];
+  preferences?: UserPreferences;
 
   completedRideCount: number;
   rating: number;

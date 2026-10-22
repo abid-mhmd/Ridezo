@@ -28,6 +28,7 @@ export class GetUserProfileUseCase {
       location: user.location,
       completedRideCount: user.completedRideCount,
       rating: user.rating,
+      preferences: user.preferences,
       reviewCount: user.reviewCount,
       emailVerified: user.emailVerified,
       phoneVerified: user.phoneVerified,
