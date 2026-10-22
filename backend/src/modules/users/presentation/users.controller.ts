@@ -4,6 +4,7 @@ import {
   Get,
   Patch,
   Post,
+  Delete,
   Req,
   UnauthorizedException,
   UseGuards,
@@ -21,6 +22,7 @@ import type { AccessTokenPayload } from '../../auth/presentation/guards/jwt-auth
 import { UpdateProfileUseCase } from '../application/use-cases/update-profile.use-case.js';
 import { UpdateProfileDto } from '../application/dto/update-profile.dto.js';
 import { UploadProfilePhotoUseCase } from '../application/use-cases/upload-profile-photo.use-case.js';
+import { RemoveProfilePhotoUseCase } from '../application/use-cases/remove-profile-phot.use-case.js';
 
 @Controller('users')
 export class UsersController {
@@ -28,6 +30,7 @@ export class UsersController {
     private readonly getUserProfileUseCase: GetUserProfileUseCase,
     private readonly updateProfileUseCase: UpdateProfileUseCase,
     private readonly uploadProfilePhotoUseCase: UploadProfilePhotoUseCase,
+    private readonly removeProfilePhotUseCase: RemoveProfilePhotoUseCase,
   ) {}
 
   @Get('me')
@@ -87,5 +90,13 @@ export class UsersController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     return this.uploadProfilePhotoUseCase.execute(request.user.sub, file);
+  }
+
+  @Delete('profile/photo')
+  @UseGuards(JwtAuthGuard)
+  async removeProfilePhoto(
+    @Req() request: Request & { user: { sub: string } },
+  ) {
+    return this.removeProfilePhotUseCase.execute(request.user.sub);
   }
 }

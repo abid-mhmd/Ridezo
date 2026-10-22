@@ -11,6 +11,7 @@ import { UsersController } from './presentation/users.controller.js';
 import { SecurityModule } from '../../infrastructure/redis/security/security.module.js';
 import { UpdateProfileUseCase } from './application/use-cases/update-profile.use-case.js';
 import { UploadProfilePhotoUseCase } from './application/use-cases/upload-profile-photo.use-case.js';
+import { RemoveProfilePhotoUseCase } from './application/use-cases/remove-profile-phot.use-case.js';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { UploadProfilePhotoUseCase } from './application/use-cases/upload-profil
     GetUserProfileUseCase,
     UpdateProfileUseCase,
     UploadProfilePhotoUseCase,
+    RemoveProfilePhotoUseCase,
   ],
   exports: [USER_REPOSITORY],
 })
