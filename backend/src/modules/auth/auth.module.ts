@@ -4,7 +4,8 @@ import { UsersModule } from '../users/users.module.js';
 import { PASSWORD_HASHER } from './application/ports/passwordhasher.js';
 import { RegisterUserUseCase } from './application/use-cases/register-user.use-case.js';
 import { Argon2PasswordHasher } from './infrastructure/persistence/security/persistence/argon2-password-hasher.js';
-
+import { REFRESH_TOKEN_STORAGE } from './application/ports/refresh-token-storage.js';
+import { RedisRefreshTokenStorage } from './infrastructure/persistence/security/persistence/redis-refresh-token.storage.js';
 import type { UserRepository } from '../users/domain/repositories/user.repository.js';
 import type { PasswordHasher } from './application/ports/passwordhasher.js';
 import { AuthController } from './presentation/auth.controller.js';
@@ -27,6 +28,7 @@ import { PassportModule } from '@nestjs/passport';
 import { GoogleStrategy } from '../../infrastructure/redis/security/google.strategy.js';
 import { GoogleAuthUseCase } from './application/use-cases/google-auth.use-case.js';
 import { SecurityModule } from '../../infrastructure/redis/security/security.module.js';
+import { RefreshAccessTokenUseCase } from './application/use-cases/refresh-token.use-case.js';
 
 @Module({
   imports: [
@@ -40,6 +42,10 @@ import { SecurityModule } from '../../infrastructure/redis/security/security.mod
     {
       provide: OTP_STORAGE,
       useClass: RedisOtpStorage,
+    },
+    {
+      provide: REFRESH_TOKEN_STORAGE,
+      useClass: RedisRefreshTokenStorage,
     },
     {
       provide: PASSWORD_HASHER,
@@ -71,6 +77,7 @@ import { SecurityModule } from '../../infrastructure/redis/security/security.mod
     ResetPasswordUseCase,
     GoogleStrategy,
     GoogleAuthUseCase,
+    RefreshAccessTokenUseCase,
   ],
   exports: [RegisterUserUseCase],
 })

@@ -13,7 +13,9 @@ export interface AccessTokenPayload {
   role: string;
 }
 
-type AuthenticatedRequest = Request & { user?: AccessTokenPayload };
+type AuthenticatedRequest = Request & {
+  user?: AccessTokenPayload;
+};
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -21,14 +23,13 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-
     const authorization = request.get('Authorization');
 
-    if (!authorization?.startsWith('Bearer')) {
+    if (!authorization?.startsWith('Bearer ')) {
       throw new UnauthorizedException('Access token is required.');
     }
 
-    const token = authorization.slice('Beared'.length).trim();
+    const token = authorization.slice('Bearer '.length).trim();
 
     if (!token) {
       throw new UnauthorizedException('Access token is required.');
@@ -50,7 +51,7 @@ export class JwtAuthGuard implements CanActivate {
 
       return true;
     } catch {
-      throw new UnauthorizedException('Invalid or expired access to token.');
+      throw new UnauthorizedException('Invalid or expired access token.');
     }
   }
 }

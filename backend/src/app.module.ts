@@ -30,6 +30,7 @@ import { RedisModule } from './infrastructure/redis/redis.module.js';
         OTP_HASH_SECRET: Joi.string().min(64).required(),
         JWT_ACCESS_SECRET: Joi.string().min(64).required(),
         JWT_ACCESS_EXPIRES_IN: Joi.string().default('15m'),
+        JWT_REFRESH_TTL_SECONDS: Joi.number().integer().positive().default(604800),
         GOOGLE_CLIENT_ID: Joi.string().required(),
         GOOGLE_CLIENT_SECRET: Joi.string().required(),
         GOOGLE_CALLBACK_URL: Joi.string().uri().required(),

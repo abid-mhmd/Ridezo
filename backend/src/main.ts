@@ -2,11 +2,14 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { Logger } from 'nestjs-pino';
 import { ValidationPipe } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
+
+  app.use(cookieParser());
 
   console.log('[Startup] NestJS application created.');
 

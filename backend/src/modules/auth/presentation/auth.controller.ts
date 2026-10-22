@@ -30,8 +30,13 @@ import {
 } from '../application/use-cases/login-user.use-case.js';
 import { LoginUserDto } from '../application/dto/login-user.dto.js';
 import { JwtService } from '@nestjs/jwt';
+import { createHash, randomBytes } from 'node:crypto';
+import { REFRESH_TOKEN_STORAGE } from '../application/ports/refresh-token-storage.js';
+import type { RefreshTokenStorage } from '../application/ports/refresh-token-storage.js';
+import { ConfigService } from '@nestjs/config';
 import { Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AccessTokenPayload, JwtAuthGuard } from './guards/jwt-auth.guard.js';
+import { RefreshAccessTokenUseCase } from '../application/use-cases/refresh-token.use-case.js';
 import type { Request } from 'express';
 import { ForgotPasswordDto } from '../application/dto/forgot-password.dto.js';
 import { RequestPasswordResetOtpUseCase } from '../application/use-cases/request-password-reset.use-case-otp.js';
@@ -80,6 +85,14 @@ export class AuthController {
 
     @Inject(GoogleAuthUseCase)
     private readonly googleAuthUseCase: GoogleAuthUseCase,
+
+    @Inject(REFRESH_TOKEN_STORAGE)
+    private readonly refreshTokenStorage: RefreshTokenStorage,
+
+    @Inject(RefreshAccessTokenUseCase)
+    private readonly refreshAccessTokenUseCase: RefreshAccessTokenUseCase,
+
+    private readonly configService: ConfigService,
 
     private readonly jwtService: JwtService,
   ) {}
@@ -142,9 +155,40 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() input: LoginUserDto) {
+  async login(
+    @Body() input: LoginUserDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     try {
       const user = await this.loginUserUseCase.execute(input);
+
+      const sessionId = randomBytes(16).toString('hex');
+
+      const refreshTtl = this.configService.getOrThrow<number>(
+        'JWT_REFRESH_TTL_SECONDS',
+      );
+
+      const refreshToken = await this.jwtService.signAsync(
+        {
+          sub: user.id,
+          jti: sessionId,
+          tokenType: 'refresh',
+        },
+        {
+          secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+          expiresIn: refreshTtl,
+        },
+      );
+
+      const refreshTokenHash = createHash('sha256')
+        .update(refreshToken)
+        .digest('hex');
+
+      await this.refreshTokenStorage.store(
+        sessionId,
+        refreshTokenHash,
+        refreshTtl,
+      );
 
       const accessToken = await this.jwtService.signAsync({
         sub: user.id,
@@ -152,8 +196,16 @@ export class AuthController {
         role: user.role,
       });
 
+      response.cookie('ridezo_refresh', refreshToken, {
+        httpOnly: true,
+        secure: this.configService.get<string>('NODE_ENV') === 'production',
+        sameSite: 'lax',
+        path: '/api/auth',
+        maxAge: refreshTtl * 1000,
+      });
+
       return {
-        message: 'Login successfull',
+        message: 'Login successful.',
         accessToken,
         expiresIn: 900,
         user: {
@@ -166,14 +218,62 @@ export class AuthController {
       };
     } catch (error) {
       if (error instanceof InvalidCredentialsError) {
-        throw new UnauthorizedException('Invalid email or password');
+        throw new UnauthorizedException('Invalid email or password.');
       }
 
       if (error instanceof EmailNotVerifiedError) {
-        throw new ForbiddenException('Please verify email before loggin in.');
+        throw new ForbiddenException(
+          'Please verify your email before logging in.',
+        );
       }
+
+      throw error;
     }
-    throw error;
+  }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refresh(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const refreshToken = request.cookies?.ridezo_refresh as string | undefined;
+
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token is required.');
+    }
+
+    try {
+      const result = await this.refreshAccessTokenUseCase.execute(refreshToken);
+
+      const refreshTtl = this.configService.getOrThrow<number>(
+        'JWT_REFRESH_TTL_SECONDS',
+      );
+
+      response.cookie('ridezo_refresh', result.refreshToken, {
+        httpOnly: true,
+        secure: this.configService.get<string>('NODE_ENV') === 'production',
+        sameSite: 'lax',
+        path: '/api/auth',
+        maxAge: refreshTtl * 1000,
+      });
+
+      return {
+        accessToken: result.accessToken,
+        expiresIn: 900,
+      };
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        response.clearCookie('ridezo_refresh', {
+          httpOnly: true,
+          secure: this.configService.get<string>('NODE_ENV') === 'production',
+          sameSite: 'lax',
+          path: '/api/auth',
+        });
+      }
+
+      throw error;
+    }
   }
 
   @Get('me')
@@ -293,5 +393,49 @@ export class AuthController {
 
       throw error;
     }
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const refreshToken = request.cookies?.ridezo_refresh as string | undefined;
+
+    if (refreshToken) {
+      try {
+        const payload = await this.jwtService.verifyAsync<{
+          sub: string;
+          jti: string;
+          tokenType: string;
+        }>(refreshToken, {
+          secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+        });
+
+        if (payload.jti && payload.tokenType === 'refresh') {
+          const incomingHash = createHash('sha256')
+            .update(refreshToken)
+            .digest('hex');
+
+          const storedHash = await this.refreshTokenStorage.get(payload.jti);
+
+          if (storedHash === incomingHash) {
+            await this.refreshTokenStorage.delete(payload.jti);
+          }
+        }
+      } catch {
+        // An invalid or expired refresh token cannot be used to restore a session.
+      }
+    }
+
+    response.clearCookie('ridezo_refresh', {
+      httpOnly: true,
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      sameSite: 'lax',
+      path: '/api/auth',
+    });
+
+    return { message: 'Logged out successfully.' };
   }
 }

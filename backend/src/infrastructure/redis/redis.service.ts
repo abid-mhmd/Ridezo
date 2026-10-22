@@ -64,4 +64,37 @@ export class RedisService implements OnModuleDestroy, OnModuleInit {
   async getAndDelete(key: string): Promise<string | null> {
     return this.redis.getdel(key);
   }
+
+  async rotateToken(
+    currentKey: string,
+    currentHash: string,
+    newKey: string,
+    newHash: string,
+    ttlSeconds: number,
+  ): Promise<boolean> {
+    const script = `
+    local current = redis.call('GET', KEYS[1])
+
+    if current ~= ARGV[1] then
+      return 0
+    end
+
+    redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3])
+    redis.call('DEL', KEYS[1])
+
+    return 1
+  `;
+
+    const result = await this.redis.eval(
+      script,
+      2,
+      currentKey,
+      newKey,
+      currentHash,
+      newHash,
+      ttlSeconds,
+    );
+
+    return result === 1;
+  }
 }

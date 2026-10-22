@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import LoginPage from './features/auth/pages/loginPage';
@@ -11,23 +11,91 @@ import AppLayout from './layputs/AppLayout';
 import ProfilePage from './features/auth/pages/ProfilePage';
 
 import type { AuthUser } from './features/auth/types/auth.types';
+import { setAccessToken, restoreSession } from './api/http';
+import { getMyProfile } from './features/auth/api/profile.api';
 
 function App() {
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [accessToken, setAccessTokenState] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initializeSession() {
+      try {
+        const token = await restoreSession();
+
+        if (!token) {
+          return;
+        }
+
+        const profile = await getMyProfile();
+
+        if (!isMounted) {
+          return;
+        }
+
+        const authenticatedUser: AuthUser = {
+          id: profile.id,
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          email: profile.email,
+          role: profile.role,
+        };
+
+        setAccessToken(token);
+        setAccessTokenState(token);
+        setUser(authenticatedUser);
+      } catch {
+        setAccessToken(null);
+
+        if (isMounted) {
+          setAccessTokenState(null);
+          setUser(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsInitializing(false);
+        }
+      }
+    }
+
+    void initializeSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   function handleLoginSuccess(token: string, authenticatedUser: AuthUser) {
     setAccessToken(token);
+    setAccessTokenState(token);
     setUser(authenticatedUser);
   }
 
-  // function handleLogout() {
-  //   setAccessToken(null);
-  //   setUser(null);
-  // }
+  async function handleLogout() {
+    try {
+      const { logoutUser } = await import('./features/auth/api/auth.api');
+      await logoutUser();
+    } finally {
+      setAccessToken(null);
+      setAccessTokenState(null);
+      setUser(null);
+    }
+  }
+
+  if (isInitializing) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#080b12] text-sm text-gray-400">
+        Restoring your Ridezo session...{' '}
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
+      {' '}
       <Routes>
         <Route
           path="/login"
@@ -39,14 +107,12 @@ function App() {
             )
           }
         />
-
+        ```
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-reset-otp" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-
-        {/* Authenticated application layout */}
         <Route
           element={
             accessToken && user ? (
@@ -58,8 +124,6 @@ function App() {
         >
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
-
-        {/* Unknown routes */}
         <Route
           path="*"
           element={

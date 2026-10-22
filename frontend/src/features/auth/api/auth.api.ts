@@ -1,5 +1,6 @@
-import { apiRequest } from '../../../api/http';
+import { apiRequest, setAccessToken } from '../../../api/http';
 import type {
+  AuthUser,
   LoginRequest,
   LoginResponse,
   RegisterRequest,
@@ -15,6 +16,19 @@ import type {
   ResetPasswordRequest,
   ResetPasswordResponse,
 } from '../types/auth.types';
+
+interface RefreshResponse {
+  accessToken: string;
+  expiresIn: number;
+}
+
+interface CurrentUserResponse {
+  user: {
+    id: string;
+    email: string;
+    role: string;
+  };
+}
 
 export function loginUser(credentials: LoginRequest): Promise<LoginResponse> {
   return apiRequest<LoginResponse>('/auth/login', {
@@ -75,4 +89,36 @@ export function resetPassword(
     method: 'POST',
     body: JSON.stringify(data),
   });
+}
+
+export async function refreshLoginSession(): Promise<string> {
+  const result = await apiRequest<RefreshResponse>('/auth/refresh', {
+    method: 'POST',
+  });
+
+  setAccessToken(result.accessToken);
+
+  return result.accessToken;
+}
+
+export async function getCurrentUser(): Promise<AuthUser> {
+  const result = await apiRequest<CurrentUserResponse>('/auth/me');
+
+  return {
+    id: result.user.id,
+    email: result.user.email,
+    role: result.user.role,
+    firstName: '',
+    lastName: '',
+  };
+}
+
+export async function logoutUser(): Promise<void> {
+  try {
+    await apiRequest<{ message: string }>('/auth/logout', {
+      method: 'POST',
+    });
+  } finally {
+    setAccessToken(null);
+  }
 }
