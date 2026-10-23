@@ -40,4 +40,3 @@ export enum ClimateControlPreference {
   NON_AC_PREFERRED = 'non-ac-preferred',
   NO_PREFERENCE = 'no-preference',
 }
-

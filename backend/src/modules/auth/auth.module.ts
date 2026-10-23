@@ -79,6 +79,6 @@ import { RefreshAccessTokenUseCase } from './application/use-cases/refresh-token
     GoogleAuthUseCase,
     RefreshAccessTokenUseCase,
   ],
-  exports: [RegisterUserUseCase],
+  exports: [RegisterUserUseCase, PASSWORD_HASHER],
 })
 export class AuthModule {}

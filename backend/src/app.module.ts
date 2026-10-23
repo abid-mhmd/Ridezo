@@ -9,6 +9,7 @@ import { AppService } from './app.service.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { RedisModule } from './infrastructure/redis/redis.module.js';
+import { AdminAuthModule } from './modules/admin/admin-auth.module.js';
 
 @Module({
   imports: [
@@ -92,6 +93,7 @@ import { RedisModule } from './infrastructure/redis/redis.module.js';
     UsersModule,
     AuthModule,
     RedisModule,
+    AdminAuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -5,6 +5,7 @@ import type { UserRepository } from '../../../users/domain/repositories/user.rep
 import { PASSWORD_HASHER } from '../ports/passwordhasher.js';
 import type { PasswordHasher } from '../ports/passwordhasher.js';
 import { LoginUserDto } from '../dto/login-user.dto.js';
+import { UserRole } from '../../../users/domain/enums/user.enums.js';
 
 export class InvalidCredentialsError extends Error {
   constructor() {
@@ -45,6 +46,9 @@ export class LoginUserUseCase {
     );
     if (!passwordIsValid) {
       throw new InvalidCredentialsError();
+    }
+    if (user.role === UserRole.ADMIN) {
+      throw new UnauthorizedException('');
     }
     if (!user.emailVerified) {
       throw new EmailNotVerifiedError();

@@ -25,7 +25,6 @@ export interface UserPreferences {
   climateControl?: ClimateControlPreference;
 }
 
-
 export interface UserEntity {
   id: string;
 
