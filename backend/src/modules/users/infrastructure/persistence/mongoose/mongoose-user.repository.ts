@@ -65,6 +65,7 @@ export class MongooseUserRepository implements UserRepository {
 
       identityVerification: user.identityVerification,
       location: user.location,
+      preferences: user.preferences,
 
       languages: user.languages,
 

@@ -2,6 +2,10 @@ import {
   AccountStatus,
   IdentityVerificationStatus,
   UserRole,
+  SmokingPreference,
+  SeatingComfortPreference,
+  PetPreference,
+  ClimateControlPreference,
 } from '../enums/user.enums.js';
 
 export interface UserLocation {
@@ -14,13 +18,13 @@ export interface IdentityVerification {
   status: IdentityVerificationStatus;
   verifiedAt: Date | null;
 }
-
 export interface UserPreferences {
-  smoking?: 'non-smoking' | 'smoking-allowed' | 'no-preference';
-  pets?: 'allowed' | 'not-allowed' | 'no-preference';
-  seatingComfort?: 'window' | 'middle' | 'aisle' | 'no-preference';
-  climateControl?: 'ac-preferred' | 'non-ac-preferred' | 'no-preference';
+  smoking?: SmokingPreference;
+  pets?: PetPreference;
+  seatingComfort?: SeatingComfortPreference;
+  climateControl?: ClimateControlPreference;
 }
+
 
 export interface UserEntity {
   id: string;

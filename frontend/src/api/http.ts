@@ -62,7 +62,12 @@ export async function apiRequest<T>(
   const makeRequest = (token: string | null) => {
     const headers = new Headers(options.headers);
 
-    if (!headers.has('Content-Type') && options.body) {
+    const isFormData = options.body instanceof FormData;
+
+    if (isFormData) {
+      // Let the browser set multipart/form-data and its boundary.
+      headers.delete('Content-Type');
+    } else if (options.body && !headers.has('Content-Type')) {
       headers.set('Content-Type', 'application/json');
     }
 

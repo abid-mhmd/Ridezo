@@ -4,6 +4,10 @@ import {
   AccountStatus,
   IdentityVerificationStatus,
   UserRole,
+  SmokingPreference,
+  SeatingComfortPreference,
+  ClimateControlPreference,
+  PetPreference,
 } from '../../../domain/enums/user.enums.js';
 
 export type UserDocument = HydratedDocument<User> & {
@@ -40,6 +44,41 @@ export class IdentityVerification {
 
 export const IdentityVerificationSchema =
   SchemaFactory.createForClass(IdentityVerification);
+
+@Schema({ _id: false })
+export class UserPreferencesSchema {
+  @Prop({
+    type: String,
+    enum: Object.values(SmokingPreference),
+    default: 'no-preference',
+  })
+  smoking?: SmokingPreference;
+
+  @Prop({
+    type: String,
+    enum: Object.values(PetPreference),
+    default: 'no-preference',
+  })
+  pets?: PetPreference;
+
+  @Prop({
+    type: String,
+    enum: Object.values(SeatingComfortPreference),
+    default: 'no-preference',
+  })
+  seatingComfort?: SeatingComfortPreference;
+
+  @Prop({
+    type: String,
+    enum: Object.values(ClimateControlPreference),
+    default: 'no-preference',
+  })
+  climateControl?: ClimateControlPreference;
+}
+
+export const UserPreferencesSchemaDefinition = SchemaFactory.createForClass(
+  UserPreferencesSchema,
+);
 
 @Schema({ timestamps: true, versionKey: false })
 export class User {
@@ -128,6 +167,12 @@ export class User {
 
   @Prop({ type: [String], default: [] })
   languages: string[];
+
+  @Prop({
+    type: UserPreferencesSchemaDefinition,
+    default: () => ({}),
+  })
+  preferences: UserPreferencesSchema;
 
   @Prop({ type: Number, min: 0, default: 0 })
   completedRideCount: number;

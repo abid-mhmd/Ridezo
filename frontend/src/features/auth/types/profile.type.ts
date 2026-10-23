@@ -28,3 +28,13 @@ export interface UserProfile {
     state?: string;
   };
 }
+
+export interface UpdateProfilePayload {
+  firstName?: string;
+  lastName?: string;
+  about?: string;
+  phone?: string;
+  languages?: string[];
+  location?: { city?: string; state?: string };
+  preferences?: UserProfile['preferences'];
+}

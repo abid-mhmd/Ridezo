@@ -50,6 +50,10 @@ export class UpdateProfileDto {
   languages?: string[];
 
   @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
   @IsObject()
   preferences?: Record<string, unknown>;
 

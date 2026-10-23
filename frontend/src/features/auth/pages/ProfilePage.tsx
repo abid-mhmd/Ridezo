@@ -175,14 +175,13 @@ export default function ProfilePage() {
 
           {/* Top Actions */}
           <div className="flex items-center gap-2.5 shrink-0">
-            <button
-              type="button"
-              disabled
+            <Link
+              to="/profile/edit"
               className="inline-flex items-center gap-2 rounded-xl bg-[#8b78ff] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#7965ed]"
             >
               <Edit3 size={14} />
               Edit Profile
-            </button>
+            </Link>
 
             {/* <button
               type="button"
@@ -451,7 +450,7 @@ export default function ProfilePage() {
                       Phone Number
                     </p>
                     <p className="text-[10px] text-[#929bad]">
-                      {profile.phone}+91 98•••••21
+                      {profile.phone}
                     </p>
                   </div>
                 </div>
@@ -497,9 +496,9 @@ export default function ProfilePage() {
               <h2 className="text-sm font-semibold text-white">
                 Travel Preferences
               </h2>
-              <span className="text-xs text-[#b6a8ff] cursor-pointer hover:underline">
+              <Link to="/profile/edit" className="text-xs text-[#b6a8ff] cursor-pointer hover:underline">
                 Edit
-              </span>
+              </Link>
             </div>
 
             <div className="mt-4 space-y-3 text-xs">
