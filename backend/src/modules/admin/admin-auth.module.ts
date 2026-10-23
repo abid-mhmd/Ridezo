@@ -8,12 +8,17 @@ import { AdminAuthController } from './presentation/admin-auth.controller.js';
 import { AdminLoginUseCase } from './application/use-cases/admin-login.use-case.js';
 import { REFRESH_TOKEN_STORAGE } from '../auth/application/ports/refresh-token-storage.js';
 import { RedisRefreshTokenStorage } from '../auth/infrastructure/persistence/security/persistence/redis-refresh-token.storage.js';
+import { AdminUsersController } from './presentation/admin-users.controller.js';
+import { ListUsersUseCase } from './application/use-cases/list-users.use-case.js';
+import { AdminRoleGuard } from './presentation/guards/admin-role.guard.js';
 
 @Module({
   imports: [AuthModule, UsersModule, RedisModule, JwtModule.register({})],
-  controllers: [AdminAuthController],
+  controllers: [AdminAuthController, AdminUsersController],
   providers: [
     AdminLoginUseCase,
+    ListUsersUseCase,
+    AdminRoleGuard,
     {
       provide: REFRESH_TOKEN_STORAGE,
       useClass: RedisRefreshTokenStorage,

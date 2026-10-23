@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-
 import {
   CreateUserData,
+  ListUsersQuery,
   UserRepository,
 } from '../../../domain/repositories/user.repository.js';
 import type { UserEntity } from '../../../domain/entities/user.entity.js';
@@ -144,5 +144,45 @@ export class MongooseUserRepository implements UserRepository {
       .select('-passwordHash')
       .lean()
       .exec() as Promise<UserEntity | null>;
+  }
+
+  async listUsers(
+    query: ListUsersQuery,
+  ): Promise<{ users: UserEntity[]; total: number }> {
+    const { page, limit, search } = query;
+
+    const filter: Record<string, unknown> = { role: { $ne: 'admin' } };
+
+    if (search?.trim()) {
+      const escapedSearch = search
+        .trim()
+        .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      const searchRegex = new RegExp(escapedSearch, 'i');
+
+      filter.$or = [
+        { firstName: searchRegex },
+        { lastName: searchRegex },
+        { email: searchRegex },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+    const [documents, total] = await Promise.all([
+      this.userModel
+        .find(filter)
+        .select('-passwordHash -googleId')
+        .sort({ createdAt: -1, _id: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+
+      this.userModel.countDocuments(filter).exec(),
+    ]);
+
+    return {
+      users: documents.map((user) => this.toEntity(user)),
+      total,
+    };
   }
 }

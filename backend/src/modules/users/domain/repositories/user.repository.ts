@@ -12,6 +12,13 @@ export type CreateUserData = Pick<
       'id' | 'firstName' | 'lastName' | 'email' | 'createdAt' | 'updatedAt'
     >
   >;
+
+export interface ListUsersQuery {
+  page: number;
+  limit: number;
+  search?: string;
+}
+
 export interface UserRepository {
   findById(id: string): Promise<UserEntity | null>;
   findByEmail(email: string): Promise<UserEntity | null>;
@@ -36,4 +43,7 @@ export interface UserRepository {
       };
     },
   ): Promise<UserEntity | null>;
+  listUsers(
+    query: ListUsersQuery,
+  ): Promise<{ users: UserEntity[]; total: number }>;
 }
