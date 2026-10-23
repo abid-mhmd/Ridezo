@@ -9,12 +9,12 @@ import ResetPasswordPage from './features/auth/pages/ResetPasswordPage';
 import { logoutUser } from './features/auth/api/auth.api';
 
 import AppLayout from './layputs/AppLayout';
-import ProfilePage from './features/auth/pages/ProfilePage';
+import ProfilePage from './features/user/pages/ProfilePage';
 
 import type { AuthUser } from './features/auth/types/auth.types';
 import { setAccessToken, restoreSession } from './api/http';
-import { getMyProfile } from './features/auth/api/profile.api';
-import EditProfilePage from './features/auth/pages/EditProfilePage';
+import { getMyProfile } from './features/user/api/profile.api';
+import EditProfilePage from './features/user/pages/EditProfilePage';
 
 function App() {
   const [accessToken, setAccessTokenState] = useState<string | null>(null);
