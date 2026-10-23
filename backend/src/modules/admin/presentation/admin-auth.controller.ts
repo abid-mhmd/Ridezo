@@ -62,13 +62,18 @@ export class AdminAuthController {
       refreshTokenHash,
       refreshTtl,
     );
-    
 
-    const accessToken = await this.jwtService.signAsync({
-      sub: admin.id,
-      email: admin.email,
-      role: admin.role,
-    });
+    const accessToken = await this.jwtService.signAsync(
+      {
+        sub: admin.id,
+        email: admin.email,
+        role: admin.role,
+      },
+      {
+        secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
+        expiresIn: 900,
+      },
+    );
 
     response.cookie('ridezo_admin_refresh', refreshToken, {
       httpOnly: true,
