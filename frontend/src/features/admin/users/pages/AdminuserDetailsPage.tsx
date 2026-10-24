@@ -94,8 +94,43 @@ export default function AdminUserDetailsPage({
   }, [accessToken, userId]);
 
   useEffect(() => {
-    void loadUserDetails();
-  }, [loadUserDetails]);
+    let isActive = true;
+
+    const fetchUserDetails = async () => {
+      if (!userId) {
+        setError('A user ID is required.');
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setError('');
+
+      try {
+        const response = await getAdminUserDetails(accessToken, userId);
+
+        if (isActive) {
+          setUser(response.user);
+        }
+      } catch (err: unknown) {
+        if (isActive) {
+          setError(
+            err instanceof Error ? err.message : 'Unable to load user details.',
+          );
+        }
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void fetchUserDetails();
+
+    return () => {
+      isActive = false;
+    };
+  }, [accessToken, userId]);
 
   const handleStatusChange = async (newStatus: 'active' | 'suspended') => {
     if (!userId) return;

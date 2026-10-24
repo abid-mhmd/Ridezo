@@ -136,8 +136,43 @@ export default function AdminUsersPage({ accessToken }: AdminUsersPageProps) {
   }, [accessToken, page, search]);
 
   useEffect(() => {
-    void loadUsers();
-  }, [loadUsers]);
+    let isActive = true;
+
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      setError('');
+
+      try {
+        const response = await getAdminUsers(accessToken, {
+          page,
+          limit: PAGE_SIZE,
+          ...(search ? { search } : {}),
+        });
+
+        if (isActive) {
+          setResult(response);
+        }
+      } catch (error: unknown) {
+        if (isActive) {
+          setError(
+            error instanceof Error
+              ? error.message
+              : 'Unable to load users. Please try again.',
+          );
+        }
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void fetchUsers();
+
+    return () => {
+      isActive = false;
+    };
+  }, [accessToken, page, search]);
 
   const users = result?.users ?? [];
   const pagination = result?.pagination;
