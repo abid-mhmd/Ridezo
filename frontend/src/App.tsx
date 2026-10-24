@@ -18,6 +18,7 @@ import { getMyProfile } from './features/user/api/profile.api';
 import AdminLoginPage from './features/admin/auth/pages/AdminLoginPage';
 import AdminUsersPage from './features/admin/users/pages/AdminUsersPage';
 import AdminLayout from './features/admin/components/AdminLayout';
+import AdminUserDetailsPage from './features/admin/users/pages/AdminuserDetailsPage';
 
 function App() {
   // Regular user session
@@ -160,8 +161,13 @@ function App() {
             path="users"
             element={<AdminUsersPage accessToken={adminAccessToken!} />}
           />
-        </Route>
 
+          {/* Admin user details */}
+          <Route
+            path="users/:userId"
+            element={<AdminUserDetailsPage accessToken={adminAccessToken!} />}
+          />
+        </Route>
         {/* Regular user protected routes */}
         <Route
           element={

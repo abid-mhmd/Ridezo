@@ -129,7 +129,7 @@ export default function AdminLoginPage({
                 }
               />
 
-              <div className="mt-2 text-right">
+              {/* <div className="mt-2 text-right">
                 <button
                   type="button"
                   className="text-[11px] font-medium text-ridezo-primary-light transition hover:text-white"
@@ -141,7 +141,7 @@ export default function AdminLoginPage({
                 >
                   Forgot password?
                 </button>
-              </div>
+              </div> */}
             </div>
 
             {error && (

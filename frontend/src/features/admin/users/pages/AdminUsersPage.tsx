@@ -9,6 +9,7 @@ import {
   FiChevronRight,
   FiEye,
 } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
 import { getAdminUsers } from '../api/admin-users.api';
 import type {
@@ -18,7 +19,6 @@ import type {
 
 interface AdminUsersPageProps {
   accessToken: string;
-  onViewUser?: (userId: string) => void;
 }
 
 const PAGE_SIZE = 10;
@@ -91,10 +91,7 @@ function VerificationBadge({ verified }: { verified: boolean }) {
   );
 }
 
-export default function AdminUsersPage({
-  accessToken,
-  onViewUser,
-}: AdminUsersPageProps) {
+export default function AdminUsersPage({ accessToken }: AdminUsersPageProps) {
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -102,6 +99,8 @@ export default function AdminUsersPage({
   const [result, setResult] = useState<AdminUserListResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const navigate = useNavigate();
 
   // Debounce search input.
   useEffect(() => {
@@ -374,7 +373,7 @@ export default function AdminUsersPage({
                     <td className="whitespace-nowrap px-6 py-3.5 text-right">
                       <button
                         type="button"
-                        onClick={() => onViewUser?.(user.id)}
+                        onClick={() => navigate(`/admin/users/${user.id}`)}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-[#263044] bg-[#080B12] px-3 py-1.5 text-xs font-medium text-[#C37DF5] transition hover:bg-[#C37DF5]/10"
                       >
                         <FiEye size={13} />

@@ -1,6 +1,7 @@
 import type {
   AdminUserListParams,
   AdminUserListResponse,
+  AdminUserDetailsResponse,
 } from '../types/admin-user.types';
 
 const API_BASE_URL =
@@ -44,4 +45,35 @@ export async function getAdminUsers(
   }
 
   return data as AdminUserListResponse;
+}
+
+export async function getAdminUserDetails(
+  accessToken: string,
+  userId: string,
+): Promise<AdminUserDetailsResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/admin/users/${encodeURIComponent(userId)}`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      credentials: 'include',
+    },
+  );
+
+  const data: unknown = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const message =
+      typeof data === 'object' && data !== null && 'message' in data
+        ? data.message
+        : 'Unable to load user details. Please try again.';
+
+    throw new Error(
+      Array.isArray(message) ? message.join(', ') : String(message),
+    );
+  }
+
+  return data as AdminUserDetailsResponse;
 }
