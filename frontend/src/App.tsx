@@ -10,16 +10,23 @@ import { logoutUser } from './features/auth/api/auth.api';
 
 import AppLayout from './layputs/AppLayout';
 import ProfilePage from './features/user/pages/ProfilePage';
+import EditProfilePage from './features/user/pages/EditProfilePage';
 
 import type { AuthUser } from './features/auth/types/auth.types';
 import { setAccessToken, restoreSession } from './api/http';
 import { getMyProfile } from './features/user/api/profile.api';
-import EditProfilePage from './features/user/pages/EditProfilePage';
+import AdminLoginPage from './features/admin/auth/pages/AdminLoginPage';
+import AdminUsersPage from './features/admin/users/pages/AdminUsersPage';
+import AdminLayout from './features/admin/components/AdminLayout';
 
 function App() {
+  // Regular user session
   const [accessToken, setAccessTokenState] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
+
+  // Separate admin session
+  const [adminAccessToken, setAdminAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -76,6 +83,11 @@ function App() {
     setUser(authenticatedUser);
   }
 
+  // Store the admin token separately from the user token.
+  function handleAdminLoginSuccess(token: string) {
+    setAdminAccessToken(token);
+  }
+
   async function handleLogout() {
     try {
       await logoutUser();
@@ -86,18 +98,22 @@ function App() {
     }
   }
 
+  function handleAdminLogout() {
+    setAdminAccessToken(null);
+  }
+
   if (isInitializing) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#080b12] text-sm text-gray-400">
-        Restoring your Ridezo session...{' '}
+        Restoring your Ridezo session...
       </div>
     );
   }
 
   return (
     <BrowserRouter>
-      {' '}
       <Routes>
+        {/* Regular user authentication */}
         <Route
           path="/login"
           element={
@@ -108,11 +124,45 @@ function App() {
             )
           }
         />
+
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-reset-otp" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+        <Route
+          path="/admin/login"
+          element={
+            adminAccessToken ? (
+              <Navigate to="/admin/users" replace />
+            ) : (
+              <AdminLoginPage
+                onLoginSuccess={(token) => handleAdminLoginSuccess(token)}
+              />
+            )
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            adminAccessToken ? (
+              <AdminLayout onLogout={handleAdminLogout} />
+            ) : (
+              <Navigate to="/admin/login" replace />
+            )
+          }
+        >
+          <Route index element={<Navigate to="/admin/users" replace />} />
+
+          <Route
+            path="users"
+            element={<AdminUsersPage accessToken={adminAccessToken!} />}
+          />
+        </Route>
+
+        {/* Regular user protected routes */}
         <Route
           element={
             accessToken && user ? (
@@ -125,6 +175,8 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/edit" element={<EditProfilePage />} />
         </Route>
+
+        {/* Fallback */}
         <Route
           path="*"
           element={

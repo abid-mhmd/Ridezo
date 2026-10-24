@@ -496,7 +496,10 @@ export default function ProfilePage() {
               <h2 className="text-sm font-semibold text-white">
                 Travel Preferences
               </h2>
-              <Link to="/profile/edit" className="text-xs text-[#b6a8ff] cursor-pointer hover:underline">
+              <Link
+                to="/profile/edit"
+                className="text-xs text-[#b6a8ff] cursor-pointer hover:underline"
+              >
                 Edit
               </Link>
             </div>

@@ -9,13 +9,6 @@ import {
   UserRole,
 } from '../../../users/domain/enums/user.enums.js';
 
-export class InvalidAdminCredetialsError extends Error {
-  constructor() {
-    super('Invalid email or password.');
-    this.name = 'InvalidAdminCredetialsError';
-  }
-}
-
 @Injectable()
 export class AdminLoginUseCase {
   constructor(
@@ -31,10 +24,7 @@ export class AdminLoginUseCase {
 
     const user = await this.userRepository.findByEmailForAuthentication(email);
 
-    if (!user) {
-      throw new InvalidAdminCredetialsError();
-    }
-    if (!user?.passwordHash) {
+    if (!user || !user.passwordHash) {
       throw new UnauthorizedException('Invalid email or password.');
     }
 
@@ -43,16 +33,13 @@ export class AdminLoginUseCase {
       user.passwordHash,
     );
 
-    if (!passwordIsValid) {
-      throw new UnauthorizedException('Invalid email or password');
-    }
-
-    if (user.role !== UserRole.ADMIN) {
-      throw new UnauthorizedException('Invalid email or password');
-    }
-
-    if (!user.emailVerified || user.accountStatus !== AccountStatus.ACTIVE) {
-      throw new UnauthorizedException('Invalid email or password');
+    if (
+      !passwordIsValid ||
+      user.role !== UserRole.ADMIN ||
+      !user.emailVerified ||
+      user.accountStatus !== AccountStatus.ACTIVE
+    ) {
+      throw new UnauthorizedException('Invalid email or password.');
     }
 
     return user;
