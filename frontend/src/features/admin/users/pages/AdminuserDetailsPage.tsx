@@ -15,14 +15,18 @@ import {
   FiTruck,
 } from 'react-icons/fi';
 
-import { getAdminUserDetails } from '../api/admin-users.api';
+import {
+  getAdminUserDetails,
+  updateAdminUserStatus,
+} from '../api/admin-users.api';
 import type { AdminUserDetails } from '../types/admin-user.types';
 
 interface AdminUserDetailsPageProps {
   accessToken: string;
 }
 
-type TabType = 'overview' | 'rides' | 'bookings' | 'vehicles' | 'reviews' | 'safety';
+type TabType =
+  'overview' | 'rides' | 'bookings' | 'vehicles' | 'reviews' | 'safety';
 
 function formatDate(value?: string): string {
   if (!value) return '—';
@@ -65,7 +69,7 @@ export default function AdminUserDetailsPage({
   // Modal states
   const [isSuspendModalOpen, setIsSuspendModalOpen] = useState(false);
   const [isReactivateModalOpen, setIsReactivateModalOpen] = useState(false);
-//   const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
+  const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
 
   const loadUserDetails = useCallback(async () => {
     if (!userId) {
@@ -93,24 +97,32 @@ export default function AdminUserDetailsPage({
     void loadUserDetails();
   }, [loadUserDetails]);
 
-//   const handleStatusChange = async (newStatus: 'active' | 'suspended') => {
-//     if (!userId) return;
-//     setIsSubmittingStatus(true);
-//     setError('');
+  const handleStatusChange = async (newStatus: 'active' | 'suspended') => {
+    if (!userId) return;
+    setIsSubmittingStatus(true);
+    setError('');
 
-//     try {
-//       const updatedUser = await updateAdminUserStatus(accessToken, userId, newStatus);
-//       setUser(updatedUser);
-//       setIsSuspendModalOpen(false);
-//       setIsReactivateModalOpen(false);
-//     } catch (err: unknown) {
-//       setError(
-//         err instanceof Error ? err.message : 'Failed to update account status.',
-//       );
-//     } finally {
-//       setIsSubmittingStatus(false);
-//     }
-//   };
+    try {
+      const updatedUser = await updateAdminUserStatus(
+        accessToken,
+        userId,
+        newStatus,
+      );
+      setUser((prevUser) =>
+        prevUser
+          ? { ...prevUser, accountStatus: updatedUser.accountStatus }
+          : prevUser,
+      );
+      setIsSuspendModalOpen(false);
+      setIsReactivateModalOpen(false);
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to update account status.',
+      );
+    } finally {
+      setIsSubmittingStatus(false);
+    }
+  };
 
   const tabs: { id: TabType; label: string; count?: number }[] = [
     { id: 'overview', label: 'Overview' },
@@ -234,7 +246,9 @@ export default function AdminUserDetailsPage({
                     <span className="flex items-center gap-1.5">
                       <FiMapPin className="text-[#C37DF5]" size={13} />
                       {user.location
-                        ? [user.location.city, user.location.state].filter(Boolean).join(', ')
+                        ? [user.location.city, user.location.state]
+                            .filter(Boolean)
+                            .join(', ')
                         : 'Kasaragod, Kerala'}
                     </span>
                     <span className="flex items-center gap-1.5">
@@ -253,7 +267,10 @@ export default function AdminUserDetailsPage({
                 <div className="text-center">
                   <p className="text-[10px] uppercase text-[#707B8F]">Rating</p>
                   <p className="mt-1 flex items-center gap-1 text-lg font-bold text-[#F8FAFC]">
-                    <FiStar className="fill-amber-400 text-amber-400" size={15} />
+                    <FiStar
+                      className="fill-amber-400 text-amber-400"
+                      size={15}
+                    />
                     {user.rating?.toFixed(1) ?? '4.9'}
                   </p>
                 </div>
@@ -286,14 +303,16 @@ export default function AdminUserDetailsPage({
               <div className="rounded-xl border border-[#263044] bg-[#080B12] p-4">
                 <p className="text-[11px] text-[#707B8F]">Email Verification</p>
                 <p className="mt-1 text-xs font-semibold text-[#34D399] flex items-center gap-1">
-                  <FiCheckCircle size={13} /> {user.emailVerified ? 'Verified' : 'Pending'}
+                  <FiCheckCircle size={13} />{' '}
+                  {user.emailVerified ? 'Verified' : 'Pending'}
                 </p>
               </div>
 
               <div className="rounded-xl border border-[#263044] bg-[#080B12] p-4">
                 <p className="text-[11px] text-[#707B8F]">Identity / KYC</p>
                 <p className="mt-1 text-xs font-semibold text-[#34D399] flex items-center gap-1">
-                  <FiCheckCircle size={13} /> {user.idVerified ? 'Verified' : 'Pending'}
+                  <FiCheckCircle size={13} />{' '}
+                  {user.idVerified ? 'Verified' : 'Pending'}
                 </p>
               </div>
             </div>
@@ -331,62 +350,83 @@ export default function AdminUserDetailsPage({
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 {/* Profile Information */}
                 <div className="rounded-2xl border border-[#263044] bg-[#111722] p-6 space-y-4 lg:col-span-2">
-                  <h3 className="text-sm font-bold text-[#F8FAFC]">Profile & Personal Details</h3>
+                  <h3 className="text-sm font-bold text-[#F8FAFC]">
+                    Profile & Personal Details
+                  </h3>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                     <div className="rounded-xl border border-[#263044] bg-[#080B12] p-3.5">
                       <span className="text-[#707B8F]">Full Name</span>
-                      <p className="mt-1 font-medium text-[#F8FAFC]">{user.firstName} {user.lastName}</p>
+                      <p className="mt-1 font-medium text-[#F8FAFC]">
+                        {user.firstName} {user.lastName}
+                      </p>
                     </div>
 
                     <div className="rounded-xl border border-[#263044] bg-[#080B12] p-3.5">
                       <span className="text-[#707B8F]">Email Address</span>
-                      <p className="mt-1 font-medium text-[#F8FAFC]">{user.email}</p>
+                      <p className="mt-1 font-medium text-[#F8FAFC]">
+                        {user.email}
+                      </p>
                     </div>
 
                     <div className="rounded-xl border border-[#263044] bg-[#080B12] p-3.5">
                       <span className="text-[#707B8F]">Phone Number</span>
-                      <p className="mt-1 font-medium text-[#F8FAFC]">{user.phone || 'Not provided'}</p>
+                      <p className="mt-1 font-medium text-[#F8FAFC]">
+                        {user.phone || 'Not provided'}
+                      </p>
                     </div>
 
                     <div className="rounded-xl border border-[#263044] bg-[#080B12] p-3.5">
                       <span className="text-[#707B8F]">Languages</span>
                       <p className="mt-1 font-medium text-[#F8FAFC]">
-                        {user.languages?.length ? user.languages.join(', ') : 'Malayalam, English'}
+                        {user.languages?.length
+                          ? user.languages.join(', ')
+                          : 'Malayalam, English'}
                       </p>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-[#263044] bg-[#080B12] p-4">
-                    <span className="text-[11px] text-[#707B8F]">About / Bio</span>
+                    <span className="text-[11px] text-[#707B8F]">
+                      About / Bio
+                    </span>
                     <p className="mt-1 text-xs text-[#A7B0C0] leading-relaxed">
-                      {user.about || 'Usually travelling along highway corridors. Prefers punctual pickups and clean vehicle standards.'}
+                      {user.about ||
+                        'Usually travelling along highway corridors. Prefers punctual pickups and clean vehicle standards.'}
                     </p>
                   </div>
                 </div>
 
                 {/* Account Compliance & Verification */}
                 <div className="rounded-2xl border border-[#263044] bg-[#111722] p-6 space-y-4">
-                  <h3 className="text-sm font-bold text-[#F8FAFC]">Compliance & Security</h3>
+                  <h3 className="text-sm font-bold text-[#F8FAFC]">
+                    Compliance & Security
+                  </h3>
 
                   <div className="space-y-3 text-xs">
                     <div className="flex items-center justify-between rounded-xl border border-[#263044] bg-[#080B12] p-3">
                       <span className="text-[#A7B0C0]">Email Verification</span>
-                      <span className={`font-semibold ${user.emailVerified ? 'text-[#34D399]' : 'text-amber-400'}`}>
+                      <span
+                        className={`font-semibold ${user.emailVerified ? 'text-[#34D399]' : 'text-amber-400'}`}
+                      >
                         {user.emailVerified ? 'Verified' : 'Pending'}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between rounded-xl border border-[#263044] bg-[#080B12] p-3">
                       <span className="text-[#A7B0C0]">Phone Verification</span>
-                      <span className={`font-semibold ${user.phoneVerified ? 'text-[#34D399]' : 'text-amber-400'}`}>
+                      <span
+                        className={`font-semibold ${user.phoneVerified ? 'text-[#34D399]' : 'text-amber-400'}`}
+                      >
                         {user.phoneVerified ? 'Verified' : 'Pending'}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between rounded-xl border border-[#263044] bg-[#080B12] p-3">
                       <span className="text-[#A7B0C0]">Identity KYC</span>
-                      <span className={`font-semibold ${user.idVerified ? 'text-[#34D399]' : 'text-gray-400'}`}>
+                      <span
+                        className={`font-semibold ${user.idVerified ? 'text-[#34D399]' : 'text-gray-400'}`}
+                      >
                         {user.idVerified ? 'Verified' : 'Unverified'}
                       </span>
                     </div>
@@ -403,40 +443,62 @@ export default function AdminUserDetailsPage({
             {activeTab === 'rides' && (
               <div className="rounded-2xl border border-[#263044] bg-[#111722] p-6 text-center py-12">
                 <FiTruck className="mx-auto text-[#707B8F]" size={32} />
-                <p className="mt-3 text-sm font-medium text-[#F8FAFC]">No active rides logged</p>
-                <p className="mt-1 text-xs text-[#A7B0C0]">This user's completed or scheduled ride history will appear here.</p>
+                <p className="mt-3 text-sm font-medium text-[#F8FAFC]">
+                  No active rides logged
+                </p>
+                <p className="mt-1 text-xs text-[#A7B0C0]">
+                  This user's completed or scheduled ride history will appear
+                  here.
+                </p>
               </div>
             )}
 
             {activeTab === 'bookings' && (
               <div className="rounded-2xl border border-[#263044] bg-[#111722] p-6 text-center py-12">
                 <FiFileText className="mx-auto text-[#707B8F]" size={32} />
-                <p className="mt-3 text-sm font-medium text-[#F8FAFC]">No bookings found</p>
-                <p className="mt-1 text-xs text-[#A7B0C0]">Passenger seat reservations will be listed here.</p>
+                <p className="mt-3 text-sm font-medium text-[#F8FAFC]">
+                  No bookings found
+                </p>
+                <p className="mt-1 text-xs text-[#A7B0C0]">
+                  Passenger seat reservations will be listed here.
+                </p>
               </div>
             )}
 
             {activeTab === 'vehicles' && (
               <div className="rounded-2xl border border-[#263044] bg-[#111722] p-6 text-center py-12">
                 <FiTruck className="mx-auto text-[#707B8F]" size={32} />
-                <p className="mt-3 text-sm font-medium text-[#F8FAFC]">No registered vehicles</p>
-                <p className="mt-1 text-xs text-[#A7B0C0]">Vehicles submitted for carpooling compliance will appear here.</p>
+                <p className="mt-3 text-sm font-medium text-[#F8FAFC]">
+                  No registered vehicles
+                </p>
+                <p className="mt-1 text-xs text-[#A7B0C0]">
+                  Vehicles submitted for carpooling compliance will appear here.
+                </p>
               </div>
             )}
 
             {activeTab === 'reviews' && (
               <div className="rounded-2xl border border-[#263044] bg-[#111722] p-6 text-center py-12">
                 <FiStar className="mx-auto text-[#707B8F]" size={32} />
-                <p className="mt-3 text-sm font-medium text-[#F8FAFC]">No reviews received</p>
-                <p className="mt-1 text-xs text-[#A7B0C0]">Co-passenger and driver feedback ratings will be listed here.</p>
+                <p className="mt-3 text-sm font-medium text-[#F8FAFC]">
+                  No reviews received
+                </p>
+                <p className="mt-1 text-xs text-[#A7B0C0]">
+                  Co-passenger and driver feedback ratings will be listed here.
+                </p>
               </div>
             )}
 
             {activeTab === 'safety' && (
               <div className="rounded-2xl border border-[#263044] bg-[#111722] p-6 text-center py-12">
                 <FiShield className="mx-auto text-[#707B8F]" size={32} />
-                <p className="mt-3 text-sm font-medium text-[#F8FAFC]">Clean safety record</p>
-                <p className="mt-1 text-xs text-[#A7B0C0]">No route deviations or incident reports recorded for this account.</p>
+                <p className="mt-3 text-sm font-medium text-[#F8FAFC]">
+                  Clean safety record
+                </p>
+                <p className="mt-1 text-xs text-[#A7B0C0]">
+                  No route deviations or incident reports recorded for this
+                  account.
+                </p>
               </div>
             )}
           </div>
@@ -447,10 +509,17 @@ export default function AdminUserDetailsPage({
               <div className="w-full max-w-md rounded-2xl border border-[#263044] bg-[#111722] p-6 shadow-2xl">
                 <div className="flex items-center gap-3 text-amber-400">
                   <FiAlertCircle size={24} />
-                  <h3 className="text-base font-bold text-[#F8FAFC]">Suspend user?</h3>
+                  <h3 className="text-base font-bold text-[#F8FAFC]">
+                    Suspend user?
+                  </h3>
                 </div>
                 <p className="mt-3 text-xs leading-relaxed text-[#A7B0C0]">
-                  This will restrict <strong className="text-white">{user.firstName} {user.lastName}</strong> from using affected Tripzo features until the account is reactivated.
+                  This will restrict{' '}
+                  <strong className="text-white">
+                    {user.firstName} {user.lastName}
+                  </strong>{' '}
+                  from using affected Tripzo features until the account is
+                  reactivated.
                 </p>
                 <div className="mt-6 flex items-center justify-end gap-3">
                   <button
@@ -461,14 +530,15 @@ export default function AdminUserDetailsPage({
                   >
                     Cancel
                   </button>
-                  {/* <button
+                  <button
                     type="button"
                     disabled={isSubmittingStatus}
                     onClick={() => void handleStatusChange('suspended')}
                     className="rounded-xl bg-amber-500 px-4 py-2 text-xs font-semibold text-[#080B12] transition hover:bg-amber-400 disabled:opacity-50"
-                  >Suspend User
+                  >
+                    Suspend User
                     {isSubmittingStatus ? 'Suspending...' : 'Suspend User'}
-                  </button> */}
+                  </button>
                 </div>
               </div>
             </div>
@@ -480,28 +550,34 @@ export default function AdminUserDetailsPage({
               <div className="w-full max-w-md rounded-2xl border border-[#263044] bg-[#111722] p-6 shadow-2xl">
                 <div className="flex items-center gap-3 text-[#34D399]">
                   <FiCheckCircle size={24} />
-                  <h3 className="text-base font-bold text-[#F8FAFC]">Reactivate user?</h3>
+                  <h3 className="text-base font-bold text-[#F8FAFC]">
+                    Reactivate user?
+                  </h3>
                 </div>
                 <p className="mt-3 text-xs leading-relaxed text-[#A7B0C0]">
-                  Restore full active Tripzo account access for <strong className="text-white">{user.firstName} {user.lastName}</strong>?
+                  Restore full active Tripzo account access for{' '}
+                  <strong className="text-white">
+                    {user.firstName} {user.lastName}
+                  </strong>
+                  ?
                 </p>
                 <div className="mt-6 flex items-center justify-end gap-3">
                   <button
                     type="button"
-                    // disabled={isSubmittingStatus}
+                    disabled={isSubmittingStatus}
                     onClick={() => setIsReactivateModalOpen(false)}
                     className="rounded-xl border border-[#263044] bg-[#080B12] px-4 py-2 text-xs font-semibold text-[#A7B0C0] transition hover:text-white"
                   >
                     Cancel
                   </button>
-                  {/* <button
+                  <button
                     type="button"
                     disabled={isSubmittingStatus}
                     onClick={() => void handleStatusChange('active')}
                     className="rounded-xl bg-[#34D399] px-4 py-2 text-xs font-semibold text-[#080B12] transition hover:bg-[#2bc2a1] disabled:opacity-50"
                   >
                     {isSubmittingStatus ? 'Reactivating...' : 'Reactivate User'}
-                  </button> */}
+                  </button>
                 </div>
               </div>
             </div>

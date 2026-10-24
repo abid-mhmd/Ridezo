@@ -12,6 +12,7 @@ import { AdminUsersController } from './presentation/admin-users.controller.js';
 import { ListUsersUseCase } from './application/use-cases/list-users.use-case.js';
 import { AdminRoleGuard } from './presentation/guards/admin-role.guard.js';
 import { GetUserDetailsUseCase } from './application/use-cases/get-user-detail.user-case.js';
+import { ChangeUserAccountStatusUseCase } from './application/use-cases/change-user-account-status.use-case.js';
 
 @Module({
   imports: [AuthModule, UsersModule, RedisModule, JwtModule.register({})],
@@ -21,6 +22,7 @@ import { GetUserDetailsUseCase } from './application/use-cases/get-user-detail.u
     ListUsersUseCase,
     AdminRoleGuard,
     GetUserDetailsUseCase,
+    ChangeUserAccountStatusUseCase,
     {
       provide: REFRESH_TOKEN_STORAGE,
       useClass: RedisRefreshTokenStorage,

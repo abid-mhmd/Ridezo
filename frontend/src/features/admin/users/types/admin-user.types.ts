@@ -1,3 +1,5 @@
+export type AccountStatus = 'active' | 'suspended' | 'deactivated';
+
 export interface AdminUserListItem {
   id: string;
   firstName: string;
@@ -6,7 +8,7 @@ export interface AdminUserListItem {
   phone?: string;
   profilePhoto?: string;
   role: string;
-  accountStatus: 'active' | 'suspended' | 'deactivated';
+  accountStatus: AccountStatus;
   emailVerified: boolean;
   phoneVerified: boolean;
   createdAt: string;

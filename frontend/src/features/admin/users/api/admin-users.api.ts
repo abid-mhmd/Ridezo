@@ -2,6 +2,7 @@ import type {
   AdminUserListParams,
   AdminUserListResponse,
   AdminUserDetailsResponse,
+  AccountStatus,
 } from '../types/admin-user.types';
 
 const API_BASE_URL =
@@ -76,4 +77,38 @@ export async function getAdminUserDetails(
   }
 
   return data as AdminUserDetailsResponse;
+}
+
+export async function updateAdminUserStatus(
+  accessToken: string,
+  userId: string,
+  accountStatus: AccountStatus,
+): Promise<{ id: string; accountStatus: AccountStatus }> {
+  const response = await fetch(
+    `${API_BASE_URL}/admin/users/${encodeURIComponent(userId)}/status`,
+    {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ status: accountStatus }),
+    },
+  );
+
+  const data: unknown = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const message =
+      typeof data === 'object' && data !== null && 'message' in data
+        ? data.message
+        : 'Unable to update user status. Please try again.';
+
+    throw new Error(
+      Array.isArray(message) ? message.join(', ') : String(message),
+    );
+  }
+
+  return data as { id: string; accountStatus: AccountStatus };
 }

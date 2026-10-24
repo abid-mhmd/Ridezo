@@ -185,4 +185,21 @@ export class MongooseUserRepository implements UserRepository {
       total,
     };
   }
+  async updateAccountStatus(
+    userId: string,
+    accountStatus: UserEntity['accountStatus'],
+  ): Promise<UserEntity | null> {
+    const user = await this.userModel
+      .findByIdAndUpdate(
+        userId,
+        { $set: { accountStatus } },
+        {
+          new: true,
+          runValidators: true,
+        },
+      )
+      .exec();
+
+    return user ? this.toEntity(user) : null;
+  }
 }

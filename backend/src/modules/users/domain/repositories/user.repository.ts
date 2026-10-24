@@ -46,4 +46,8 @@ export interface UserRepository {
   listUsers(
     query: ListUsersQuery,
   ): Promise<{ users: UserEntity[]; total: number }>;
+  updateAccountStatus(
+    userId: string,
+    accountStatus: UserEntity['accountStatus'],
+  ): Promise<UserEntity | null>;
 }
