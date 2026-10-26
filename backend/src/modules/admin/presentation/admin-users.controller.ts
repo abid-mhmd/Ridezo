@@ -1,4 +1,12 @@
-import { Controller, Get, Query,Body, Param,Patch, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Body,
+  Param,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard.js';
 import { AdminRoleGuard } from './guards/admin-role.guard.js';
 import { AdminUserListQueryDto } from '../application/dto/admin-user-list-query.dto.js';
@@ -13,14 +21,14 @@ export class AdminUsersController {
   constructor(
     private readonly listUsersUseCase: ListUsersUseCase,
     private readonly getUserDetailsUseCase: GetUserDetailsUseCase,
-    private readonly changeUserAccountStatusUseCase:ChangeUserAccountStatusUseCase,
+    private readonly changeUserAccountStatusUseCase: ChangeUserAccountStatusUseCase,
   ) {}
 
   @Get()
   async listUsers(@Query() query: AdminUserListQueryDto) {
     return this.listUsersUseCase.execute({
       page: query.page,
-      limit: query.limit,
+      limit: 1,
       search: query.search,
     });
   }

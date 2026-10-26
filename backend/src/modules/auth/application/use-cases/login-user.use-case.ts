@@ -6,6 +6,7 @@ import { PASSWORD_HASHER } from '../ports/passwordhasher.js';
 import type { PasswordHasher } from '../ports/passwordhasher.js';
 import { LoginUserDto } from '../dto/login-user.dto.js';
 import { UserRole } from '../../../users/domain/enums/user.enums.js';
+import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
 
 export class InvalidCredentialsError extends Error {
   constructor() {
@@ -52,6 +53,9 @@ export class LoginUserUseCase {
     }
     if (!user.emailVerified) {
       throw new EmailNotVerifiedError();
+    }
+    if (user.accountStatus !== AccountStatus.ACTIVE) {
+      throw new UnauthorizedException('Your account is not active.');
     }
     return user;
   }

@@ -7,6 +7,7 @@ import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage.js';
 import type { RefreshTokenStorage } from '../ports/refresh-token-storage.js';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
 import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
 
 interface RefreshTokenPayload {
   sub: string;
@@ -64,6 +65,13 @@ export class RefreshAccessTokenUseCase {
       await this.refreshTokenStorage.delete(payload.jti);
 
       throw new UnauthorizedException('Refresh token is invalid or expired.');
+    }
+    if (user.accountStatus !== AccountStatus.ACTIVE) {
+      await this.refreshTokenStorage.delete(payload.jti);
+
+      throw new UnauthorizedException(
+        'Your account is suspended or inactive. Please contact support.',
+      );
     }
 
     const newSessionId = randomBytes(16).toString('hex');
