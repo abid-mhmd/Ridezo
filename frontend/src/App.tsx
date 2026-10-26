@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom';
 
 import LoginPage from './features/auth/pages/loginPage';
 import RegisterPage from './features/auth/pages/RegisterPage';
@@ -110,6 +117,57 @@ function App() {
       </div>
     );
   }
+  function GoogleCallbackHandler({
+    onLoginSuccess,
+  }: {
+    onLoginSuccess: (token: string, user: AuthUser) => void;
+  }) {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+      let isMounted = true;
+
+      async function completeGoogleLogin() {
+        try {
+          const token = await restoreSession();
+
+          if (!token) {
+            throw new Error('Unable to restore Google login session.');
+          }
+
+          const profile = await getMyProfile();
+
+          if (!isMounted) return;
+
+          const authenticatedUser: AuthUser = {
+            id: profile.id,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            email: profile.email,
+            role: profile.role,
+          };
+
+          onLoginSuccess(token, authenticatedUser);
+          navigate('/profile', { replace: true });
+        } catch {
+          if (isMounted) {
+            navigate('/login?error=google-login-failed', {
+              replace: true,
+            });
+          }
+        }
+      }
+
+      void completeGoogleLogin();
+
+      return () => {
+        isMounted = false;
+      };
+    }, [navigate, onLoginSuccess, location.key]);
+
+    return <div>Signing you in...</div>;
+  }
 
   return (
     <BrowserRouter>
@@ -123,6 +181,12 @@ function App() {
             ) : (
               <LoginPage onLoginSuccess={handleLoginSuccess} />
             )
+          }
+        />
+        <Route
+          path="/auth/google/callback"
+          element={
+            <GoogleCallbackHandler onLoginSuccess={handleLoginSuccess} />
           }
         />
 

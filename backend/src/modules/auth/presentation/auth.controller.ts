@@ -372,23 +372,50 @@ export class AuthController {
     try {
       const result = await this.googleAuthUseCase.execute(profile);
 
-      return response.status(HttpStatus.OK).json({
-        message: 'Google authentication successful.',
-        accessToken: result.accessToken,
-        user: {
-          id: result.user.id,
-          firstName: result.user.firstName,
-          lastName: result.user.lastName,
-          email: result.user.email,
-          role: result.user.role,
+      const sessionId = randomBytes(16).toString('hex');
+
+      const refreshTtl = this.configService.getOrThrow<number>(
+        'JWT_REFRESH_TTL_SECONDS',
+      );
+
+      const refreshToken = await this.jwtService.signAsync(
+        {
+          sub: result.user.id,
+          jti: sessionId,
+          tokenType: 'refresh',
         },
+        {
+          secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+          expiresIn: refreshTtl,
+        },
+      );
+
+      const refreshTokenHash = createHash('sha256')
+        .update(refreshToken)
+        .digest('hex');
+
+      await this.refreshTokenStorage.store(
+        sessionId,
+        refreshTokenHash,
+        refreshTtl,
+      );
+
+      response.cookie('ridezo_refresh', refreshToken, {
+        httpOnly: true,
+        secure: this.configService.get<string>('NODE_ENV') === 'production',
+        sameSite: 'lax',
+        path: '/api/auth',
+        maxAge: refreshTtl * 1000,
       });
+
+      const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
+
+      return response.redirect(`${frontendUrl}/auth/google/callback`);
     } catch (error) {
       if (error instanceof GoogleAccountLinkRequiredError) {
-        return response.status(HttpStatus.CONFLICT).json({
-          message:
-            'An account with this email already exists. Please log in using your existing method.',
-        });
+        return response.redirect(
+          `${this.configService.getOrThrow<string>('FRONTEND_URL')}/login?error=google-account-link-required`,
+        );
       }
 
       throw error;
