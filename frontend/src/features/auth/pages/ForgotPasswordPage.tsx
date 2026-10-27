@@ -29,12 +29,17 @@ export default function ForgotPasswordPage() {
     setServerError('');
 
     try {
-      await forgotPassword({
-        email: values.email,
-      });
+      const email= values.email.trim().toLowerCase();
+
+      const response = await forgotPassword({email});
+
+      if(!response.otpSent){
+        setServerError('Unable to process this email.Please check you email address.');
+        return;
+      }
 
       navigate('/verify-reset-otp', {
-        state: { email: values.email.trim() },
+        state: { email },
       });
     } catch (error) {
       setServerError(

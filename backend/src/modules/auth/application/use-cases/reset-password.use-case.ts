@@ -4,6 +4,7 @@ import { USER_REPOSITORY } from '../../../users/domain/repositories/user.reposit
 import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
 import { PASSWORD_HASHER } from '../ports/passwordhasher.js';
 import type { PasswordHasher } from '../ports/passwordhasher.js';
+import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
 
 export class InvalidPasswordResetTokenError extends Error {
   constructor() {
@@ -36,6 +37,17 @@ export class ResetPasswordUseCase {
     if (
       typeof payload.sub !== 'string' ||
       payload.purpose !== 'password_reset'
+    ) {
+      throw new InvalidPasswordResetTokenError();
+    }
+
+    const user = await this.userRepository.findById(payload.sub);
+
+    if (
+      !user ||
+      user.accountStatus !== AccountStatus.ACTIVE ||
+      !user.emailVerified ||
+      !user.passwordHash
     ) {
       throw new InvalidPasswordResetTokenError();
     }

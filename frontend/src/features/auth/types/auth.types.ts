@@ -52,6 +52,7 @@ export interface ForgotPasswordRequest {
 
 export interface ForgotPasswordResponce {
   message: string;
+  otpSent:boolean;
 }
 
 export interface verifyResetOtpRequest {

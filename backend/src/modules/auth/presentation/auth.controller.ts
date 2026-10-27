@@ -297,11 +297,15 @@ export class AuthController {
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(@Body() input: ForgotPasswordDto) {
-    await this.requestPasswordResetOtpUseCase.execute(input.email);
+    const otpSent = await this.requestPasswordResetOtpUseCase.execute(
+      input.email,
+    );
 
     return {
-      message:
-        'If an account exists with this email, a password-reset OTP has been sent.',
+      otpSent,
+      message: otpSent
+        ? 'OTP sent successfully.'
+        : 'Unable to process this email. Please check your email address and try again.',
     };
   }
 

@@ -27,6 +27,7 @@ export class MongooseUserRepository implements UserRepository {
 
     const user = await this.userModel
       .findOne({ email: normalizedEmail })
+      .select('+passwordHash')
       .exec();
 
     return user ? this.toEntity(user) : null;
