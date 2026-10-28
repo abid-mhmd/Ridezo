@@ -29,12 +29,14 @@ export default function ForgotPasswordPage() {
     setServerError('');
 
     try {
-      const email= values.email.trim().toLowerCase();
+      const email = values.email.trim().toLowerCase();
 
-      const response = await forgotPassword({email});
+      const response = await forgotPassword({ email });
 
-      if(!response.otpSent){
-        setServerError('Unable to process this email.Please check you email address.');
+      if (!response.otpSent) {
+        setServerError(
+          'Unable to process this email.Please check you email address.',
+        );
         return;
       }
 

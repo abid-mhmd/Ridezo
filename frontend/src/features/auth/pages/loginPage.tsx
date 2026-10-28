@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FcGoogle } from 'react-icons/fc';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import AuthInput from '../../../components/AuthInput';
 import { loginUser } from '../api/auth.api';
@@ -17,6 +17,8 @@ interface LoginPageProps {
 function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [serverError, setServerError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const navigate = useNavigate();
 
   const {
     register,
@@ -40,6 +42,7 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
       });
 
       onLoginSuccess(result.accessToken, result.user);
+      navigate('/profile', { replace: true });
     } catch (error) {
       setServerError(
         error instanceof Error

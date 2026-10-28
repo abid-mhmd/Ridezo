@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 import AuthInput from '../../../../components/AuthInput';
@@ -12,8 +12,6 @@ interface AdminLoginPageProps {
 export default function AdminLoginPage({
   onLoginSuccess,
 }: AdminLoginPageProps) {
-  const navigate = useNavigate();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -34,7 +32,6 @@ export default function AdminLoginPage({
       }
 
       onLoginSuccess(result.accessToken, result.expiresIn);
-      navigate('/admin/users', { replace: true });
     } catch (error: unknown) {
       setError(
         error instanceof Error
@@ -128,20 +125,6 @@ export default function AdminLoginPage({
                   </button>
                 }
               />
-
-              {/* <div className="mt-2 text-right">
-                <button
-                  type="button"
-                  className="text-[11px] font-medium text-ridezo-primary-light transition hover:text-white"
-                  onClick={() => {
-                    setError(
-                      'Password reset is restricted to system administrators.',
-                    );
-                  }}
-                >
-                  Forgot password?
-                </button>
-              </div> */}
             </div>
 
             {error && (

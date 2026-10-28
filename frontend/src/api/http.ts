@@ -12,6 +12,11 @@ export function getAccessToken(): string | null {
   return accessToken;
 }
 
+function clearSession(): void {
+  accessToken = null;
+  window.dispatchEvent(new Event('ridezo:session-expired'));
+}
+
 async function refreshAccessToken(): Promise<string | null> {
   if (refreshPromise) {
     return refreshPromise;
@@ -61,11 +66,9 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const makeRequest = (token: string | null) => {
     const headers = new Headers(options.headers);
-
     const isFormData = options.body instanceof FormData;
 
     if (isFormData) {
-      // Let the browser set multipart/form-data and its boundary.
       headers.delete('Content-Type');
     } else if (options.body && !headers.has('Content-Type')) {
       headers.set('Content-Type', 'application/json');
@@ -86,13 +89,18 @@ export async function apiRequest<T>(
 
   let response = await makeRequest(accessToken);
 
-  if (response.status === 401 && !endpoint.startsWith('/auth/')) {
+  const isAuthEndpoint = endpoint.startsWith('/auth/');
+  const isRefreshEndpoint = endpoint === '/auth/refresh';
+
+  if (response.status === 401 && !isAuthEndpoint && !isRefreshEndpoint) {
     const newToken = await refreshAccessToken();
 
     if (newToken) {
       response = await makeRequest(newToken);
-    } else {
-      accessToken = null;
+
+      if (response.status === 401) {
+        clearSession();
+      }
     }
   }
 

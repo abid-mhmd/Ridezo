@@ -9,7 +9,7 @@ const API_BASE_URL =
 export async function loginAdmin(
   input: AdminLoginInput,
 ): Promise<AdminLoginResponse> {
-  const response = await fetch(`${API_BASE_URL}/admin/auth/login`, {
+  const response = await fetch(`${API_BASE_URL}/admin/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -32,4 +32,64 @@ export async function loginAdmin(
   }
 
   return data as AdminLoginResponse;
+}
+
+let adminRefreshPromise: Promise<{
+  accessToken: string;
+  expiresIn: number;
+}> | null = null;
+
+export function refreshAdminSession(): Promise<{
+  accessToken: string;
+  expiresIn: number;
+}> {
+  if (adminRefreshPromise) {
+    return adminRefreshPromise;
+  }
+
+  adminRefreshPromise = (async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Admin session expired.');
+      }
+
+      const data: unknown = await response.json();
+
+      if (
+        typeof data !== 'object' ||
+        data === null ||
+        !('accessToken' in data) ||
+        typeof data.accessToken !== 'string' ||
+        !('expiresIn' in data) ||
+        typeof data.expiresIn !== 'number'
+      ) {
+        throw new Error('Invalid admin refresh response.');
+      }
+
+      return {
+        accessToken: data.accessToken,
+        expiresIn: data.expiresIn,
+      };
+    } finally {
+      adminRefreshPromise = null;
+    }
+  })();
+
+  return adminRefreshPromise;
+}
+
+export async function logoutAdmin(): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/admin/logout`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Unable to complete admin logout.');
+  }
 }

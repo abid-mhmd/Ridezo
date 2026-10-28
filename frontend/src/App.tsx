@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   BrowserRouter,
   Routes,
   Route,
   Navigate,
   useNavigate,
-  useLocation,
 } from 'react-router-dom';
 
 import LoginPage from './features/auth/pages/loginPage';
@@ -15,7 +14,7 @@ import ForgotPasswordPage from './features/auth/pages/ForgotPasswordPage';
 import ResetPasswordPage from './features/auth/pages/ResetPasswordPage';
 import { logoutUser } from './features/auth/api/auth.api';
 
-import AppLayout from './layputs/AppLayout';
+import AppLayout from './layouts/AppLayout';
 import ProfilePage from './features/user/pages/ProfilePage';
 import EditProfilePage from './features/user/pages/EditProfilePage';
 
@@ -26,6 +25,61 @@ import AdminLoginPage from './features/admin/auth/pages/AdminLoginPage';
 import AdminUsersPage from './features/admin/users/pages/AdminUsersPage';
 import AdminLayout from './features/admin/components/AdminLayout';
 import AdminUserDetailsPage from './features/admin/users/pages/AdminuserDetailsPage';
+import {
+  refreshAdminSession,
+  logoutAdmin,
+} from './features/admin/auth/api/admin-auth.api';
+
+function GoogleCallbackHandler({
+  onLoginSuccess,
+}: {
+  onLoginSuccess: (token: string, user: AuthUser) => void;
+}) {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function completeGoogleLogin() {
+      try {
+        const token = await restoreSession();
+
+        if (!token) {
+          throw new Error('Unable to restore Google login session.');
+        }
+
+        const profile = await getMyProfile();
+
+        if (!isMounted) return;
+
+        const authenticatedUser: AuthUser = {
+          id: profile.id,
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          email: profile.email,
+          role: profile.role,
+        };
+
+        onLoginSuccess(token, authenticatedUser);
+        navigate('/profile', { replace: true });
+      } catch {
+        if (isMounted) {
+          navigate('/login?error=google-login-failed', {
+            replace: true,
+          });
+        }
+      }
+    }
+
+    void completeGoogleLogin();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [navigate, onLoginSuccess]);
+
+  return <div>Signing you in...</div>;
+}
 
 function App() {
   // Regular user session
@@ -35,6 +89,24 @@ function App() {
 
   // Separate admin session
   const [adminAccessToken, setAdminAccessToken] = useState<string | null>(null);
+  const [isAdminInitializing, setIsAdminInitializing] = useState(true);
+
+  useEffect(() => {
+    function handleSessionExpired() {
+      setAccessToken(null);
+      setAccessTokenState(null);
+      setUser(null);
+    }
+
+    window.addEventListener('ridezo:session-expired', handleSessionExpired);
+
+    return () => {
+      window.removeEventListener(
+        'ridezo:session-expired',
+        handleSessionExpired,
+      );
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -85,11 +157,42 @@ function App() {
     };
   }, []);
 
-  function handleLoginSuccess(token: string, authenticatedUser: AuthUser) {
-    setAccessToken(token);
-    setAccessTokenState(token);
-    setUser(authenticatedUser);
-  }
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initializeAdminSession() {
+      try {
+        const session = await refreshAdminSession();
+
+        if (isMounted) {
+          setAdminAccessToken(session.accessToken);
+        }
+      } catch {
+        if (isMounted) {
+          setAdminAccessToken(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsAdminInitializing(false);
+        }
+      }
+    }
+
+    void initializeAdminSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleLoginSuccess = useCallback(
+    (token: string, authenticatedUser: AuthUser) => {
+      setAccessToken(token);
+      setAccessTokenState(token);
+      setUser(authenticatedUser);
+    },
+    [],
+  );
 
   // Store the admin token separately from the user token.
   function handleAdminLoginSuccess(token: string) {
@@ -97,76 +200,29 @@ function App() {
   }
 
   async function handleLogout() {
+    setAccessToken(null);
+    setAccessTokenState(null);
+    setUser(null);
+
     try {
       await logoutUser();
-    } finally {
-      setAccessToken(null);
-      setAccessTokenState(null);
-      setUser(null);
+    } catch (error) {
+      console.error('Logout request failed:', error);
     }
   }
 
-  function handleAdminLogout() {
+  async function handleAdminLogout() {
+    // Clear the in-memory admin session immediately.
     setAdminAccessToken(null);
-  }
 
-  if (isInitializing) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#080b12] text-sm text-gray-400">
-        Restoring your Ridezo session...
-      </div>
-    );
-  }
-  function GoogleCallbackHandler({
-    onLoginSuccess,
-  }: {
-    onLoginSuccess: (token: string, user: AuthUser) => void;
-  }) {
-    const navigate = useNavigate();
-    const location = useLocation();
-
-    useEffect(() => {
-      let isMounted = true;
-
-      async function completeGoogleLogin() {
-        try {
-          const token = await restoreSession();
-
-          if (!token) {
-            throw new Error('Unable to restore Google login session.');
-          }
-
-          const profile = await getMyProfile();
-
-          if (!isMounted) return;
-
-          const authenticatedUser: AuthUser = {
-            id: profile.id,
-            firstName: profile.firstName,
-            lastName: profile.lastName,
-            email: profile.email,
-            role: profile.role,
-          };
-
-          onLoginSuccess(token, authenticatedUser);
-          navigate('/profile', { replace: true });
-        } catch {
-          if (isMounted) {
-            navigate('/login?error=google-login-failed', {
-              replace: true,
-            });
-          }
-        }
-      }
-
-      void completeGoogleLogin();
-
-      return () => {
-        isMounted = false;
-      };
-    }, [navigate, onLoginSuccess, location.key]);
-
-    return <div>Signing you in...</div>;
+    try {
+      await logoutAdmin();
+    } catch (error) {
+      console.error('Admin logout request failed:', error);
+    } finally {
+      // Replace the current history entry with the admin login page.
+      window.location.replace('/admin/login');
+    }
   }
 
   return (
@@ -176,43 +232,53 @@ function App() {
         <Route
           path="/login"
           element={
-            accessToken && user ? (
+            isInitializing ? (
+              <div className="flex min-h-screen items-center justify-center bg-[#080b12] text-sm text-gray-400">
+                Restoring your session...
+              </div>
+            ) : adminAccessToken ? (
+              <Navigate to="/admin/users" replace />
+            ) : accessToken && user ? (
               <Navigate to="/profile" replace />
             ) : (
               <LoginPage onLoginSuccess={handleLoginSuccess} />
             )
           }
         />
+
         <Route
           path="/auth/google/callback"
           element={
             <GoogleCallbackHandler onLoginSuccess={handleLoginSuccess} />
           }
         />
-
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-reset-otp" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-
         <Route
           path="/admin/login"
           element={
-            adminAccessToken ? (
+            isAdminInitializing || isInitializing ? (
+              <div className="flex min-h-screen items-center justify-center bg-[#080b12] text-sm text-gray-400">
+                Restoring your session...
+              </div>
+            ) : accessToken && user ? (
+              <Navigate to="/profile" replace />
+            ) : adminAccessToken ? (
               <Navigate to="/admin/users" replace />
             ) : (
-              <AdminLoginPage
-                onLoginSuccess={(token) => handleAdminLoginSuccess(token)}
-              />
+              <AdminLoginPage onLoginSuccess={handleAdminLoginSuccess} />
             )
           }
         />
-
         <Route
           path="/admin"
           element={
-            adminAccessToken ? (
+            isAdminInitializing ? (
+              <div>Loading...</div>
+            ) : adminAccessToken ? (
               <AdminLayout onLogout={handleAdminLogout} />
             ) : (
               <Navigate to="/admin/login" replace />
@@ -245,15 +311,22 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/edit" element={<EditProfilePage />} />
         </Route>
-
         {/* Fallback */}
         <Route
           path="*"
           element={
-            <Navigate
-              to={accessToken && user ? '/profile' : '/login'}
-              replace
-            />
+            window.location.pathname.startsWith('/admin') ? (
+              <Navigate
+                to={adminAccessToken ? '/admin/users' : '/admin/login'}
+                replace
+              />
+            ) : adminAccessToken ? (
+              <Navigate to="/admin/users" replace />
+            ) : accessToken && user ? (
+              <Navigate to="/profile" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
           }
         />
       </Routes>
