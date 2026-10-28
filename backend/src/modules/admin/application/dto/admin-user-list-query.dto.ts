@@ -20,7 +20,7 @@ export class AdminUserListQueryDto {
   @IsInt()
   @Min(1)
   @Max(100)
-  limit = 1;
+  limit = 10;
 
   @IsOptional()
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))

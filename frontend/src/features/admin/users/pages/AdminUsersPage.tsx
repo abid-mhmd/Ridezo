@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   FiSearch,
-  FiRefreshCw,
   FiUsers,
   FiCheckCircle,
   FiMail,
@@ -102,39 +101,6 @@ export default function AdminUsersPage({ accessToken }: AdminUsersPageProps) {
 
   const navigate = useNavigate();
 
-  // Debounce search input.
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      setPage(1);
-      setSearch(searchInput.trim());
-    }, 350);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [searchInput]);
-
-  const loadUsers = useCallback(async () => {
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const response = await getAdminUsers(accessToken, {
-        page,
-        limit: PAGE_SIZE,
-        ...(search ? { search } : {}),
-      });
-
-      setResult(response);
-    } catch (error: unknown) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to load users. Please try again.',
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accessToken, page, search]);
-
   useEffect(() => {
     let isActive = true;
 
@@ -196,18 +162,6 @@ export default function AdminUsersPage({ accessToken }: AdminUsersPageProps) {
             across Kerala commute networks.
           </p>
         </div>
-
-        <button
-          type="button"
-          onClick={() => void loadUsers()}
-          disabled={isLoading}
-          className="inline-flex items-center justify-center gap-2 self-start rounded-xl border border-[#263044] bg-[#111722] px-4 py-2 text-xs font-semibold text-[#F8FAFC] transition hover:border-[#C37DF5]/40 disabled:cursor-not-allowed disabled:opacity-50 sm:self-auto"
-        >
-          <FiRefreshCw
-            className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`}
-          />
-          Refresh
-        </button>
       </div>
 
       {/* Summary cards */}
@@ -282,19 +236,50 @@ export default function AdminUsersPage({ accessToken }: AdminUsersPageProps) {
             </p>
           </div>
 
-          <label className="relative block w-full sm:max-w-xs">
-            <span className="sr-only">Search users</span>
-            <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-[#707B8F]">
-              <FiSearch size={15} />
-            </span>
-            <input
-              type="search"
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Search by name, email, or phone..."
-              className="w-full rounded-xl border border-[#263044] bg-[#080B12] py-2 pl-10 pr-3 text-xs text-[#F8FAFC] outline-none transition placeholder:text-[#707B8F] focus:border-[#C37DF5]"
-            />
-          </label>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                setPage(1);
+                setSearch(searchInput.trim());
+              }}
+              className="flex w-full gap-2 sm:w-auto"
+            >
+              <label className="relative block min-w-0 flex-1 sm:w-64">
+                <span className="sr-only">Search users</span>
+                <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-[#707B8F]">
+                  <FiSearch size={15} />
+                </span>
+                <input
+                  type="search"
+                  value={searchInput}
+                  onChange={(event) => setSearchInput(event.target.value)}
+                  placeholder="Search by name, email, or phone..."
+                  className="w-full appearance-none rounded-xl border border-[#263044] bg-[#080B12] py-2 pl-10 pr-3 text-xs text-[#F8FAFC] outline-none transition placeholder:text-[#707B8F] focus:border-[#C37DF5] [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+                />
+              </label>
+              <button
+                type="submit"
+                className="rounded-xl bg-[#C37DF5] px-4 py-2 text-xs font-semibold text-[#080B12] transition hover:bg-[#D5A0FA]"
+              >
+                Search
+              </button>
+            </form>
+
+            {searchInput && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchInput('');
+                  setSearch('');
+                  setPage(1);
+                }}
+                className="rounded-xl border border-[#263044] bg-[#080B12] px-4 py-2 text-xs font-semibold text-[#A7B0C0] transition hover:border-[#C37DF5]/40 hover:text-[#F8FAFC]"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
 
         {error && (
@@ -302,13 +287,6 @@ export default function AdminUsersPage({ accessToken }: AdminUsersPageProps) {
             <p role="alert" className="text-xs text-red-300">
               {error}
             </p>
-            <button
-              type="button"
-              onClick={() => void loadUsers()}
-              className="mt-2 text-xs font-semibold text-red-200 underline underline-offset-4"
-            >
-              Try again
-            </button>
           </div>
         )}
 

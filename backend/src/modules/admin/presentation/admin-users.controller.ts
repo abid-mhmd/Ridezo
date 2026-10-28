@@ -28,7 +28,7 @@ export class AdminUsersController {
   async listUsers(@Query() query: AdminUserListQueryDto) {
     return this.listUsersUseCase.execute({
       page: query.page,
-      limit: 1,
+      limit: query.limit,
       search: query.search,
     });
   }
