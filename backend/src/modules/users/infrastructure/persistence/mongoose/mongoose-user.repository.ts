@@ -8,16 +8,22 @@ import {
 } from '../../../domain/repositories/user.repository.js';
 import type { UserEntity } from '../../../domain/entities/user.entity.js';
 import { User, type UserDocument } from './user.schema.js';
+import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository.js';
 
 @Injectable()
-export class MongooseUserRepository implements UserRepository {
+export class MongooseUserRepository
+  extends BaseMongooseRepository<User>
+  implements UserRepository
+{
   constructor(
     @InjectModel(User.name)
-    private readonly userModel: Model<User>,
-  ) {}
+    model: Model<User>,
+  ) {
+    super(model);
+  }
 
   async findById(id: string): Promise<UserEntity | null> {
-    const user = await this.userModel.findById(id).exec();
+    const user = await this.findDocumentById(id);
 
     return user ? this.toEntity(user) : null;
   }
@@ -25,7 +31,7 @@ export class MongooseUserRepository implements UserRepository {
   async findByEmail(email: string): Promise<UserEntity | null> {
     const normalizedEmail = email.trim().toLowerCase();
 
-    const user = await this.userModel
+    const user = await this.model
       .findOne({ email: normalizedEmail })
       .select('+passwordHash')
       .exec();
@@ -36,13 +42,13 @@ export class MongooseUserRepository implements UserRepository {
   async existsByEmail(email: string): Promise<boolean> {
     const normalizedEmail = email.trim().toLowerCase();
 
-    const user = await this.userModel.exists({ email: normalizedEmail }).exec();
+    const user = await this.model.exists({ email: normalizedEmail }).exec();
 
     return user !== null;
   }
 
   async create(userData: CreateUserData): Promise<UserEntity> {
-    const user = await this.userModel.create(userData);
+    const user = await this.createDocument(userData);
 
     return this.toEntity(user);
   }
@@ -81,7 +87,7 @@ export class MongooseUserRepository implements UserRepository {
   }
 
   async markEmailVerified(id: string): Promise<void> {
-    await this.userModel
+    await this.model
       .updateOne({ _id: id }, { $set: { emailVerified: true } })
       .exec();
   }
@@ -91,7 +97,7 @@ export class MongooseUserRepository implements UserRepository {
   ): Promise<UserEntity | null> {
     const normalizedEmail = email.trim().toLocaleLowerCase();
 
-    const user = await this.userModel
+    const user = await this.model
       .findOne({ email: normalizedEmail })
       .select(`+passwordHash`)
       .exec();
@@ -103,7 +109,7 @@ export class MongooseUserRepository implements UserRepository {
     userId: string,
     passwordHash: string,
   ): Promise<void> {
-    const result = await this.userModel
+    const result = await this.model
       .updateOne({ _id: userId }, { $set: { passwordHash } })
       .exec();
 
@@ -113,7 +119,7 @@ export class MongooseUserRepository implements UserRepository {
   }
 
   async findByGoogleId(googleId: string): Promise<UserEntity | null> {
-    const user = await this.userModel.findOne({ googleId }).exec();
+    const user = await this.model.findOne({ googleId }).exec();
 
     return user ? this.toEntity(user) : null;
   }
@@ -133,7 +139,7 @@ export class MongooseUserRepository implements UserRepository {
       };
     },
   ): Promise<UserEntity | null> {
-    return this.userModel
+    const user = await this.model
       .findByIdAndUpdate(
         id,
         { $set: data },
@@ -143,8 +149,9 @@ export class MongooseUserRepository implements UserRepository {
         },
       )
       .select('-passwordHash')
-      .lean()
-      .exec() as Promise<UserEntity | null>;
+      .exec();
+
+    return user ? this.toEntity(user) : null;
   }
 
   async listUsers(
@@ -170,7 +177,7 @@ export class MongooseUserRepository implements UserRepository {
 
     const skip = (page - 1) * limit;
     const [documents, total] = await Promise.all([
-      this.userModel
+      this.model
         .find(filter)
         .select('-passwordHash -googleId')
         .sort({ createdAt: -1, _id: -1 })
@@ -178,7 +185,7 @@ export class MongooseUserRepository implements UserRepository {
         .limit(limit)
         .exec(),
 
-      this.userModel.countDocuments(filter).exec(),
+      this.model.countDocuments(filter).exec(),
     ]);
 
     return {
@@ -190,7 +197,7 @@ export class MongooseUserRepository implements UserRepository {
     userId: string,
     accountStatus: UserEntity['accountStatus'],
   ): Promise<UserEntity | null> {
-    const user = await this.userModel
+    const user = await this.model
       .findByIdAndUpdate(
         userId,
         { $set: { accountStatus } },
