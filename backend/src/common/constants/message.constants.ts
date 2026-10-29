@@ -7,9 +7,8 @@ export const API_MESSAGES = {
     AUTHENTICATION_REQUIRED: 'Authentication required.',
     SESSION_EXPIRED: 'Session expired. Please log in again.',
     EMAIL_VERIFIED: 'Email verified successfully.',
-    PASSWORD_RESET_SUCCESS:
-      'Password reset successful. Please login again.',
-    REFRESH_TOKEN_EXPIRED :'Refresh token is invalid or expired.'
+    PASSWORD_RESET_SUCCESS: 'Password reset successful. Please login again.',
+    REFRESH_TOKEN_EXPIRED: 'Refresh token is invalid or expired.',
   },
 
   ADMIN: {
@@ -25,7 +24,7 @@ export const API_MESSAGES = {
     PROFILE_UPDATED: 'Profile updated successfully.',
     PHOTO_REMOVED: 'Profile photo removed successfully.',
     INVALID_PHOTO_TYPE: 'Only JPEG, PNG, and WebP images are allowed.',
-    PROFILE_PHOTO_REQUIRED: 'Profile photo is required.'
+    PROFILE_PHOTO_REQUIRED: 'Profile photo is required.',
   },
 
   COMMON: {

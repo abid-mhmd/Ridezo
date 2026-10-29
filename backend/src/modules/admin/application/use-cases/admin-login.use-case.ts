@@ -8,7 +8,7 @@ import {
   AccountStatus,
   UserRole,
 } from '../../../users/domain/enums/user.enums.js';
-import { API_MESSAGES } from '../../../../common/contstants/message.constants.js';
+import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
 
 @Injectable()
 export class AdminLoginUseCase {

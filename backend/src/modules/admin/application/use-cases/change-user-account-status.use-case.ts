@@ -14,7 +14,7 @@ import {
 } from '../../../users/domain/enums/user.enums.js';
 
 import { Types } from 'mongoose';
-import { API_MESSAGES } from '../../../../common/contstants/message.constants.js';
+import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
 
 @Injectable()
 export class ChangeUserAccountStatusUseCase {

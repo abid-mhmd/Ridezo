@@ -58,9 +58,10 @@ import {
   GoogleAccountLinkRequiredError,
 } from '../application/use-cases/google-auth.use-case.js';
 import type { GoogleProfile } from '../application/use-cases/google-auth.use-case.js';
-import { API_MESSAGES } from '../../../common/contstants/message.constants.js';
+import { API_MESSAGES } from '../../../common/constants/message.constants.js';
+import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
 
-@Controller('auth')
+@Controller()
 export class AuthController {
   constructor(
     @Inject(RegisterUserUseCase)
@@ -98,7 +99,7 @@ export class AuthController {
     private readonly jwtService: JwtService,
   ) {}
 
-  @Post('register')
+  @Post(API_ENDPOINTS.AUTH.REGISTER)
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() input: RegisterUserDto) {
     try {
@@ -122,7 +123,7 @@ export class AuthController {
     }
   }
 
-  @Post('email-otp')
+  @Post(API_ENDPOINTS.AUTH.EMAIL_OTP)
   @HttpCode(HttpStatus.OK)
   async requestEmailOtp(@Body() input: RequestEmailOtpDto) {
     await this.sendEmailOtpUseCase.execute(input.email);
@@ -132,7 +133,7 @@ export class AuthController {
     };
   }
 
-  @Post('verify-email-otp')
+  @Post(API_ENDPOINTS.AUTH.VERIFY_EMAIL_OTP)
   @HttpCode(HttpStatus.OK)
   async verifyEmailOtp(@Body() input: VerifyEmailOtpDto) {
     try {
@@ -154,7 +155,7 @@ export class AuthController {
     }
   }
 
-  @Post('login')
+  @Post(API_ENDPOINTS.AUTH.LOGIN)
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() input: LoginUserDto,
@@ -232,7 +233,7 @@ export class AuthController {
     }
   }
 
-  @Post('refresh')
+  @Post(API_ENDPOINTS.AUTH.REFRESH)
   @HttpCode(HttpStatus.OK)
   async refresh(
     @Req() request: Request,
@@ -277,13 +278,15 @@ export class AuthController {
     }
   }
 
-  @Get('me')
+  @Get(API_ENDPOINTS.USERS.ME)
   @UseGuards(JwtAuthGuard)
   getCurrentUser(@Req() request: Request & { user?: AccessTokenPayload }) {
     const user = request.user;
 
     if (!user) {
-      throw new UnauthorizedException(API_MESSAGES.AUTH.AUTHENTICATION_REQUIRED);
+      throw new UnauthorizedException(
+        API_MESSAGES.AUTH.AUTHENTICATION_REQUIRED,
+      );
     }
 
     return {
@@ -295,7 +298,7 @@ export class AuthController {
     };
   }
 
-  @Post('forgot-password')
+  @Post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD)
   @HttpCode(HttpStatus.OK)
   async forgotPassword(@Body() input: ForgotPasswordDto) {
     const otpSent = await this.requestPasswordResetOtpUseCase.execute(
@@ -310,7 +313,7 @@ export class AuthController {
     };
   }
 
-  @Post('verify-reset-otp')
+  @Post(API_ENDPOINTS.AUTH.VERIFY_RESET_OTP)
   @HttpCode(HttpStatus.OK)
   async verifyPasswordResetOtp(@Body() input: VerifyEmailOtpDto) {
     try {
@@ -331,7 +334,7 @@ export class AuthController {
     }
   }
 
-  @Post('reset-password')
+  @Post(API_ENDPOINTS.AUTH.RESET_PASSWORD)
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() input: ResetPasswordDto) {
     try {
@@ -345,20 +348,18 @@ export class AuthController {
       };
     } catch (error) {
       if (error instanceof InvalidPasswordResetTokenError) {
-        throw new BadRequestException(
-          API_MESSAGES.AUTH.SESSION_EXPIRED,
-        );
+        throw new BadRequestException(API_MESSAGES.AUTH.SESSION_EXPIRED);
       }
     }
     throw error;
   }
-  @Get('google')
+  @Get(API_ENDPOINTS.AUTH.GOOGLE)
   @UseGuards(AuthGuard('google'))
   googleLogin(): void {
     // Passport redirects the user to Google.
   }
 
-  @Get('google/callback')
+  @Get(API_ENDPOINTS.AUTH.GOOGLE_CALLBACK)
   @UseGuards(AuthGuard('google'))
   async googleCallback(
     @Req()
@@ -427,7 +428,7 @@ export class AuthController {
     }
   }
 
-  @Post('logout')
+  @Post(API_ENDPOINTS.AUTH.LOGOUT)
   @HttpCode(HttpStatus.OK)
   async logout(
     @Req() request: Request,

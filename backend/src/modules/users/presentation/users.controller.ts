@@ -23,9 +23,10 @@ import { UpdateProfileUseCase } from '../application/use-cases/update-profile.us
 import { UpdateProfileDto } from '../application/dto/update-profile.dto.js';
 import { UploadProfilePhotoUseCase } from '../application/use-cases/upload-profile-photo.use-case.js';
 import { RemoveProfilePhotoUseCase } from '../application/use-cases/remove-profile-phot.use-case.js';
-import { API_MESSAGES } from '../../../common/contstants/message.constants.js';
+import { API_MESSAGES } from '../../../common/constants/message.constants.js';
+import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
 
-@Controller('users')
+@Controller()
 export class UsersController {
   constructor(
     private readonly getUserProfileUseCase: GetUserProfileUseCase,
@@ -34,13 +35,15 @@ export class UsersController {
     private readonly removeProfilePhotUseCase: RemoveProfilePhotoUseCase,
   ) {}
 
-  @Get('me')
+  @Get(API_ENDPOINTS.USERS.PROFILE)
   @UseGuards(JwtAuthGuard)
   async getMyProfile(@Req() request: Request & { user?: AccessTokenPayload }) {
     const user = request.user;
 
     if (!user) {
-      throw new UnauthorizedException(API_MESSAGES.AUTH.AUTHENTICATION_REQUIRED);
+      throw new UnauthorizedException(
+        API_MESSAGES.AUTH.AUTHENTICATION_REQUIRED,
+      );
     }
 
     return {
@@ -48,7 +51,7 @@ export class UsersController {
     };
   }
 
-  @Patch('profile')
+  @Patch(API_ENDPOINTS.USERS.PROFILE)
   @UseGuards(JwtAuthGuard)
   async updateProfile(
     @Req()
@@ -60,7 +63,7 @@ export class UsersController {
     return this.updateProfileUseCase.execute(request.user.sub, dto);
   }
 
-  @Post('profile/photo')
+  @Post(API_ENDPOINTS.USERS.PROFILE_PHOTO)
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('photo', {
@@ -74,9 +77,7 @@ export class UsersController {
 
         if (!allowedTypes.includes(file.mimetype)) {
           callback(
-            new BadRequestException(
-              API_MESSAGES.USERS.INVALID_PHOTO_TYPE
-            ),
+            new BadRequestException(API_MESSAGES.USERS.INVALID_PHOTO_TYPE),
             false,
           );
           return;
@@ -93,7 +94,7 @@ export class UsersController {
     return this.uploadProfilePhotoUseCase.execute(request.user.sub, file);
   }
 
-  @Delete('profile/photo')
+  @Delete(API_ENDPOINTS.USERS.PROFILE_PHOTO)
   @UseGuards(JwtAuthGuard)
   async removeProfilePhoto(
     @Req() request: Request & { user: { sub: string } },

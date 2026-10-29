@@ -46,9 +46,7 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
       navigate('/profile', { replace: true });
     } catch (error) {
       setServerError(
-        error instanceof Error
-          ? error.message
-          : MESSAGES.AUTH.LOGIN_FAILED,
+        error instanceof Error ? error.message : MESSAGES.AUTH.LOGIN_FAILED,
       );
     }
   }

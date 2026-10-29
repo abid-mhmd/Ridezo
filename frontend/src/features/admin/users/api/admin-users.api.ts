@@ -1,3 +1,4 @@
+import { API_ENDPOINTS } from '../../../../common/constants/api_endpoints';
 import type {
   AdminUserListParams,
   AdminUserListResponse,
@@ -22,7 +23,7 @@ export async function getAdminUsers(
   }
 
   const response = await fetch(
-    `${API_BASE_URL}/admin/users?${searchParams.toString()}`,
+    `${API_BASE_URL}${API_ENDPOINTS.ADMIN.USERS}?${searchParams.toString()}`,
     {
       method: 'GET',
       headers: {
@@ -53,7 +54,7 @@ export async function getAdminUserDetails(
   userId: string,
 ): Promise<AdminUserDetailsResponse> {
   const response = await fetch(
-    `${API_BASE_URL}/admin/users/${encodeURIComponent(userId)}`,
+    `${API_BASE_URL}${API_ENDPOINTS.ADMIN.USERS}${encodeURIComponent(userId)}`,
     {
       method: 'GET',
       headers: {
@@ -85,7 +86,7 @@ export async function updateAdminUserStatus(
   accountStatus: AccountStatus,
 ): Promise<{ id: string; accountStatus: AccountStatus }> {
   const response = await fetch(
-    `${API_BASE_URL}/admin/users/${encodeURIComponent(userId)}/status`,
+    `${API_BASE_URL}${API_ENDPOINTS.ADMIN.USERS}${encodeURIComponent(userId)}/status`,
     {
       method: 'PATCH',
       headers: {

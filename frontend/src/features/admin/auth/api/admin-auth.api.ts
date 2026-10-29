@@ -1,3 +1,4 @@
+import { API_ENDPOINTS } from '../../../../common/constants/api_endpoints';
 import type {
   AdminLoginInput,
   AdminLoginResponse,
@@ -9,7 +10,7 @@ const API_BASE_URL =
 export async function loginAdmin(
   input: AdminLoginInput,
 ): Promise<AdminLoginResponse> {
-  const response = await fetch(`${API_BASE_URL}/admin/login`, {
+  const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.ADMIN.LOGIN}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -49,10 +50,13 @@ export function refreshAdminSession(): Promise<{
 
   adminRefreshPromise = (async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${API_BASE_URL}${API_ENDPOINTS.ADMIN.REFRESH}`,
+        {
+          method: 'POST',
+          credentials: 'include',
+        },
+      );
 
       if (!response.ok) {
         throw new Error('Admin session expired.');
@@ -84,7 +88,7 @@ export function refreshAdminSession(): Promise<{
 }
 
 export async function logoutAdmin(): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/admin/logout`, {
+  const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.ADMIN.LOGOUT}`, {
     method: 'POST',
     credentials: 'include',
   });

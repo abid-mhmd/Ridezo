@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { configureCloudinary } from '../../../../infrastructure/config/Cloudinary.config.js';
 import { USER_REPOSITORY } from '../../domain/repositories/user.repository.js';
 import type { UserRepository } from '../../domain/repositories/user.repository.js';
-import { API_MESSAGES } from '../../../../common/contstants/message.constants.js';
+import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
 
 @Injectable()
 export class UploadProfilePhotoUseCase {
@@ -34,9 +34,7 @@ export class UploadProfilePhotoUseCase {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
     if (!allowedTypes.includes(file.mimetype)) {
-      throw new BadRequestException(
-       API_MESSAGES.USERS.INVALID_PHOTO_TYPE
-      );
+      throw new BadRequestException(API_MESSAGES.USERS.INVALID_PHOTO_TYPE);
     }
 
     const user = await this.userRepository.findById(userId);

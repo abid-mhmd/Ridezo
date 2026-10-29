@@ -7,7 +7,7 @@ import type { PasswordHasher } from '../ports/passwordhasher.js';
 import { LoginUserDto } from '../dto/login-user.dto.js';
 import { UserRole } from '../../../users/domain/enums/user.enums.js';
 import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
-import { API_MESSAGES } from '../../../../common/contstants/message.constants.js';
+import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
 
 export class InvalidCredentialsError extends Error {
   constructor() {

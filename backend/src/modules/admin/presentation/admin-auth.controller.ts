@@ -24,9 +24,10 @@ import {
 } from '../../users/domain/enums/user.enums.js';
 import { USER_REPOSITORY } from '../../users/domain/repositories/user.repository.js';
 import type { UserRepository } from '../../users/domain/repositories/user.repository.js';
-import { API_MESSAGES } from '../../../common/contstants/message.constants.js';
+import { API_MESSAGES } from '../../../common/constants/message.constants.js';
+import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
 
-@Controller('admin')
+@Controller()
 export class AdminAuthController {
   constructor(
     private readonly adminLoginUseCase: AdminLoginUseCase,
@@ -40,7 +41,7 @@ export class AdminAuthController {
     private readonly userRepository: UserRepository,
   ) {}
 
-  @Post('login')
+  @Post(API_ENDPOINTS.ADMIN.LOGIN)
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() input: AdminLoginDto,
@@ -110,7 +111,7 @@ export class AdminAuthController {
     };
   }
 
-  @Post('refresh')
+  @Post(API_ENDPOINTS.ADMIN.REFRESH)
   @HttpCode(HttpStatus.OK)
   async refresh(
     @Req() request: Request,
@@ -212,9 +213,7 @@ export class AdminAuthController {
 
     if (!rotated) {
       clearAdminCookie();
-      throw new UnauthorizedException(
-        API_MESSAGES.ADMIN.SESSION_INVALID
-      );
+      throw new UnauthorizedException(API_MESSAGES.ADMIN.SESSION_INVALID);
     }
 
     const accessToken = await this.jwtService.signAsync(
@@ -243,7 +242,7 @@ export class AdminAuthController {
     };
   }
 
-  @Post('logout')
+  @Post(API_ENDPOINTS.ADMIN.LOGOUT)
   @HttpCode(HttpStatus.OK)
   async logout(
     @Req() request: Request,

@@ -1,4 +1,5 @@
 import { apiRequest } from '../../../api/http';
+import { API_ENDPOINTS } from '../../../common/constants/api_endpoints';
 import type { UserProfile, UpdateProfilePayload } from '../types/profile.type';
 
 interface MyProfileResponse {
@@ -8,17 +9,22 @@ interface MyProfileResponse {
 type UpdateProfileResponse = UserProfile | MyProfileResponse;
 
 export async function getMyProfile(): Promise<UserProfile> {
-  const response = await apiRequest<MyProfileResponse>('/users/me');
+  const response = await apiRequest<MyProfileResponse>(
+    API_ENDPOINTS.USERS.PROFILE,
+  );
   return response.user;
 }
 
 export async function updateMyProfile(
   payload: UpdateProfilePayload,
 ): Promise<UserProfile> {
-  const response = await apiRequest<UpdateProfileResponse>('/users/profile', {
-    method: 'PATCH',
-    body: JSON.stringify(payload),
-  });
+  const response = await apiRequest<UpdateProfileResponse>(
+    API_ENDPOINTS.USERS.PROFILE,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    },
+  );
 
   return 'user' in response ? response.user : response;
 }
@@ -30,7 +36,7 @@ export async function uploadProfilePhoto(
   formData.append('photo', file);
 
   return apiRequest<{ message: string; profilePhoto: string }>(
-    '/users/profile/photo',
+    API_ENDPOINTS.USERS.PROFILE_PHOTO,
     {
       method: 'POST',
       body: formData,
@@ -39,7 +45,7 @@ export async function uploadProfilePhoto(
 }
 
 export async function removeProfilePhoto(): Promise<void> {
-  await apiRequest('/users/profile/photo', {
+  await apiRequest(API_ENDPOINTS.USERS.PROFILE_PHOTO, {
     method: 'DELETE',
   });
 }

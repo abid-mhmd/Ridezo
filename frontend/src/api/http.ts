@@ -1,4 +1,5 @@
-import { MESSAGES } from "../common/constants/messages";
+import { API_ENDPOINTS } from '../common/constants/api_endpoints';
+import { MESSAGES } from '../common/constants/messages';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
@@ -26,10 +27,13 @@ async function refreshAccessToken(): Promise<string | null> {
 
   refreshPromise = (async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`,
+        {
+          method: 'POST',
+          credentials: 'include',
+        },
+      );
 
       if (!response.ok) {
         return null;
@@ -92,7 +96,7 @@ export async function apiRequest<T>(
   let response = await makeRequest(accessToken);
 
   const isAuthEndpoint = endpoint.startsWith('/auth/');
-  const isRefreshEndpoint = endpoint === '/auth/refresh';
+  const isRefreshEndpoint = endpoint === API_ENDPOINTS.AUTH.REFRESH;
 
   if (response.status === 401 && !isAuthEndpoint && !isRefreshEndpoint) {
     const newToken = await refreshAccessToken();
@@ -112,7 +116,7 @@ export async function apiRequest<T>(
     const message =
       typeof data === 'object' && data !== null && 'message' in data
         ? data.message
-        :   MESSAGES.COMMON.SOMETHING_WENT_WRONG;
+        : MESSAGES.COMMON.SOMETHING_WENT_WRONG;
 
     throw new Error(
       Array.isArray(message) ? message.join(', ') : String(message),

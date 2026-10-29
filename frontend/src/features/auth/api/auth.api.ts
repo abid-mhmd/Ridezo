@@ -1,4 +1,5 @@
 import { apiRequest, setAccessToken } from '../../../api/http';
+import { API_ENDPOINTS } from '../../../common/constants/api_endpoints';
 import type {
   AuthUser,
   LoginRequest,
@@ -31,7 +32,7 @@ interface CurrentUserResponse {
 }
 
 export function loginUser(credentials: LoginRequest): Promise<LoginResponse> {
-  return apiRequest<LoginResponse>('/auth/login', {
+  return apiRequest<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, {
     method: 'POST',
     body: JSON.stringify(credentials),
   });
@@ -40,7 +41,7 @@ export function loginUser(credentials: LoginRequest): Promise<LoginResponse> {
 export function registerUser(
   userData: RegisterRequest,
 ): Promise<RegisterResponse> {
-  return apiRequest<RegisterResponse>('/auth/register', {
+  return apiRequest<RegisterResponse>(API_ENDPOINTS.AUTH.REGISTER, {
     method: 'POST',
     body: JSON.stringify(userData),
   });
@@ -49,16 +50,19 @@ export function registerUser(
 export function verifyEmailOtp(
   data: VerifyEmailOtpRequest,
 ): Promise<VerifyEmailOtpResponse> {
-  return apiRequest<VerifyEmailOtpResponse>('/auth/verify-email-otp', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
+  return apiRequest<VerifyEmailOtpResponse>(
+    API_ENDPOINTS.AUTH.VERIFY_EMAIL_OTP,
+    {
+      method: 'POST',
+      body: JSON.stringify(data),
+    },
+  );
 }
 
 export function resendEmailOtp(
   data: ResendEmailOtpRequest,
 ): Promise<ResendEmailOtpResponse> {
-  return apiRequest<ResendEmailOtpResponse>('/auth/email-otp', {
+  return apiRequest<ResendEmailOtpResponse>(API_ENDPOINTS.AUTH.EMAIL_OTP, {
     method: 'POST',
     body: JSON.stringify(data),
   });
@@ -67,32 +71,38 @@ export function resendEmailOtp(
 export function forgotPassword(
   data: ForgotPasswordRequest,
 ): Promise<ForgotPasswordResponce> {
-  return apiRequest<ForgotPasswordResponce>('/auth/forgot-password', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
+  return apiRequest<ForgotPasswordResponce>(
+    API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
+    {
+      method: 'POST',
+      body: JSON.stringify(data),
+    },
+  );
 }
 
 export function verifyResetOtp(
   data: verifyResetOtpRequest,
 ): Promise<VerifyResetOtpResponse> {
-  return apiRequest<VerifyResetOtpResponse>('/auth/verify-reset-otp', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
+  return apiRequest<VerifyResetOtpResponse>(
+    API_ENDPOINTS.AUTH.VERIFY_RESET_OTP,
+    {
+      method: 'POST',
+      body: JSON.stringify(data),
+    },
+  );
 }
 
 export function resetPassword(
   data: ResetPasswordRequest,
 ): Promise<ResetPasswordResponse> {
-  return apiRequest<ResetPasswordResponse>('/auth/reset-password', {
+  return apiRequest<ResetPasswordResponse>(API_ENDPOINTS.AUTH.RESET_PASSWORD, {
     method: 'POST',
     body: JSON.stringify(data),
   });
 }
 
 export async function refreshLoginSession(): Promise<string> {
-  const result = await apiRequest<RefreshResponse>('/auth/refresh', {
+  const result = await apiRequest<RefreshResponse>(API_ENDPOINTS.AUTH.REFRESH, {
     method: 'POST',
   });
 
@@ -102,7 +112,7 @@ export async function refreshLoginSession(): Promise<string> {
 }
 
 export async function getCurrentUser(): Promise<AuthUser> {
-  const result = await apiRequest<CurrentUserResponse>('/auth/me');
+  const result = await apiRequest<CurrentUserResponse>(API_ENDPOINTS.AUTH.ME);
 
   return {
     id: result.user.id,
@@ -115,7 +125,7 @@ export async function getCurrentUser(): Promise<AuthUser> {
 
 export async function logoutUser(): Promise<void> {
   try {
-    await apiRequest('/auth/logout', { method: 'POST' });
+    await apiRequest(API_ENDPOINTS.AUTH.LOGOUT, { method: 'POST' });
   } finally {
     setAccessToken(null);
   }

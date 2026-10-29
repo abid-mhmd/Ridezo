@@ -14,8 +14,9 @@ import { ListUsersUseCase } from '../application/use-cases/list-users.use-case.j
 import { GetUserDetailsUseCase } from '../application/use-cases/get-user-detail.user-case.js';
 import { ChangeUserAccountStatusUseCase } from '../application/use-cases/change-user-account-status.use-case.js';
 import { AccountStatus } from '../../users/domain/enums/user.enums.js';
+import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
 
-@Controller('admin/users')
+@Controller(API_ENDPOINTS.ADMIN.USERS)
 @UseGuards(JwtAuthGuard, AdminRoleGuard)
 export class AdminUsersController {
   constructor(
@@ -33,7 +34,7 @@ export class AdminUsersController {
     });
   }
 
-  @Get(':userId')
+  @Get(API_ENDPOINTS.ADMIN.USER_BY_ID)
   async getUserDetails(@Param('userId') userId: string) {
     const user = await this.getUserDetailsUseCase.execute(userId);
 
@@ -62,7 +63,7 @@ export class AdminUsersController {
     };
   }
 
-  @Patch(':userId/status')
+  @Patch(API_ENDPOINTS.ADMIN.UPDATE_USER_STATUS)
   async updateUserStatus(
     @Param('userId') userId: string,
     @Body() body: { status: AccountStatus },

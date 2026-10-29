@@ -8,7 +8,7 @@ import type { RefreshTokenStorage } from '../ports/refresh-token-storage.js';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
 import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
 import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
-import { API_MESSAGES } from '../../../../common/contstants/message.constants.js';
+import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
 
 interface RefreshTokenPayload {
   sub: string;
