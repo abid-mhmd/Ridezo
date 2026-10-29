@@ -9,6 +9,7 @@ import AuthInput from '../../../components/AuthInput';
 import { loginUser } from '../api/auth.api';
 import { loginSchema, type LoginFormValues } from '../schemas/auth.schema';
 import type { AuthUser } from '../types/auth.types';
+import { MESSAGES } from '../../../common/constants/messages';
 
 interface LoginPageProps {
   onLoginSuccess: (token: string, user: AuthUser) => void;
@@ -47,7 +48,7 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
       setServerError(
         error instanceof Error
           ? error.message
-          : 'Unable to sign in. Please try again.',
+          : MESSAGES.AUTH.LOGIN_FAILED,
       );
     }
   }

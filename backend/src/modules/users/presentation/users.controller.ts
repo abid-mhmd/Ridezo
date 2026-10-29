@@ -23,6 +23,7 @@ import { UpdateProfileUseCase } from '../application/use-cases/update-profile.us
 import { UpdateProfileDto } from '../application/dto/update-profile.dto.js';
 import { UploadProfilePhotoUseCase } from '../application/use-cases/upload-profile-photo.use-case.js';
 import { RemoveProfilePhotoUseCase } from '../application/use-cases/remove-profile-phot.use-case.js';
+import { API_MESSAGES } from '../../../common/contstants/message.constants.js';
 
 @Controller('users')
 export class UsersController {
@@ -39,7 +40,7 @@ export class UsersController {
     const user = request.user;
 
     if (!user) {
-      throw new UnauthorizedException('Authentication required.');
+      throw new UnauthorizedException(API_MESSAGES.AUTH.AUTHENTICATION_REQUIRED);
     }
 
     return {
@@ -74,7 +75,7 @@ export class UsersController {
         if (!allowedTypes.includes(file.mimetype)) {
           callback(
             new BadRequestException(
-              'Only JPEG, PNG, and WebP images are allowed.',
+              API_MESSAGES.USERS.INVALID_PHOTO_TYPE
             ),
             false,
           );

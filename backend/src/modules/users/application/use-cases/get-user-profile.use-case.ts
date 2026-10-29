@@ -1,6 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { USER_REPOSITORY } from '../../domain/repositories/user.repository.js';
 import type { UserRepository } from '../../domain/repositories/user.repository.js';
+import { API_MESSAGES } from '../../../../common/contstants/message.constants.js';
 
 @Injectable()
 export class GetUserProfileUseCase {
@@ -13,7 +14,7 @@ export class GetUserProfileUseCase {
     const user = await this.userRepository.findById(userId);
 
     if (!user) {
-      throw new NotFoundException('User not found.');
+      throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
     return {

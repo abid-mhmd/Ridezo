@@ -14,6 +14,7 @@ import {
 } from '../../../users/domain/enums/user.enums.js';
 
 import { Types } from 'mongoose';
+import { API_MESSAGES } from '../../../../common/contstants/message.constants.js';
 
 @Injectable()
 export class ChangeUserAccountStatusUseCase {
@@ -36,7 +37,7 @@ export class ChangeUserAccountStatusUseCase {
     const existingUser = await this.userRepository.findById(userId);
 
     if (!existingUser || existingUser.role === UserRole.ADMIN) {
-      throw new NotFoundException('User not found.');
+      throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
     if (existingUser.accountStatus === status) {
@@ -49,7 +50,7 @@ export class ChangeUserAccountStatusUseCase {
     );
 
     if (!updatedUser) {
-      throw new NotFoundException('User not found.');
+      throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
     return {

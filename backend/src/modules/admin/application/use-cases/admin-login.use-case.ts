@@ -8,6 +8,7 @@ import {
   AccountStatus,
   UserRole,
 } from '../../../users/domain/enums/user.enums.js';
+import { API_MESSAGES } from '../../../../common/contstants/message.constants.js';
 
 @Injectable()
 export class AdminLoginUseCase {
@@ -25,7 +26,7 @@ export class AdminLoginUseCase {
     const user = await this.userRepository.findByEmailForAuthentication(email);
 
     if (!user || !user.passwordHash) {
-      throw new UnauthorizedException('Invalid email or password.');
+      throw new UnauthorizedException(API_MESSAGES.AUTH.INVALID_CREDENTIALS);
     }
 
     const passwordIsValid = await this.passwordHasher.verify(
@@ -39,7 +40,7 @@ export class AdminLoginUseCase {
       !user.emailVerified ||
       user.accountStatus !== AccountStatus.ACTIVE
     ) {
-      throw new UnauthorizedException('Invalid email or password.');
+      throw new UnauthorizedException(API_MESSAGES.AUTH.INVALID_CREDENTIALS);
     }
 
     return user;

@@ -10,6 +10,7 @@ import { USER_REPOSITORY } from '../../../users/domain/repositories/user.reposit
 import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
 
 import { Inject } from '@nestjs/common';
+import { API_MESSAGES } from '../../../../common/contstants/message.constants.js';
 
 @Injectable()
 export class GetUserDetailsUseCase {
@@ -26,11 +27,11 @@ export class GetUserDetailsUseCase {
     const user = await this.userRepository.findById(userId);
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
     if (user.role === 'admin') {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
     return user;

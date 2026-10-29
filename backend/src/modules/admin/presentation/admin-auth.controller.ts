@@ -24,6 +24,7 @@ import {
 } from '../../users/domain/enums/user.enums.js';
 import { USER_REPOSITORY } from '../../users/domain/repositories/user.repository.js';
 import type { UserRepository } from '../../users/domain/repositories/user.repository.js';
+import { API_MESSAGES } from '../../../common/contstants/message.constants.js';
 
 @Controller('admin')
 export class AdminAuthController {
@@ -96,7 +97,7 @@ export class AdminAuthController {
     });
 
     return {
-      message: 'Admin login successful.',
+      message: API_MESSAGES.ADMIN.LOGIN_SUCCESS,
       accessToken,
       expiresIn: 900,
       user: {
@@ -129,9 +130,7 @@ export class AdminAuthController {
     if (!refreshToken || typeof refreshToken !== 'string') {
       clearAdminCookie();
 
-      throw new UnauthorizedException(
-        'Admin session expired. Please log in again.',
-      );
+      throw new UnauthorizedException(API_MESSAGES.ADMIN.SESSION_EXPIRED);
     }
 
     const refreshSecret =
@@ -149,14 +148,12 @@ export class AdminAuthController {
       });
     } catch {
       clearAdminCookie();
-      throw new UnauthorizedException(
-        'Admin session expired. Please log in again.',
-      );
+      throw new UnauthorizedException(API_MESSAGES.ADMIN.SESSION_EXPIRED);
     }
 
     if (!payload.sub || !payload.jti || payload.tokenType !== 'refresh') {
       clearAdminCookie();
-      throw new UnauthorizedException('Invalid admin refresh token.');
+      throw new UnauthorizedException(API_MESSAGES.ADMIN.INVALID_REFRESH_TOKEN);
     }
 
     const incomingHash = createHash('sha256')
@@ -167,7 +164,7 @@ export class AdminAuthController {
 
     if (!storedHash || storedHash !== incomingHash) {
       clearAdminCookie();
-      throw new UnauthorizedException('Invalid admin refresh token.');
+      throw new UnauthorizedException(API_MESSAGES.ADMIN.INVALID_REFRESH_TOKEN);
     }
 
     const admin = await this.userRepository.findById(payload.sub);
@@ -180,7 +177,7 @@ export class AdminAuthController {
       await this.refreshTokenStorage.delete(payload.jti);
       clearAdminCookie();
 
-      throw new UnauthorizedException('Admin session is no longer valid.');
+      throw new UnauthorizedException(API_MESSAGES.ADMIN.SESSION_INVALID);
     }
 
     const newSessionId = randomBytes(16).toString('hex');
@@ -216,7 +213,7 @@ export class AdminAuthController {
     if (!rotated) {
       clearAdminCookie();
       throw new UnauthorizedException(
-        'Admin session is invalid or already used.',
+        API_MESSAGES.ADMIN.SESSION_INVALID
       );
     }
 
@@ -287,6 +284,6 @@ export class AdminAuthController {
       path: '/api/admin',
     });
 
-    return { message: 'Admin logged out successfully.' };
+    return { message: API_MESSAGES.ADMIN.LOGOUT_SUCCESS };
   }
 }

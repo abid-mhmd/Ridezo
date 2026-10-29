@@ -1,6 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { USER_REPOSITORY } from '../../domain/repositories/user.repository.js';
 import type { UserRepository } from '../../domain/repositories/user.repository.js';
+import { API_MESSAGES } from '../../../../common/contstants/message.constants.js';
 
 @Injectable()
 export class RemoveProfilePhotoUseCase {
@@ -13,7 +14,7 @@ export class RemoveProfilePhotoUseCase {
     const user = await this.userRepository.findById(userId);
 
     if (!user) {
-      throw new NotFoundException('User not found.');
+      throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
     if (!user.profilePhoto) {
@@ -26,10 +27,10 @@ export class RemoveProfilePhotoUseCase {
     });
 
     if (!updatedUser) {
-      throw new NotFoundException('User not found.');
+      throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
     return {
-      message: 'Profile photo removed successfully.',
+      message: API_MESSAGES.USERS.PHOTO_REMOVED,
     };
   }
 }

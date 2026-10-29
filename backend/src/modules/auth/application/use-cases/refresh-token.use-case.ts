@@ -8,6 +8,7 @@ import type { RefreshTokenStorage } from '../ports/refresh-token-storage.js';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
 import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
 import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
+import { API_MESSAGES } from '../../../../common/contstants/message.constants.js';
 
 interface RefreshTokenPayload {
   sub: string;
@@ -42,11 +43,11 @@ export class RefreshAccessTokenUseCase {
         { secret: refreshSecret },
       );
     } catch {
-      throw new UnauthorizedException('Refresh token is invalid or expired.');
+      throw new UnauthorizedException(API_MESSAGES.AUTH.REFRESH_TOKEN_EXPIRED);
     }
 
     if (!payload.sub || !payload.jti || payload.tokenType !== 'refresh') {
-      throw new UnauthorizedException('Refresh token is invalid or expired.');
+      throw new UnauthorizedException(API_MESSAGES.AUTH.REFRESH_TOKEN_EXPIRED);
     }
 
     const incomingHash = createHash('sha256')
@@ -56,7 +57,7 @@ export class RefreshAccessTokenUseCase {
     const storedHash = await this.refreshTokenStorage.get(payload.jti);
 
     if (!storedHash || storedHash !== incomingHash) {
-      throw new UnauthorizedException('Refresh token is invalid or expired.');
+      throw new UnauthorizedException(API_MESSAGES.AUTH.REFRESH_TOKEN_EXPIRED);
     }
 
     const user = await this.userRepository.findById(payload.sub);
@@ -64,7 +65,7 @@ export class RefreshAccessTokenUseCase {
     if (!user) {
       await this.refreshTokenStorage.delete(payload.jti);
 
-      throw new UnauthorizedException('Refresh token is invalid or expired.');
+      throw new UnauthorizedException(API_MESSAGES.AUTH.REFRESH_TOKEN_EXPIRED);
     }
     if (user.accountStatus !== AccountStatus.ACTIVE) {
       await this.refreshTokenStorage.delete(payload.jti);
@@ -105,7 +106,7 @@ export class RefreshAccessTokenUseCase {
     );
 
     if (!rotated) {
-      throw new UnauthorizedException('Refresh token is invalid or expired.');
+      throw new UnauthorizedException(API_MESSAGES.AUTH.REFRESH_TOKEN_EXPIRED);
     }
 
     const accessToken = await this.jwtService.signAsync({

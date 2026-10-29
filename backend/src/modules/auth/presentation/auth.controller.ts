@@ -58,6 +58,7 @@ import {
   GoogleAccountLinkRequiredError,
 } from '../application/use-cases/google-auth.use-case.js';
 import type { GoogleProfile } from '../application/use-cases/google-auth.use-case.js';
+import { API_MESSAGES } from '../../../common/contstants/message.constants.js';
 
 @Controller('auth')
 export class AuthController {
@@ -104,7 +105,7 @@ export class AuthController {
       const user = await this.registerUserUseCase.execute(input);
 
       return {
-        message: 'Registration successful.',
+        message: API_MESSAGES.AUTH.REGISTRATION_SUCCESS,
         user: {
           id: user.id,
           firstName: user.firstName,
@@ -138,7 +139,7 @@ export class AuthController {
       await this.verifyEmailOtpUseCase.execute(input.email, input.otp);
 
       return {
-        message: 'Email verified successfully.',
+        message: API_MESSAGES.AUTH.EMAIL_VERIFIED,
       };
     } catch (error) {
       if (error instanceof TooManyOtpAttemptsError) {
@@ -205,7 +206,7 @@ export class AuthController {
       });
 
       return {
-        message: 'Login successful.',
+        message: API_MESSAGES.AUTH.LOGIN_SUCCESS,
         accessToken,
         expiresIn: 900,
         user: {
@@ -218,7 +219,7 @@ export class AuthController {
       };
     } catch (error) {
       if (error instanceof InvalidCredentialsError) {
-        throw new UnauthorizedException('Invalid email or password.');
+        throw new UnauthorizedException(API_MESSAGES.AUTH.INVALID_CREDENTIALS);
       }
 
       if (error instanceof EmailNotVerifiedError) {
@@ -282,7 +283,7 @@ export class AuthController {
     const user = request.user;
 
     if (!user) {
-      throw new UnauthorizedException('Authetication required.');
+      throw new UnauthorizedException(API_MESSAGES.AUTH.AUTHENTICATION_REQUIRED);
     }
 
     return {
@@ -340,12 +341,12 @@ export class AuthController {
       );
 
       return {
-        message: 'Password reset successful. Please login again.',
+        message: API_MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
       };
     } catch (error) {
       if (error instanceof InvalidPasswordResetTokenError) {
         throw new BadRequestException(
-          'Invalid or expired password-reset authorization.',
+          API_MESSAGES.AUTH.SESSION_EXPIRED,
         );
       }
     }
@@ -467,6 +468,6 @@ export class AuthController {
       path: '/api/auth',
     });
 
-    return { message: 'Logged out successfully.' };
+    return { message: API_MESSAGES.AUTH.LOGOUT_SUCCESS };
   }
 }

@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { configureCloudinary } from '../../../../infrastructure/config/Cloudinary.config.js';
 import { USER_REPOSITORY } from '../../domain/repositories/user.repository.js';
 import type { UserRepository } from '../../domain/repositories/user.repository.js';
+import { API_MESSAGES } from '../../../../common/contstants/message.constants.js';
 
 @Injectable()
 export class UploadProfilePhotoUseCase {
@@ -27,21 +28,21 @@ export class UploadProfilePhotoUseCase {
     },
   ) {
     if (!file) {
-      throw new BadRequestException('Profile photo is required.');
+      throw new BadRequestException(API_MESSAGES.USERS.PROFILE_PHOTO_REQUIRED);
     }
 
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
     if (!allowedTypes.includes(file.mimetype)) {
       throw new BadRequestException(
-        'Only JPEG, PNG, and WebP images are allowed.',
+       API_MESSAGES.USERS.INVALID_PHOTO_TYPE
       );
     }
 
     const user = await this.userRepository.findById(userId);
 
     if (!user) {
-      throw new NotFoundException('User not found.');
+      throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
     configureCloudinary(this.configService);
@@ -85,11 +86,11 @@ export class UploadProfilePhotoUseCase {
 
     if (!updatedUser) {
       await cloudinary.uploader.destroy(result.public_id);
-      throw new NotFoundException('User not found.');
+      throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
     return {
-      message: 'Profile photo updated successfully.',
+      message: API_MESSAGES.USERS.PROFILE_UPDATED,
       profilePhoto: result.secure_url,
     };
   }

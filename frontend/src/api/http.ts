@@ -1,3 +1,5 @@
+import { MESSAGES } from "../common/constants/messages";
+
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 
@@ -110,7 +112,7 @@ export async function apiRequest<T>(
     const message =
       typeof data === 'object' && data !== null && 'message' in data
         ? data.message
-        : 'Something went wrong. Please try again.';
+        :   MESSAGES.COMMON.SOMETHING_WENT_WRONG;
 
     throw new Error(
       Array.isArray(message) ? message.join(', ') : String(message),
