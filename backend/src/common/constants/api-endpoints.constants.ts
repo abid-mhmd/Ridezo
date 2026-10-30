@@ -6,7 +6,7 @@ export const API_ENDPOINTS = {
     LOGOUT: '/auth/logout',
     ME: '/auth/me',
 
-    EMAIL_OTP:'email-otp',
+    EMAIL_OTP: '/auth/email-otp',
     VERIFY_EMAIL_OTP: '/auth/verify-email-otp',
     RESEND_EMAIL_OTP: '/auth/resend-otp',
 
@@ -30,7 +30,7 @@ export const API_ENDPOINTS = {
     LOGOUT: '/admin/logout',
 
     USERS: '/admin/users',
-    USER_BY_ID: '/admin/users/:userId',
-    UPDATE_USER_STATUS: '/admin/users/:userId/status',
+    USER_BY_ID: '/:userId',
+    UPDATE_USER_STATUS: '/:userId/status',
   },
 } as const;

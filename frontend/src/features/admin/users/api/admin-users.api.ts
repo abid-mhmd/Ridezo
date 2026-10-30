@@ -5,6 +5,8 @@ import type {
   AdminUserDetailsResponse,
   AccountStatus,
 } from '../types/admin-user.types';
+import type { ApiResponse } from '../../../../common/types/api-response.types';
+import type { AdminUserDetails } from '../types/admin-user.types';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
@@ -46,7 +48,11 @@ export async function getAdminUsers(
     );
   }
 
-  return data as AdminUserListResponse;
+  const result = data as ApiResponse<AdminUserListResponse['users']>;
+  return {
+    users: result.data,
+    pagination: result.meta!,
+  };
 }
 
 export async function getAdminUserDetails(
@@ -54,7 +60,7 @@ export async function getAdminUserDetails(
   userId: string,
 ): Promise<AdminUserDetailsResponse> {
   const response = await fetch(
-    `${API_BASE_URL}${API_ENDPOINTS.ADMIN.USERS}${encodeURIComponent(userId)}`,
+    `${API_BASE_URL}${API_ENDPOINTS.ADMIN.USERS}/${encodeURIComponent(userId)}`,
     {
       method: 'GET',
       headers: {
@@ -77,7 +83,10 @@ export async function getAdminUserDetails(
     );
   }
 
-  return data as AdminUserDetailsResponse;
+  const result = data as ApiResponse<AdminUserDetails>;
+  return {
+    user: result.data,
+  };
 }
 
 export async function updateAdminUserStatus(
@@ -86,7 +95,7 @@ export async function updateAdminUserStatus(
   accountStatus: AccountStatus,
 ): Promise<{ id: string; accountStatus: AccountStatus }> {
   const response = await fetch(
-    `${API_BASE_URL}${API_ENDPOINTS.ADMIN.USERS}${encodeURIComponent(userId)}/status`,
+    `${API_BASE_URL}${API_ENDPOINTS.ADMIN.USERS}/${encodeURIComponent(userId)}/status`,
     {
       method: 'PATCH',
       headers: {
@@ -111,5 +120,9 @@ export async function updateAdminUserStatus(
     );
   }
 
-  return data as { id: string; accountStatus: AccountStatus };
+  const result = data as ApiResponse<{
+    id: string;
+    accountStatus: AccountStatus;
+  }>;
+  return result.data;
 }

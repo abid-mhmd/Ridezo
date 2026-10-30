@@ -17,3 +17,8 @@ export interface AdminLoginResponse {
   expiresIn: number;
   user: AdminUser;
 }
+
+export interface AdminRefreshResponse {
+  accessToken: string;
+  expiresIn: number;
+}

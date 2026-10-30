@@ -3,6 +3,8 @@ import type {
   AdminLoginInput,
   AdminLoginResponse,
 } from '../types/admin-auth.types';
+import type { ApiResponse } from '../../../../common/types/api-response.types';
+import type { AdminRefreshResponse } from '../types/admin-auth.types';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
@@ -32,7 +34,8 @@ export async function loginAdmin(
     );
   }
 
-  return data as AdminLoginResponse;
+  const result = data as ApiResponse<AdminLoginResponse>;
+  return result.data;
 }
 
 let adminRefreshPromise: Promise<{
@@ -40,10 +43,7 @@ let adminRefreshPromise: Promise<{
   expiresIn: number;
 }> | null = null;
 
-export function refreshAdminSession(): Promise<{
-  accessToken: string;
-  expiresIn: number;
-}> {
+export function refreshAdminSession(): Promise<AdminRefreshResponse> {
   if (adminRefreshPromise) {
     return adminRefreshPromise;
   }
@@ -62,23 +62,18 @@ export function refreshAdminSession(): Promise<{
         throw new Error('Admin session expired.');
       }
 
-      const data: unknown = await response.json();
+      const result: ApiResponse<AdminRefreshResponse> = await response.json();
 
       if (
-        typeof data !== 'object' ||
-        data === null ||
-        !('accessToken' in data) ||
-        typeof data.accessToken !== 'string' ||
-        !('expiresIn' in data) ||
-        typeof data.expiresIn !== 'number'
+        !result.success ||
+        !result.data ||
+        typeof result.data.accessToken !== 'string' ||
+        typeof result.data.expiresIn !== 'number'
       ) {
         throw new Error('Invalid admin refresh response.');
       }
 
-      return {
-        accessToken: data.accessToken,
-        expiresIn: data.expiresIn,
-      };
+      return result.data;
     } finally {
       adminRefreshPromise = null;
     }

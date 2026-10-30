@@ -98,15 +98,18 @@ export class AdminAuthController {
     });
 
     return {
+      success: true,
       message: API_MESSAGES.ADMIN.LOGIN_SUCCESS,
-      accessToken,
-      expiresIn: 900,
-      user: {
-        id: admin.id,
-        firstName: admin.firstName,
-        lastName: admin.lastName,
-        email: admin.email,
-        role: admin.role,
+      data: {
+        accessToken,
+        expiresIn: 900,
+        user: {
+          id: admin.id,
+          firstName: admin.firstName,
+          lastName: admin.lastName,
+          email: admin.email,
+          role: admin.role,
+        },
       },
     };
   }
@@ -237,8 +240,12 @@ export class AdminAuthController {
     });
 
     return {
-      accessToken,
-      expiresIn: 900,
+      success: true,
+      message: API_MESSAGES.ADMIN.LOGIN_SUCCESS,
+      data: {
+        accessToken,
+        expiresIn: 900,
+      },
     };
   }
 
@@ -283,6 +290,9 @@ export class AdminAuthController {
       path: '/api/admin',
     });
 
-    return { message: API_MESSAGES.ADMIN.LOGOUT_SUCCESS };
+    return {
+      success: true,
+      message: API_MESSAGES.ADMIN.LOGOUT_SUCCESS,
+    };
   }
 }

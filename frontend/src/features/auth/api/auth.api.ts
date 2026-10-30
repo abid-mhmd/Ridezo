@@ -7,7 +7,7 @@ import type {
   RegisterRequest,
   RegisterResponse,
   VerifyEmailOtpRequest,
-  VerifyEmailOtpResponse,
+  // VerifyEmailOtpResponse,
   ResendEmailOtpRequest,
   ResendEmailOtpResponse,
   ForgotPasswordRequest,
@@ -17,6 +17,12 @@ import type {
   ResetPasswordRequest,
   ResetPasswordResponse,
 } from '../types/auth.types';
+
+interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data: T;
+}
 
 interface RefreshResponse {
   accessToken: string;
@@ -31,26 +37,37 @@ interface CurrentUserResponse {
   };
 }
 
-export function loginUser(credentials: LoginRequest): Promise<LoginResponse> {
-  return apiRequest<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, {
-    method: 'POST',
-    body: JSON.stringify(credentials),
-  });
+export async function loginUser(
+  credentials: LoginRequest,
+): Promise<LoginResponse> {
+  const response = await apiRequest<ApiResponse<LoginResponse>>(
+    API_ENDPOINTS.AUTH.LOGIN,
+    {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    },
+  );
+
+  return response.data;
 }
 
-export function registerUser(
+export async function registerUser(
   userData: RegisterRequest,
 ): Promise<RegisterResponse> {
-  return apiRequest<RegisterResponse>(API_ENDPOINTS.AUTH.REGISTER, {
-    method: 'POST',
-    body: JSON.stringify(userData),
-  });
+  const response = await apiRequest<ApiResponse<RegisterResponse>>(
+    API_ENDPOINTS.AUTH.REGISTER,
+    {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    },
+  );
+  return response.data;
 }
 
-export function verifyEmailOtp(
+export async function verifyEmailOtp(
   data: VerifyEmailOtpRequest,
-): Promise<VerifyEmailOtpResponse> {
-  return apiRequest<VerifyEmailOtpResponse>(
+): Promise<ApiResponse<undefined>> {
+  return apiRequest<ApiResponse<undefined>>(
     API_ENDPOINTS.AUTH.VERIFY_EMAIL_OTP,
     {
       method: 'POST',
@@ -59,7 +76,7 @@ export function verifyEmailOtp(
   );
 }
 
-export function resendEmailOtp(
+export async function resendEmailOtp(
   data: ResendEmailOtpRequest,
 ): Promise<ResendEmailOtpResponse> {
   return apiRequest<ResendEmailOtpResponse>(API_ENDPOINTS.AUTH.EMAIL_OTP, {
@@ -68,56 +85,70 @@ export function resendEmailOtp(
   });
 }
 
-export function forgotPassword(
+export async function forgotPassword(
   data: ForgotPasswordRequest,
 ): Promise<ForgotPasswordResponce> {
-  return apiRequest<ForgotPasswordResponce>(
+  const response = await apiRequest<ApiResponse<ForgotPasswordResponce>>(
     API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
     {
       method: 'POST',
       body: JSON.stringify(data),
     },
   );
+  return response.data!;
 }
 
-export function verifyResetOtp(
+export async function verifyResetOtp(
   data: verifyResetOtpRequest,
 ): Promise<VerifyResetOtpResponse> {
-  return apiRequest<VerifyResetOtpResponse>(
+  const response = await apiRequest<ApiResponse<VerifyResetOtpResponse>>(
     API_ENDPOINTS.AUTH.VERIFY_RESET_OTP,
     {
       method: 'POST',
       body: JSON.stringify(data),
     },
   );
+  return response.data!;
 }
 
-export function resetPassword(
+export async function resetPassword(
   data: ResetPasswordRequest,
 ): Promise<ResetPasswordResponse> {
-  return apiRequest<ResetPasswordResponse>(API_ENDPOINTS.AUTH.RESET_PASSWORD, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
+  const response = await apiRequest<ApiResponse<undefined>>(
+    API_ENDPOINTS.AUTH.RESET_PASSWORD,
+    {
+      method: 'POST',
+      body: JSON.stringify(data),
+    },
+  );
+  return {
+    message: response.message ?? 'Password reset successful.',
+  };
 }
 
 export async function refreshLoginSession(): Promise<string> {
-  const result = await apiRequest<RefreshResponse>(API_ENDPOINTS.AUTH.REFRESH, {
-    method: 'POST',
-  });
+  const response = await apiRequest<ApiResponse<RefreshResponse>>(
+    API_ENDPOINTS.AUTH.REFRESH,
+    {
+      method: 'POST',
+    },
+  );
 
-  setAccessToken(result.accessToken);
+  setAccessToken(response.data.accessToken);
 
-  return result.accessToken;
+  return response.data.accessToken;
 }
 
 export async function getCurrentUser(): Promise<AuthUser> {
-  const result = await apiRequest<CurrentUserResponse>(API_ENDPOINTS.AUTH.ME);
+  const response = await apiRequest<ApiResponse<CurrentUserResponse>>(
+    API_ENDPOINTS.AUTH.ME,
+  );
 
+  const user = response.data!.user;
   return {
-    id: result.user.id,
-    email: result.user.email,
-    role: result.user.role,
+    id: user.id,
+    email: user.email,
+    role: user.role,
     firstName: '',
     lastName: '',
   };
@@ -125,7 +156,9 @@ export async function getCurrentUser(): Promise<AuthUser> {
 
 export async function logoutUser(): Promise<void> {
   try {
-    await apiRequest(API_ENDPOINTS.AUTH.LOGOUT, { method: 'POST' });
+    await apiRequest<ApiResponse<undefined>>(API_ENDPOINTS.AUTH.LOGOUT, {
+      method: 'POST',
+    });
   } finally {
     setAccessToken(null);
   }

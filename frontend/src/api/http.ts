@@ -44,14 +44,17 @@ async function refreshAccessToken(): Promise<string | null> {
       if (
         typeof data !== 'object' ||
         data === null ||
-        !('accessToken' in data) ||
-        typeof data.accessToken !== 'string'
+        !('data' in data) ||
+        typeof data.data !== 'object' ||
+        data.data === null ||
+        !('accessToken' in data.data) ||
+        typeof data.data.accessToken !== 'string'
       ) {
         return null;
       }
 
-      accessToken = data.accessToken;
-      return data.accessToken;
+      accessToken = data.data.accessToken;
+      return data.data.accessToken;
     } catch {
       return null;
     } finally {

@@ -3,30 +3,7 @@ import { USER_REPOSITORY } from '../../../users/domain/repositories/user.reposit
 import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
 import type { ListUsersQuery } from '../../../users/domain/repositories/user.repository.js';
 import { UserEntity } from '../../../users/domain/entities/user.entity.js';
-
-export interface AdminUserListItem {
-  id: string;
-  firstName: string;
-  lastName?: string;
-  email: string;
-  phone?: string;
-  profilePhoto?: string;
-  role: string;
-  accountStatus: string;
-  emailVerified: boolean;
-  phoneVerified: boolean;
-  createdAt: Date;
-}
-
-export interface ListUsersResults {
-  users: AdminUserListItem[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+import type { AdminUserListResult } from '../../presentation/dto/admin-user.list-responce.dto.js';
 
 @Injectable()
 export class ListUsersUseCase {
@@ -35,7 +12,7 @@ export class ListUsersUseCase {
     private readonly userRepository: UserRepository,
   ) {}
 
-  async execute(query: ListUsersQuery): Promise<ListUsersResults> {
+  async execute(query: ListUsersQuery): Promise<AdminUserListResult> {
     const { users, total } = await this.userRepository.listUsers(query);
 
     return {

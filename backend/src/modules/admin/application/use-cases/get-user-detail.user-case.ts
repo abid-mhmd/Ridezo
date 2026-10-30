@@ -21,7 +21,7 @@ export class GetUserDetailsUseCase {
 
   async execute(userId: string) {
     if (!Types.ObjectId.isValid(userId)) {
-      throw new BadRequestException('Invalid user ID');
+      throw new BadRequestException(API_MESSAGES.ADMIN.INVALID_USER_ID);
     }
 
     const user = await this.userRepository.findById(userId);

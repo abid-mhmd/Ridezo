@@ -5,6 +5,7 @@ import type { UserRepository } from '../../../users/domain/repositories/user.rep
 import { PASSWORD_HASHER } from '../ports/passwordhasher.js';
 import type { PasswordHasher } from '../ports/passwordhasher.js';
 import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
+import { ConfigService } from '@nestjs/config';
 
 export class InvalidPasswordResetTokenError extends Error {
   constructor() {
@@ -23,14 +24,22 @@ export class ResetPasswordUseCase {
     private readonly passwordHasher: PasswordHasher,
 
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async execute(resetToken: string, newPassword: string): Promise<void> {
     let payload: { sub: string; purpose: string };
 
     try {
-      payload = await this.jwtService.verifyAsync(resetToken);
-    } catch {
+      payload = await this.jwtService.verifyAsync(resetToken, {
+        secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
+      });
+    } catch (error) {
+      console.error(
+        'Password reset JWT verification failed:',
+        error instanceof Error ? error.message : 'Unknown JWT error',
+      );
+
       throw new InvalidPasswordResetTokenError();
     }
 
@@ -40,14 +49,12 @@ export class ResetPasswordUseCase {
     ) {
       throw new InvalidPasswordResetTokenError();
     }
-
     const user = await this.userRepository.findById(payload.sub);
 
     if (
       !user ||
       user.accountStatus !== AccountStatus.ACTIVE ||
-      !user.emailVerified ||
-      !user.passwordHash
+      !user.emailVerified
     ) {
       throw new InvalidPasswordResetTokenError();
     }

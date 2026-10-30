@@ -45,7 +45,6 @@ import {
   InvalidPasswordResetOtpError,
   TooManyPasswordResetAttemptsError,
 } from '../application/use-cases/verify-password-reset-otp.use-case.js';
-import { error } from 'console';
 import { ResetPasswordDto } from '../application/dto/reset-password.dto.js';
 import {
   ResetPasswordUseCase,
@@ -60,6 +59,14 @@ import {
 import type { GoogleProfile } from '../application/use-cases/google-auth.use-case.js';
 import { API_MESSAGES } from '../../../common/constants/message.constants.js';
 import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
+import type { ApiResponse } from '../../../common/interfaces/api-responce.interface.js';
+import {
+  CurrentUserResponseDto,
+  ForgotPasswordResponseDto,
+  LoginResponseDto,
+  RefreshResponseDto,
+  RegisterResponseDto,
+} from '../application/dto/auth-response.dto.js';
 
 @Controller()
 export class AuthController {
@@ -101,17 +108,22 @@ export class AuthController {
 
   @Post(API_ENDPOINTS.AUTH.REGISTER)
   @HttpCode(HttpStatus.CREATED)
-  async register(@Body() input: RegisterUserDto) {
+  async register(
+    @Body() input: RegisterUserDto,
+  ): Promise<ApiResponse<RegisterResponseDto>> {
     try {
       const user = await this.registerUserUseCase.execute(input);
 
       return {
+        success: true,
         message: API_MESSAGES.AUTH.REGISTRATION_SUCCESS,
-        user: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
+        data: {
+          user: {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+          },
         },
       };
     } catch (error) {
@@ -129,7 +141,8 @@ export class AuthController {
     await this.sendEmailOtpUseCase.execute(input.email);
 
     return {
-      message: `If the request is eligible, a verfication code will be sent.`,
+      success: true,
+      message: API_MESSAGES.USERS.OTP_SENT,
     };
   }
 
@@ -140,6 +153,7 @@ export class AuthController {
       await this.verifyEmailOtpUseCase.execute(input.email, input.otp);
 
       return {
+        success: true,
         message: API_MESSAGES.AUTH.EMAIL_VERIFIED,
       };
     } catch (error) {
@@ -160,7 +174,7 @@ export class AuthController {
   async login(
     @Body() input: LoginUserDto,
     @Res({ passthrough: true }) response: Response,
-  ) {
+  ): Promise<ApiResponse<LoginResponseDto>> {
     try {
       const user = await this.loginUserUseCase.execute(input);
 
@@ -207,15 +221,18 @@ export class AuthController {
       });
 
       return {
+        success: true,
         message: API_MESSAGES.AUTH.LOGIN_SUCCESS,
-        accessToken,
-        expiresIn: 900,
-        user: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          role: user.role,
+        data: {
+          accessToken,
+          expiresIn: 900,
+          user: {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            role: user.role,
+          },
         },
       };
     } catch (error) {
@@ -238,7 +255,7 @@ export class AuthController {
   async refresh(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
-  ) {
+  ): Promise<ApiResponse<RefreshResponseDto>> {
     const refreshToken = request.cookies?.ridezo_refresh as string | undefined;
 
     if (!refreshToken) {
@@ -261,8 +278,12 @@ export class AuthController {
       });
 
       return {
-        accessToken: result.accessToken,
-        expiresIn: 900,
+        success: true,
+        message: API_MESSAGES.AUTH.REFRESH_SUCCESS,
+        data: {
+          accessToken: result.accessToken,
+          expiresIn: 900,
+        },
       };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
@@ -280,7 +301,9 @@ export class AuthController {
 
   @Get(API_ENDPOINTS.USERS.ME)
   @UseGuards(JwtAuthGuard)
-  getCurrentUser(@Req() request: Request & { user?: AccessTokenPayload }) {
+  getCurrentUser(
+    @Req() request: Request & { user?: AccessTokenPayload },
+  ): ApiResponse<CurrentUserResponseDto> {
     const user = request.user;
 
     if (!user) {
@@ -290,26 +313,35 @@ export class AuthController {
     }
 
     return {
-      user: {
-        id: user.sub,
-        email: user.email,
-        role: user.role,
+      success: true,
+      message: API_MESSAGES.USERS.USER_RETRIEVED_SUCCESS,
+      data: {
+        user: {
+          id: user.sub,
+          email: user.email,
+          role: user.role,
+        },
       },
     };
   }
 
   @Post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD)
   @HttpCode(HttpStatus.OK)
-  async forgotPassword(@Body() input: ForgotPasswordDto) {
+  async forgotPassword(
+    @Body() input: ForgotPasswordDto,
+  ): Promise<ApiResponse<ForgotPasswordResponseDto>> {
     const otpSent = await this.requestPasswordResetOtpUseCase.execute(
       input.email,
     );
 
     return {
-      otpSent,
+      success: true,
       message: otpSent
         ? 'OTP sent successfully.'
         : 'Unable to process this email. Please check your email address and try again.',
+      data: {
+        otpSent,
+      },
     };
   }
 
@@ -317,18 +349,22 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async verifyPasswordResetOtp(@Body() input: VerifyEmailOtpDto) {
     try {
-      return await this.verifyPasswordResetOtpUseCase.execute(
+      const result = await this.verifyPasswordResetOtpUseCase.execute(
         input.email,
         input.otp,
       );
+
+      return {
+        success: true,
+        message: API_MESSAGES.AUTH.PASSWORD_RESET_OTP_SUCCESS,
+        data: result,
+      };
     } catch (error) {
       if (
         error instanceof InvalidPasswordResetOtpError ||
         error instanceof TooManyPasswordResetAttemptsError
       ) {
-        throw new UnauthorizedException(
-          'Invalid or expired password-reset OTP.',
-        );
+        throw new UnauthorizedException(API_MESSAGES.AUTH.INVALID_OTP);
       }
       throw error;
     }
@@ -336,7 +372,7 @@ export class AuthController {
 
   @Post(API_ENDPOINTS.AUTH.RESET_PASSWORD)
   @HttpCode(HttpStatus.OK)
-  async resetPassword(@Body() input: ResetPasswordDto) {
+  async resetPassword(@Body() input: ResetPasswordDto): Promise<ApiResponse> {
     try {
       await this.resetPasswordUseCase.execute(
         input.resetToken,
@@ -344,15 +380,17 @@ export class AuthController {
       );
 
       return {
+        success: true,
         message: API_MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
       };
     } catch (error) {
       if (error instanceof InvalidPasswordResetTokenError) {
         throw new BadRequestException(API_MESSAGES.AUTH.SESSION_EXPIRED);
       }
+      throw error;
     }
-    throw error;
   }
+
   @Get(API_ENDPOINTS.AUTH.GOOGLE)
   @UseGuards(AuthGuard('google'))
   googleLogin(): void {
@@ -433,7 +471,7 @@ export class AuthController {
   async logout(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
-  ) {
+  ): Promise<ApiResponse> {
     const refreshToken = request.cookies?.ridezo_refresh as string | undefined;
 
     if (refreshToken) {
@@ -469,6 +507,9 @@ export class AuthController {
       path: '/api/auth',
     });
 
-    return { message: API_MESSAGES.AUTH.LOGOUT_SUCCESS };
+    return {
+      success: true,
+      message: API_MESSAGES.AUTH.LOGOUT_SUCCESS,
+    };
   }
 }

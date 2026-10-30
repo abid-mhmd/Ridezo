@@ -47,6 +47,7 @@ export class UsersController {
     }
 
     return {
+      success: true,
       user: await this.getUserProfileUseCase.execute(user.sub),
     };
   }

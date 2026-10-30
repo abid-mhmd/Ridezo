@@ -15,6 +15,9 @@ import { GetUserDetailsUseCase } from '../application/use-cases/get-user-detail.
 import { ChangeUserAccountStatusUseCase } from '../application/use-cases/change-user-account-status.use-case.js';
 import { AccountStatus } from '../../users/domain/enums/user.enums.js';
 import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
+import { API_MESSAGES } from '../../../common/constants/message.constants.js';
+import type { ApiResponse } from '../../../common/interfaces/api-responce.interface.js';
+import { AdminUserListItem } from './dto/admin-user.list-responce.dto.js';
 
 @Controller(API_ENDPOINTS.ADMIN.USERS)
 @UseGuards(JwtAuthGuard, AdminRoleGuard)
@@ -26,12 +29,20 @@ export class AdminUsersController {
   ) {}
 
   @Get()
-  async listUsers(@Query() query: AdminUserListQueryDto) {
-    return this.listUsersUseCase.execute({
+  async listUsers(
+    @Query() query: AdminUserListQueryDto,
+  ): Promise<ApiResponse<AdminUserListItem[]>> {
+    const result = await this.listUsersUseCase.execute({
       page: query.page,
       limit: query.limit,
       search: query.search,
     });
+    return {
+      success: true,
+      message: API_MESSAGES.ADMIN.USER_RETRIEVED_SUCCESS,
+      data: result.users,
+      meta: result.pagination,
+    };
   }
 
   @Get(API_ENDPOINTS.ADMIN.USER_BY_ID)
@@ -39,7 +50,9 @@ export class AdminUsersController {
     const user = await this.getUserDetailsUseCase.execute(userId);
 
     return {
-      user: {
+      success: true,
+      message: API_MESSAGES.ADMIN.USER_RETRIEVED_SUCCESS,
+      data: {
         id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
@@ -68,6 +81,15 @@ export class AdminUsersController {
     @Param('userId') userId: string,
     @Body() body: { status: AccountStatus },
   ) {
-    return this.changeUserAccountStatusUseCase.execute(userId, body.status);
+    const result = await this.changeUserAccountStatusUseCase.execute(
+      userId,
+      body.status,
+    );
+
+    return {
+      success: true,
+      message: API_MESSAGES.ADMIN.USER_ACCOUNT_STATUS,
+      data: result,
+    };
   }
 }
