@@ -1,0 +1,137 @@
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { createHash, randomBytes } from 'node:crypto';
+
+import { REFRESH_TOKEN_STORAGE } from '../../../auth/application/ports/refresh-token-storage.js';
+import type { RefreshTokenStorage } from '../../../auth/application/ports/refresh-token-storage.js';
+
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
+import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+
+import {
+  AccountStatus,
+  UserRole,
+} from '../../../users/domain/enums/user.enums.js';
+
+import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
+
+interface RefreshTokenPayload {
+  sub: string;
+  jti: string;
+  tokenType: 'refresh';
+}
+
+export interface RefreshAdminTokenResult {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
+
+@Injectable()
+export class RefreshAdminTokenUseCase {
+  constructor(
+    @Inject(REFRESH_TOKEN_STORAGE)
+    private readonly refreshTokenStorage: RefreshTokenStorage,
+
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: UserRepository,
+
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  async execute(refreshToken: string): Promise<RefreshAdminTokenResult> {
+    const refreshSecret =
+      this.configService.getOrThrow<string>('JWT_REFRESH_SECRET');
+
+    let payload: RefreshTokenPayload;
+
+    try {
+      payload = await this.jwtService.verifyAsync<RefreshTokenPayload>(
+        refreshToken,
+        { secret: refreshSecret },
+      );
+    } catch {
+      throw new UnauthorizedException(API_MESSAGES.ADMIN.SESSION_EXPIRED);
+    }
+
+    if (!payload.sub || !payload.jti || payload.tokenType !== 'refresh') {
+      throw new UnauthorizedException(API_MESSAGES.ADMIN.INVALID_REFRESH_TOKEN);
+    }
+
+    const incomingHash = createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
+
+    const storedHash = await this.refreshTokenStorage.get(payload.jti);
+
+    if (!storedHash || storedHash !== incomingHash) {
+      throw new UnauthorizedException(API_MESSAGES.ADMIN.INVALID_REFRESH_TOKEN);
+    }
+
+    const admin = await this.userRepository.findById(payload.sub);
+
+    if (
+      !admin ||
+      admin.role !== UserRole.ADMIN ||
+      admin.accountStatus !== AccountStatus.ACTIVE
+    ) {
+      await this.refreshTokenStorage.delete(payload.jti);
+
+      throw new UnauthorizedException(API_MESSAGES.ADMIN.SESSION_INVALID);
+    }
+
+    const newSessionId = randomBytes(16).toString('hex');
+
+    const refreshTtl = this.configService.getOrThrow<number>(
+      'JWT_REFRESH_TTL_SECONDS',
+    );
+
+    const newRefreshToken = await this.jwtService.signAsync(
+      {
+        sub: admin.id,
+        jti: newSessionId,
+        tokenType: 'refresh',
+      },
+      {
+        secret: refreshSecret,
+        expiresIn: refreshTtl,
+      },
+    );
+
+    const newRefreshHash = createHash('sha256')
+      .update(newRefreshToken)
+      .digest('hex');
+
+    const rotated = await this.refreshTokenStorage.rotate(
+      payload.jti,
+      storedHash,
+      newSessionId,
+      newRefreshHash,
+      refreshTtl,
+    );
+
+    if (!rotated) {
+      throw new UnauthorizedException(API_MESSAGES.ADMIN.SESSION_INVALID);
+    }
+
+    const accessToken = await this.jwtService.signAsync(
+      {
+        sub: admin.id,
+        email: admin.email,
+        role: admin.role,
+      },
+      {
+        secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
+        expiresIn: 900,
+      },
+    );
+
+    return {
+      accessToken,
+      refreshToken: newRefreshToken,
+      expiresIn: 900,
+    };
+  }
+}

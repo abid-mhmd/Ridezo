@@ -29,10 +29,9 @@ import {
   LoginUserUseCase,
 } from '../application/use-cases/login-user.use-case.js';
 import { LoginUserDto } from '../application/dto/login-user.dto.js';
-import { JwtService } from '@nestjs/jwt';
-import { createHash, randomBytes } from 'node:crypto';
-import { REFRESH_TOKEN_STORAGE } from '../application/ports/refresh-token-storage.js';
-import type { RefreshTokenStorage } from '../application/ports/refresh-token-storage.js';
+// import { JwtService } from '@nestjs/jwt';
+// import { REFRESH_TOKEN_STORAGE } from '../application/ports/refresh-token-storage.js';
+// import type { RefreshTokenStorage } from '../application/ports/refresh-token-storage.js';
 import { ConfigService } from '@nestjs/config';
 import { Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AccessTokenPayload, JwtAuthGuard } from './guards/jwt-auth.guard.js';
@@ -67,6 +66,7 @@ import {
   RefreshResponseDto,
   RegisterResponseDto,
 } from '../application/dto/auth-response.dto.js';
+import { LogoutUserUseCase } from '../application/use-cases/logout-user.use-case.js';
 
 @Controller()
 export class AuthController {
@@ -95,15 +95,18 @@ export class AuthController {
     @Inject(GoogleAuthUseCase)
     private readonly googleAuthUseCase: GoogleAuthUseCase,
 
-    @Inject(REFRESH_TOKEN_STORAGE)
-    private readonly refreshTokenStorage: RefreshTokenStorage,
+    // @Inject(REFRESH_TOKEN_STORAGE)
+    // private readonly refreshTokenStorage: RefreshTokenStorage,
 
     @Inject(RefreshAccessTokenUseCase)
     private readonly refreshAccessTokenUseCase: RefreshAccessTokenUseCase,
 
+    @Inject(LogoutUserUseCase)
+    private readonly logoutUserUseCase: LogoutUserUseCase,
+
     private readonly configService: ConfigService,
 
-    private readonly jwtService: JwtService,
+    // private readonly jwtService: JwtService,
   ) {}
 
   @Post(API_ENDPOINTS.AUTH.REGISTER)
@@ -176,62 +179,28 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<ApiResponse<LoginResponseDto>> {
     try {
-      const user = await this.loginUserUseCase.execute(input);
+      const result = await this.loginUserUseCase.execute(input);
 
-      const sessionId = randomBytes(16).toString('hex');
-
-      const refreshTtl = this.configService.getOrThrow<number>(
-        'JWT_REFRESH_TTL_SECONDS',
-      );
-
-      const refreshToken = await this.jwtService.signAsync(
-        {
-          sub: user.id,
-          jti: sessionId,
-          tokenType: 'refresh',
-        },
-        {
-          secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-          expiresIn: refreshTtl,
-        },
-      );
-
-      const refreshTokenHash = createHash('sha256')
-        .update(refreshToken)
-        .digest('hex');
-
-      await this.refreshTokenStorage.store(
-        sessionId,
-        refreshTokenHash,
-        refreshTtl,
-      );
-
-      const accessToken = await this.jwtService.signAsync({
-        sub: user.id,
-        email: user.email,
-        role: user.role,
-      });
-
-      response.cookie('ridezo_refresh', refreshToken, {
+      response.cookie('ridezo_refresh', result.refreshToken, {
         httpOnly: true,
         secure: this.configService.get<string>('NODE_ENV') === 'production',
         sameSite: 'lax',
         path: '/api/auth',
-        maxAge: refreshTtl * 1000,
+        maxAge: result.refreshTtl * 1000,
       });
 
       return {
         success: true,
         message: API_MESSAGES.AUTH.LOGIN_SUCCESS,
         data: {
-          accessToken,
-          expiresIn: 900,
+          accessToken: result.accessToken,
+          expiresIn: result.expiresIn,
           user: {
-            id: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            role: user.role,
+            id: result.user.id,
+            firstName: result.user.firstName,
+            lastName: result.user.lastName,
+            email: result.user.email,
+            role: result.user.role,
           },
         },
       };
@@ -256,8 +225,18 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<ApiResponse<RefreshResponseDto>> {
-    const refreshToken = request.cookies?.ridezo_refresh as string | undefined;
+    const refreshToken = request.cookies?.ridezo_refresh;
 
+    if (typeof refreshToken !== 'string' || !refreshToken) {
+      response.clearCookie('ridezo_refresh', {
+        httpOnly: true,
+        secure: this.configService.get<string>('NODE_ENV') === 'production',
+        sameSite: 'lax',
+        path: '/api/auth',
+      });
+
+      throw new UnauthorizedException('Refresh token is required.');
+    }
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token is required.');
     }
@@ -416,40 +395,12 @@ export class AuthController {
     try {
       const result = await this.googleAuthUseCase.execute(profile);
 
-      const sessionId = randomBytes(16).toString('hex');
-
-      const refreshTtl = this.configService.getOrThrow<number>(
-        'JWT_REFRESH_TTL_SECONDS',
-      );
-
-      const refreshToken = await this.jwtService.signAsync(
-        {
-          sub: result.user.id,
-          jti: sessionId,
-          tokenType: 'refresh',
-        },
-        {
-          secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-          expiresIn: refreshTtl,
-        },
-      );
-
-      const refreshTokenHash = createHash('sha256')
-        .update(refreshToken)
-        .digest('hex');
-
-      await this.refreshTokenStorage.store(
-        sessionId,
-        refreshTokenHash,
-        refreshTtl,
-      );
-
-      response.cookie('ridezo_refresh', refreshToken, {
+      response.cookie('ridezo_refresh', result.refreshToken, {
         httpOnly: true,
         secure: this.configService.get<string>('NODE_ENV') === 'production',
         sameSite: 'lax',
         path: '/api/auth',
-        maxAge: refreshTtl * 1000,
+        maxAge: result.refreshTtl * 1000,
       });
 
       const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
@@ -472,33 +423,11 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<ApiResponse> {
-    const refreshToken = request.cookies?.ridezo_refresh as string | undefined;
+    const refreshToken = request.cookies?.ridezo_refresh;
 
-    if (refreshToken) {
-      try {
-        const payload = await this.jwtService.verifyAsync<{
-          sub: string;
-          jti: string;
-          tokenType: string;
-        }>(refreshToken, {
-          secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-        });
-
-        if (payload.jti && payload.tokenType === 'refresh') {
-          const incomingHash = createHash('sha256')
-            .update(refreshToken)
-            .digest('hex');
-
-          const storedHash = await this.refreshTokenStorage.get(payload.jti);
-
-          if (storedHash === incomingHash) {
-            await this.refreshTokenStorage.delete(payload.jti);
-          }
-        }
-      } catch {
-        // An invalid or expired refresh token cannot be used to restore a session.
-      }
-    }
+    await this.logoutUserUseCase.execute(
+      typeof refreshToken === 'string' ? refreshToken : undefined,
+    );
 
     response.clearCookie('ridezo_refresh', {
       httpOnly: true,

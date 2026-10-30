@@ -17,7 +17,7 @@ import { AccountStatus } from '../../users/domain/enums/user.enums.js';
 import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
 import { API_MESSAGES } from '../../../common/constants/message.constants.js';
 import type { ApiResponse } from '../../../common/interfaces/api-responce.interface.js';
-import { AdminUserListItem } from './dto/admin-user.list-responce.dto.js';
+import { AdminUserListItem } from '../application/dto/admin-user.list-responce.dto.js';
 
 @Controller(API_ENDPOINTS.ADMIN.USERS)
 @UseGuards(JwtAuthGuard, AdminRoleGuard)

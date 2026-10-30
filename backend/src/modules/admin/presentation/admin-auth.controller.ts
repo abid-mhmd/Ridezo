@@ -3,42 +3,35 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
-  Inject,
   Post,
   Res,
+  Inject,
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import type { Response } from 'express';
-import { createHash, randomBytes } from 'node:crypto';
-import { AdminLoginDto } from '../application/dto/admin-login.dto.js';
+import { AdminLoginDto } from './dto/admin-login.dto.js';
 import { AdminLoginUseCase } from '../application/use-cases/admin-login.use-case.js';
+import { RefreshAdminTokenUseCase } from '../application/use-cases/refresh-admin-token.use-case.js';
 import { REFRESH_TOKEN_STORAGE } from '../../auth/application/ports/refresh-token-storage.js';
 import type { RefreshTokenStorage } from '../../auth/application/ports/refresh-token-storage.js';
-import {
-  AccountStatus,
-  UserRole,
-} from '../../users/domain/enums/user.enums.js';
-import { USER_REPOSITORY } from '../../users/domain/repositories/user.repository.js';
-import type { UserRepository } from '../../users/domain/repositories/user.repository.js';
 import { API_MESSAGES } from '../../../common/constants/message.constants.js';
 import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
+import { AdminLogoutUseCase } from '../application/use-cases/admin-logout.use-case.js';
 
 @Controller()
 export class AdminAuthController {
   constructor(
     private readonly adminLoginUseCase: AdminLoginUseCase,
+    private readonly refreshAdminTokenUseCase: RefreshAdminTokenUseCase,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly adminLogoutUseCase: AdminLogoutUseCase,
 
     @Inject(REFRESH_TOKEN_STORAGE)
     private readonly refreshTokenStorage: RefreshTokenStorage,
-
-    @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
   ) {}
 
   @Post(API_ENDPOINTS.ADMIN.LOGIN)
@@ -47,68 +40,28 @@ export class AdminAuthController {
     @Body() input: AdminLoginDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const admin = await this.adminLoginUseCase.execute(input);
+    const result = await this.adminLoginUseCase.execute(input);
 
-    const sessionId = randomBytes(16).toString('hex');
-
-    const refreshTtl = this.configService.getOrThrow<number>(
-      'JWT_REFRESH_TTL_SECONDS',
-    );
-
-    const refreshToken = await this.jwtService.signAsync(
-      {
-        sub: admin.id,
-        jti: sessionId,
-        tokenType: 'refresh',
-      },
-      {
-        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-        expiresIn: refreshTtl,
-      },
-    );
-
-    const refreshTokenHash = createHash('sha256')
-      .update(refreshToken)
-      .digest('hex');
-
-    await this.refreshTokenStorage.store(
-      sessionId,
-      refreshTokenHash,
-      refreshTtl,
-    );
-
-    const accessToken = await this.jwtService.signAsync(
-      {
-        sub: admin.id,
-        email: admin.email,
-        role: admin.role,
-      },
-      {
-        secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-        expiresIn: 900,
-      },
-    );
-
-    response.cookie('ridezo_admin_refresh', refreshToken, {
+    response.cookie('ridezo_admin_refresh', result.refreshToken, {
       httpOnly: true,
       secure: this.configService.get<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
       path: '/api/admin',
-      maxAge: refreshTtl * 1000,
+      maxAge: result.refreshTtl * 1000,
     });
 
     return {
       success: true,
       message: API_MESSAGES.ADMIN.LOGIN_SUCCESS,
       data: {
-        accessToken,
-        expiresIn: 900,
+        accessToken: result.accessToken,
+        expiresIn: result.expiresIn,
         user: {
-          id: admin.id,
-          firstName: admin.firstName,
-          lastName: admin.lastName,
-          email: admin.email,
-          role: admin.role,
+          id: result.user.id,
+          firstName: result.user.firstName,
+          lastName: result.user.lastName,
+          email: result.user.email,
+          role: result.user.role,
         },
       },
     };
@@ -137,116 +90,29 @@ export class AdminAuthController {
       throw new UnauthorizedException(API_MESSAGES.ADMIN.SESSION_EXPIRED);
     }
 
-    const refreshSecret =
-      this.configService.getOrThrow<string>('JWT_REFRESH_SECRET');
-
-    let payload: {
-      sub: string;
-      jti: string;
-      tokenType: 'refresh';
-    };
-
     try {
-      payload = await this.jwtService.verifyAsync(refreshToken, {
-        secret: refreshSecret,
+      const result = await this.refreshAdminTokenUseCase.execute(refreshToken);
+
+      response.cookie('ridezo_admin_refresh', result.refreshToken, {
+        httpOnly: true,
+        secure: this.configService.get<string>('NODE_ENV') === 'production',
+        sameSite: 'lax',
+        path: '/api/admin',
+        maxAge: result.expiresIn * 1000,
       });
-    } catch {
+
+      return {
+        success: true,
+        message: API_MESSAGES.ADMIN.LOGIN_SUCCESS,
+        data: {
+          accessToken: result.accessToken,
+          expiresIn: result.expiresIn,
+        },
+      };
+    } catch (error) {
       clearAdminCookie();
-      throw new UnauthorizedException(API_MESSAGES.ADMIN.SESSION_EXPIRED);
+      throw error;
     }
-
-    if (!payload.sub || !payload.jti || payload.tokenType !== 'refresh') {
-      clearAdminCookie();
-      throw new UnauthorizedException(API_MESSAGES.ADMIN.INVALID_REFRESH_TOKEN);
-    }
-
-    const incomingHash = createHash('sha256')
-      .update(refreshToken)
-      .digest('hex');
-
-    const storedHash = await this.refreshTokenStorage.get(payload.jti);
-
-    if (!storedHash || storedHash !== incomingHash) {
-      clearAdminCookie();
-      throw new UnauthorizedException(API_MESSAGES.ADMIN.INVALID_REFRESH_TOKEN);
-    }
-
-    const admin = await this.userRepository.findById(payload.sub);
-
-    if (
-      !admin ||
-      admin.role !== UserRole.ADMIN ||
-      admin.accountStatus !== AccountStatus.ACTIVE
-    ) {
-      await this.refreshTokenStorage.delete(payload.jti);
-      clearAdminCookie();
-
-      throw new UnauthorizedException(API_MESSAGES.ADMIN.SESSION_INVALID);
-    }
-
-    const newSessionId = randomBytes(16).toString('hex');
-
-    const refreshTtl = this.configService.getOrThrow<number>(
-      'JWT_REFRESH_TTL_SECONDS',
-    );
-
-    const newRefreshToken = await this.jwtService.signAsync(
-      {
-        sub: admin.id,
-        jti: newSessionId,
-        tokenType: 'refresh',
-      },
-      {
-        secret: refreshSecret,
-        expiresIn: refreshTtl,
-      },
-    );
-
-    const newRefreshHash = createHash('sha256')
-      .update(newRefreshToken)
-      .digest('hex');
-
-    const rotated = await this.refreshTokenStorage.rotate(
-      payload.jti,
-      storedHash,
-      newSessionId,
-      newRefreshHash,
-      refreshTtl,
-    );
-
-    if (!rotated) {
-      clearAdminCookie();
-      throw new UnauthorizedException(API_MESSAGES.ADMIN.SESSION_INVALID);
-    }
-
-    const accessToken = await this.jwtService.signAsync(
-      {
-        sub: admin.id,
-        email: admin.email,
-        role: admin.role,
-      },
-      {
-        secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-        expiresIn: 900,
-      },
-    );
-
-    response.cookie('ridezo_admin_refresh', newRefreshToken, {
-      httpOnly: true,
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
-      sameSite: 'lax',
-      path: '/api/admin',
-      maxAge: refreshTtl * 1000,
-    });
-
-    return {
-      success: true,
-      message: API_MESSAGES.ADMIN.LOGIN_SUCCESS,
-      data: {
-        accessToken,
-        expiresIn: 900,
-      },
-    };
   }
 
   @Post(API_ENDPOINTS.ADMIN.LOGOUT)
@@ -257,31 +123,9 @@ export class AdminAuthController {
   ) {
     const refreshToken = request.cookies?.ridezo_admin_refresh;
 
-    if (typeof refreshToken === 'string' && refreshToken) {
-      try {
-        const payload = await this.jwtService.verifyAsync<{
-          sub: string;
-          jti: string;
-          tokenType: string;
-        }>(refreshToken, {
-          secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-        });
-
-        if (payload.jti && payload.tokenType === 'refresh') {
-          const incomingHash = createHash('sha256')
-            .update(refreshToken)
-            .digest('hex');
-
-          const storedHash = await this.refreshTokenStorage.get(payload.jti);
-
-          if (storedHash === incomingHash) {
-            await this.refreshTokenStorage.delete(payload.jti);
-          }
-        }
-      } catch {
-        // The refresh token is invalid or expired.
-      }
-    }
+    await this.adminLogoutUseCase.execute(
+      typeof refreshToken === 'string' ? refreshToken : undefined,
+    );
 
     response.clearCookie('ridezo_admin_refresh', {
       httpOnly: true,

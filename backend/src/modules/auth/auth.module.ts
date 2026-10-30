@@ -29,6 +29,7 @@ import { GoogleStrategy } from '../../infrastructure/redis/security/google.strat
 import { GoogleAuthUseCase } from './application/use-cases/google-auth.use-case.js';
 import { SecurityModule } from '../../infrastructure/redis/security/security.module.js';
 import { RefreshAccessTokenUseCase } from './application/use-cases/refresh-token.use-case.js';
+import { LogoutUserUseCase } from './application/use-cases/logout-user.use-case.js';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { RefreshAccessTokenUseCase } from './application/use-cases/refresh-token
     GoogleStrategy,
     GoogleAuthUseCase,
     RefreshAccessTokenUseCase,
+    LogoutUserUseCase,
   ],
   exports: [RegisterUserUseCase, PASSWORD_HASHER],
 })

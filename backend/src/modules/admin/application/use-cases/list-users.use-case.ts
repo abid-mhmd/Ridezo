@@ -3,7 +3,7 @@ import { USER_REPOSITORY } from '../../../users/domain/repositories/user.reposit
 import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
 import type { ListUsersQuery } from '../../../users/domain/repositories/user.repository.js';
 import { UserEntity } from '../../../users/domain/entities/user.entity.js';
-import type { AdminUserListResult } from '../../presentation/dto/admin-user.list-responce.dto.js';
+import type { AdminUserListResult } from '../dto/admin-user.list-responce.dto.js';
 
 @Injectable()
 export class ListUsersUseCase {

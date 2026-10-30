@@ -13,19 +13,29 @@ import { ListUsersUseCase } from './application/use-cases/list-users.use-case.js
 import { AdminRoleGuard } from './presentation/guards/admin-role.guard.js';
 import { GetUserDetailsUseCase } from './application/use-cases/get-user-detail.user-case.js';
 import { ChangeUserAccountStatusUseCase } from './application/use-cases/change-user-account-status.use-case.js';
+import { RefreshAdminTokenUseCase } from './application/use-cases/refresh-admin-token.use-case.js';
+import { TOKEN_GENERATOR } from './application/ports/token.generator.js';
+import { JwtTokenGenerator } from './infrastructure/security/jwt-token-generator.js';
+import { AdminLogoutUseCase } from './application/use-cases/admin-logout.use-case.js';
 
 @Module({
   imports: [AuthModule, UsersModule, RedisModule, JwtModule.register({})],
   controllers: [AdminAuthController, AdminUsersController],
   providers: [
     AdminLoginUseCase,
+    RefreshAdminTokenUseCase,
     ListUsersUseCase,
     AdminRoleGuard,
     GetUserDetailsUseCase,
     ChangeUserAccountStatusUseCase,
+    AdminLogoutUseCase,
     {
       provide: REFRESH_TOKEN_STORAGE,
       useClass: RedisRefreshTokenStorage,
+    },
+    {
+      provide: TOKEN_GENERATOR,
+      useClass: JwtTokenGenerator,
     },
   ],
 })

@@ -55,12 +55,14 @@ export class UsersController {
   @Patch(API_ENDPOINTS.USERS.PROFILE)
   @UseGuards(JwtAuthGuard)
   async updateProfile(
-    @Req()
-    request: Request & {
-      user: { sub: string };
-    },
+    @Req() request: Request & { user?: AccessTokenPayload },
     @Body() dto: UpdateProfileDto,
   ) {
+    if (!request.user) {
+      throw new UnauthorizedException(
+        API_MESSAGES.AUTH.AUTHENTICATION_REQUIRED,
+      );
+    }
     return this.updateProfileUseCase.execute(request.user.sub, dto);
   }
 
@@ -89,17 +91,30 @@ export class UsersController {
     }),
   )
   async uploadProfilePhoto(
-    @Req() request: Request & { user: { sub: string } },
+    @Req() request: Request & { user?: AccessTokenPayload },
     @UploadedFile() file: Express.Multer.File,
   ) {
+    if (!request.user) {
+      throw new UnauthorizedException(
+        API_MESSAGES.AUTH.AUTHENTICATION_REQUIRED,
+      );
+    }
+    if (!file) {
+      throw new BadRequestException(API_MESSAGES.USERS.INVALID_PHOTO_TYPE);
+    }
     return this.uploadProfilePhotoUseCase.execute(request.user.sub, file);
   }
 
   @Delete(API_ENDPOINTS.USERS.PROFILE_PHOTO)
   @UseGuards(JwtAuthGuard)
   async removeProfilePhoto(
-    @Req() request: Request & { user: { sub: string } },
+    @Req() request: Request & { user?: AccessTokenPayload },
   ) {
+    if (!request.user) {
+      throw new UnauthorizedException(
+        API_MESSAGES.AUTH.AUTHENTICATION_REQUIRED,
+      );
+    }
     return this.removeProfilePhotUseCase.execute(request.user.sub);
   }
 }
