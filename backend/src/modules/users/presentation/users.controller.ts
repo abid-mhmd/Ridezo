@@ -25,6 +25,8 @@ import { UploadProfilePhotoUseCase } from '../application/use-cases/upload-profi
 import { RemoveProfilePhotoUseCase } from '../application/use-cases/remove-profile-phot.use-case.js';
 import { API_MESSAGES } from '../../../common/constants/message.constants.js';
 import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
+import { UserProfileMapper } from './mappers/user-profile.mapper.js';
+import type { UserProfileResponseDto } from './dto/user-profile-responce.dto.js';
 
 @Controller()
 export class UsersController {
@@ -37,7 +39,12 @@ export class UsersController {
 
   @Get(API_ENDPOINTS.USERS.PROFILE)
   @UseGuards(JwtAuthGuard)
-  async getMyProfile(@Req() request: Request & { user?: AccessTokenPayload }) {
+  async getMyProfile(
+    @Req() request: Request & { user?: AccessTokenPayload },
+  ): Promise<{
+    success: boolean;
+    user: UserProfileResponseDto;
+  }> {
     const user = request.user;
 
     if (!user) {
@@ -46,9 +53,11 @@ export class UsersController {
       );
     }
 
+    const profile = await this.getUserProfileUseCase.execute(user.sub);
+
     return {
       success: true,
-      user: await this.getUserProfileUseCase.execute(user.sub),
+      user: UserProfileMapper.toResponse(profile),
     };
   }
 
@@ -57,13 +66,25 @@ export class UsersController {
   async updateProfile(
     @Req() request: Request & { user?: AccessTokenPayload },
     @Body() dto: UpdateProfileDto,
-  ) {
+  ): Promise<{
+    success: boolean;
+    user: UserProfileResponseDto;
+  }> {
     if (!request.user) {
       throw new UnauthorizedException(
         API_MESSAGES.AUTH.AUTHENTICATION_REQUIRED,
       );
     }
-    return this.updateProfileUseCase.execute(request.user.sub, dto);
+
+    const updatedUser = await this.updateProfileUseCase.execute(
+      request.user.sub,
+      dto,
+    );
+
+    return {
+      success: true,
+      user: UserProfileMapper.toResponse(updatedUser),
+    };
   }
 
   @Post(API_ENDPOINTS.USERS.PROFILE_PHOTO)

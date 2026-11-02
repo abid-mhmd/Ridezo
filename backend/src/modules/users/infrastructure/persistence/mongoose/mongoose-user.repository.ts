@@ -95,7 +95,7 @@ export class MongooseUserRepository
   async findByEmailForAuthentication(
     email: string,
   ): Promise<UserEntity | null> {
-    const normalizedEmail = email.trim().toLocaleLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
 
     const user = await this.model
       .findOne({ email: normalizedEmail })

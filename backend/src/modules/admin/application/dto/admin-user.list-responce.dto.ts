@@ -1,19 +1,7 @@
-export interface AdminUserListItem {
-  id: string;
-  firstName: string;
-  lastName?: string;
-  email: string;
-  phone?: string;
-  profilePhoto?: string;
-  role: string;
-  accountStatus: string;
-  emailVerified: boolean;
-  phoneVerified: boolean;
-  createdAt: Date;
-}
+import type { UserEntity } from '../../../users/domain/entities/user.entity.js';
 
 export interface AdminUserListResult {
-  users: AdminUserListItem[];
+  users: UserEntity[];
   pagination: {
     page: number;
     limit: number;

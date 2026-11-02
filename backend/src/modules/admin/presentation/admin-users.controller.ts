@@ -17,7 +17,8 @@ import { AccountStatus } from '../../users/domain/enums/user.enums.js';
 import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
 import { API_MESSAGES } from '../../../common/constants/message.constants.js';
 import type { ApiResponse } from '../../../common/interfaces/api-responce.interface.js';
-import { AdminUserListItem } from '../application/dto/admin-user.list-responce.dto.js';
+import { AdminUserMapper } from './mappers/admin-user.mapper.js';
+import type { AdminUserListItem } from './dto/admin-user-response.dto.js';
 
 @Controller(API_ENDPOINTS.ADMIN.USERS)
 @UseGuards(JwtAuthGuard, AdminRoleGuard)
@@ -37,10 +38,11 @@ export class AdminUsersController {
       limit: query.limit,
       search: query.search,
     });
+
     return {
       success: true,
       message: API_MESSAGES.ADMIN.USER_RETRIEVED_SUCCESS,
-      data: result.users,
+      data: AdminUserMapper.toListResponse(result.users),
       meta: result.pagination,
     };
   }
@@ -52,27 +54,7 @@ export class AdminUsersController {
     return {
       success: true,
       message: API_MESSAGES.ADMIN.USER_RETRIEVED_SUCCESS,
-      data: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phone: user.phone,
-        about: user.about,
-        profilePhoto: user.profilePhoto,
-        role: user.role,
-        accountStatus: user.accountStatus,
-        emailVerified: user.emailVerified,
-        phoneVerified: user.phoneVerified,
-        idVerified: user.identityVerification.status,
-        languages: user.languages,
-        location: user.location,
-        completedRideCount: user.completedRideCount,
-        rating: user.rating,
-        reviewCount: user.reviewCount,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      },
+      data: AdminUserMapper.toDetailsResponse(user),
     };
   }
 
