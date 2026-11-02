@@ -1,8 +1,7 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import type { ITokenService } from '../ports/token.service.js';
+import { TOKEN_SERVICE } from '../ports/token.service.js';
 import { createHash, randomBytes } from 'node:crypto';
-
 import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage.js';
 import type { RefreshTokenStorage } from '../ports/refresh-token-storage.js';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
@@ -25,27 +24,23 @@ export class RefreshAccessTokenUseCase {
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
 
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    @Inject(TOKEN_SERVICE)
+    private readonly tokenService: ITokenService,
   ) {}
 
   async execute(
     refreshToken: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const refreshSecret =
-      this.configService.getOrThrow<string>('JWT_REFRESH_SECRET');
-
     let payload: RefreshTokenPayload;
 
     try {
-      payload = await this.jwtService.verifyAsync<RefreshTokenPayload>(
-        refreshToken,
-        { secret: refreshSecret },
-      );
+      payload =
+        await this.tokenService.verifyRefreshToken<RefreshTokenPayload>(
+          refreshToken,
+        );
     } catch {
       throw new UnauthorizedException(API_MESSAGES.AUTH.REFRESH_TOKEN_EXPIRED);
     }
-
     if (!payload.sub || !payload.jti || payload.tokenType !== 'refresh') {
       throw new UnauthorizedException(API_MESSAGES.AUTH.REFRESH_TOKEN_EXPIRED);
     }
@@ -77,21 +72,13 @@ export class RefreshAccessTokenUseCase {
 
     const newSessionId = randomBytes(16).toString('hex');
 
-    const refreshTtl = this.configService.getOrThrow<number>(
-      'JWT_REFRESH_TTL_SECONDS',
-    );
+    const refreshTtl = this.tokenService.getRefreshTokenTtl();
 
-    const newRefreshToken = await this.jwtService.signAsync(
-      {
-        sub: user.id,
-        jti: newSessionId,
-        tokenType: 'refresh',
-      },
-      {
-        secret: refreshSecret,
-        expiresIn: refreshTtl,
-      },
-    );
+    const newRefreshToken = await this.tokenService.generateRefreshToken({
+      sub: user.id,
+      jti: newSessionId,
+      tokenType: 'refresh',
+    });
 
     const newRefreshHash = createHash('sha256')
       .update(newRefreshToken)
@@ -109,7 +96,7 @@ export class RefreshAccessTokenUseCase {
       throw new UnauthorizedException(API_MESSAGES.AUTH.REFRESH_TOKEN_EXPIRED);
     }
 
-    const accessToken = await this.jwtService.signAsync({
+    const accessToken = await this.tokenService.generateAccessToken({
       sub: user.id,
       email: user.email,
       role: user.role,

@@ -1,14 +1,13 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { createHash, randomBytes } from 'node:crypto';
-import { ConfigService } from '@nestjs/config';
 import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
 import type { PasswordHasher } from '../../../auth/application/ports/passwordhasher.js';
 import { PASSWORD_HASHER } from '../../../auth/application/ports/passwordhasher.js';
 import type { RefreshTokenStorage } from '../../../auth/application/ports/refresh-token-storage.js';
 import { REFRESH_TOKEN_STORAGE } from '../../../auth/application/ports/refresh-token-storage.js';
-import type { TokenGenerator } from '../ports/token.generator.js';
-import { TOKEN_GENERATOR } from '../ports/token.generator.js';
+import type { ITokenService } from '../../../auth/application/ports/token.service.js';
+import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service.js';
 import {
   AccountStatus,
   UserRole,
@@ -28,10 +27,8 @@ export class AdminLoginUseCase {
     @Inject(REFRESH_TOKEN_STORAGE)
     private readonly refreshTokenStorage: RefreshTokenStorage,
 
-    @Inject(TOKEN_GENERATOR)
-    private readonly tokenGenerator: TokenGenerator,
-
-    private readonly configService: ConfigService,
+    @Inject(TOKEN_SERVICE)
+    private readonly tokenService: ITokenService,
   ) {}
 
   async execute(input: AdminLoginInput) {
@@ -59,11 +56,9 @@ export class AdminLoginUseCase {
 
     const sessionId = randomBytes(16).toString('hex');
 
-    const refreshTtl = this.configService.getOrThrow<number>(
-      'JWT_REFRESH_TTL_SECONDS',
-    );
+    const refreshTtl = this.tokenService.getRefreshTokenTtl();
 
-    const refreshToken = await this.tokenGenerator.generateRefreshToken({
+    const refreshToken = await this.tokenService.generateRefreshToken({
       sub: user.id,
       jti: sessionId,
       tokenType: 'refresh',
@@ -79,7 +74,7 @@ export class AdminLoginUseCase {
       refreshTtl,
     );
 
-    const accessToken = await this.tokenGenerator.generateAccessToken({
+    const accessToken = await this.tokenService.generateAccessToken({
       sub: user.id,
       email: user.email,
       role: user.role,

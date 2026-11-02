@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import type { ITokenService } from '../../../auth/application/ports/token.service.js';
+import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service.js';
 import { createHash } from 'node:crypto';
 import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage.js';
 import type { RefreshTokenStorage } from '../ports/refresh-token-storage.js';
@@ -11,20 +11,18 @@ export class LogoutUserUseCase {
     @Inject(REFRESH_TOKEN_STORAGE)
     private readonly refreshTokenStorage: RefreshTokenStorage,
 
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    @Inject(TOKEN_SERVICE)
+    private readonly tokenService: ITokenService,
   ) {}
 
   async execute(refreshToken?: string): Promise<void> {
     if (!refreshToken) return;
 
     try {
-      const payload = await this.jwtService.verifyAsync<{
+      const payload = await this.tokenService.verifyRefreshToken<{
         jti: string;
         tokenType: string;
-      }>(refreshToken, {
-        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-      });
+      }>(refreshToken);
 
       if (!payload.jti || payload.tokenType !== 'refresh') return;
 

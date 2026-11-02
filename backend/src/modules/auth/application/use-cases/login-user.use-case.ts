@@ -13,8 +13,8 @@ import {
   AccountStatus,
 } from '../../../users/domain/enums/user.enums.js';
 import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import type { ITokenService } from '../ports/token.service.js';
+import { TOKEN_SERVICE } from '../ports/token.service.js';
 
 export class InvalidCredentialsError extends Error {
   constructor() {
@@ -50,8 +50,8 @@ export class LoginUserUseCase {
     @Inject(REFRESH_TOKEN_STORAGE)
     private readonly refreshTokenStorage: RefreshTokenStorage,
 
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    @Inject(TOKEN_SERVICE)
+    private readonly tokenService: ITokenService,
   ) {}
 
   async execute(input: LoginUserDto): Promise<LoginUserResult> {
@@ -86,21 +86,13 @@ export class LoginUserUseCase {
 
     const sessionId = randomBytes(16).toString('hex');
 
-    const refreshTtl = this.configService.getOrThrow<number>(
-      'JWT_REFRESH_TTL_SECONDS',
-    );
+    const refreshTtl = this.tokenService.getRefreshTokenTtl();
 
-    const refreshToken = await this.jwtService.signAsync(
-      {
-        sub: user.id,
-        jti: sessionId,
-        tokenType: 'refresh',
-      },
-      {
-        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-        expiresIn: refreshTtl,
-      },
-    );
+    const refreshToken = await this.tokenService.generateRefreshToken({
+      sub: user.id,
+      jti: sessionId,
+      tokenType: 'refresh',
+    });
 
     const refreshTokenHash = createHash('sha256')
       .update(refreshToken)
@@ -112,7 +104,7 @@ export class LoginUserUseCase {
       refreshTtl,
     );
 
-    const accessToken = await this.jwtService.signAsync({
+    const accessToken = await this.tokenService.generateAccessToken({
       sub: user.id,
       email: user.email,
       role: user.role,

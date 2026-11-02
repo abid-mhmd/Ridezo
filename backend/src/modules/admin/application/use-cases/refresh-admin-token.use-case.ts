@@ -1,6 +1,6 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import type { ITokenService } from '../../../auth/application/ports/token.service.js';
+import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service.js';
 import { createHash, randomBytes } from 'node:crypto';
 
 import { REFRESH_TOKEN_STORAGE } from '../../../auth/application/ports/refresh-token-storage.js';
@@ -37,21 +37,18 @@ export class RefreshAdminTokenUseCase {
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
 
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    @Inject(TOKEN_SERVICE)
+    private readonly tokenService: ITokenService,
   ) {}
 
   async execute(refreshToken: string): Promise<RefreshAdminTokenResult> {
-    const refreshSecret =
-      this.configService.getOrThrow<string>('JWT_REFRESH_SECRET');
-
     let payload: RefreshTokenPayload;
 
     try {
-      payload = await this.jwtService.verifyAsync<RefreshTokenPayload>(
-        refreshToken,
-        { secret: refreshSecret },
-      );
+      payload =
+        await this.tokenService.verifyRefreshToken<RefreshTokenPayload>(
+          refreshToken,
+        );
     } catch {
       throw new UnauthorizedException(API_MESSAGES.ADMIN.SESSION_EXPIRED);
     }
@@ -84,21 +81,13 @@ export class RefreshAdminTokenUseCase {
 
     const newSessionId = randomBytes(16).toString('hex');
 
-    const refreshTtl = this.configService.getOrThrow<number>(
-      'JWT_REFRESH_TTL_SECONDS',
-    );
+    const refreshTtl = this.tokenService.getRefreshTokenTtl();
 
-    const newRefreshToken = await this.jwtService.signAsync(
-      {
-        sub: admin.id,
-        jti: newSessionId,
-        tokenType: 'refresh',
-      },
-      {
-        secret: refreshSecret,
-        expiresIn: refreshTtl,
-      },
-    );
+    const newRefreshToken = await this.tokenService.generateRefreshToken({
+      sub: admin.id,
+      jti: newSessionId,
+      tokenType: 'refresh',
+    });
 
     const newRefreshHash = createHash('sha256')
       .update(newRefreshToken)
@@ -116,17 +105,11 @@ export class RefreshAdminTokenUseCase {
       throw new UnauthorizedException(API_MESSAGES.ADMIN.SESSION_INVALID);
     }
 
-    const accessToken = await this.jwtService.signAsync(
-      {
-        sub: admin.id,
-        email: admin.email,
-        role: admin.role,
-      },
-      {
-        secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-        expiresIn: 900,
-      },
-    );
+    const accessToken = await this.tokenService.generateAccessToken({
+      sub: admin.id,
+      email: admin.email,
+      role: admin.role,
+    });
 
     return {
       accessToken,

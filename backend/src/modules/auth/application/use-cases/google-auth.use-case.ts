@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
 import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
 import type { UserEntity } from '../../../users/domain/entities/user.entity.js';
-import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes } from 'node:crypto';
 import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage.js';
 import type { RefreshTokenStorage } from '../ports/refresh-token-storage.js';
+import type { ITokenService } from '../ports/token.service.js';
+import { TOKEN_SERVICE } from '../ports/token.service.js';
 
 export interface GoogleProfile {
   googleId: string;
@@ -33,8 +33,8 @@ export class GoogleAuthUseCase {
     @Inject(REFRESH_TOKEN_STORAGE)
     private readonly refreshTokenStorage: RefreshTokenStorage,
 
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    @Inject(TOKEN_SERVICE)
+    private readonly tokenService: ITokenService,
   ) {}
 
   async execute(profile: GoogleProfile): Promise<{
@@ -70,21 +70,13 @@ export class GoogleAuthUseCase {
 
     const sessionId = randomBytes(16).toString('hex');
 
-    const refreshTtl = this.configService.getOrThrow<number>(
-      'JWT_REFRESH_TTL_SECONDS',
-    );
+    const refreshTtl = this.tokenService.getRefreshTokenTtl();
 
-    const refreshToken = await this.jwtService.signAsync(
-      {
-        sub: user.id,
-        jti: sessionId,
-        tokenType: 'refresh',
-      },
-      {
-        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-        expiresIn: refreshTtl,
-      },
-    );
+    const refreshToken = await this.tokenService.generateRefreshToken({
+      sub: user.id,
+      jti: sessionId,
+      tokenType: 'refresh',
+    });
 
     const refreshTokenHash = createHash('sha256')
       .update(refreshToken)
@@ -96,7 +88,7 @@ export class GoogleAuthUseCase {
       refreshTtl,
     );
 
-    const accessToken = await this.jwtService.signAsync({
+    const accessToken = await this.tokenService.generateAccessToken({
       sub: user.id,
       email: user.email,
       role: user.role,

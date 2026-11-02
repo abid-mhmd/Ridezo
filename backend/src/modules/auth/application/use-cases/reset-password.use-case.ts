@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
 import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
 import { PASSWORD_HASHER } from '../ports/passwordhasher.js';
 import type { PasswordHasher } from '../ports/passwordhasher.js';
 import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
-import { ConfigService } from '@nestjs/config';
+import type { ITokenService } from '../ports/token.service.js';
+import { TOKEN_SERVICE } from '../ports/token.service.js';
 
 export class InvalidPasswordResetTokenError extends Error {
   constructor() {
@@ -23,23 +23,19 @@ export class ResetPasswordUseCase {
     @Inject(PASSWORD_HASHER)
     private readonly passwordHasher: PasswordHasher,
 
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    @Inject(TOKEN_SERVICE)
+    private readonly tokenService: ITokenService,
   ) {}
 
   async execute(resetToken: string, newPassword: string): Promise<void> {
     let payload: { sub: string; purpose: string };
 
     try {
-      payload = await this.jwtService.verifyAsync(resetToken, {
-        secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-      });
-    } catch (error) {
-      console.error(
-        'Password reset JWT verification failed:',
-        error instanceof Error ? error.message : 'Unknown JWT error',
-      );
-
+      payload = await this.tokenService.verifyAccessToken<{
+        sub: string;
+        purpose: string;
+      }>(resetToken);
+    } catch {
       throw new InvalidPasswordResetTokenError();
     }
 
