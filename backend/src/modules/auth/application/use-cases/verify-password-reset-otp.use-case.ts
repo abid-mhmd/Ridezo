@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   PASSWORD_RESET_STORAGE,
-  type PasswordResetStorage,
+  type IPasswordResetStorage,
 } from '../ports/password-reset-storage.js';
 import { OtpHasherService } from '../services/otp-hasher.service.js';
 import { TOKEN_SERVICE } from '../ports/token.service.js';
@@ -25,7 +25,7 @@ export class TooManyPasswordResetAttemptsError extends Error {
 export class VerifyPasswordResetOtpUseCase {
   constructor(
     @Inject(PASSWORD_RESET_STORAGE)
-    private readonly passwordResetStorage: PasswordResetStorage,
+    private readonly passwordResetStorage: IPasswordResetStorage,
 
     private readonly otpHasherService: OtpHasherService,
 

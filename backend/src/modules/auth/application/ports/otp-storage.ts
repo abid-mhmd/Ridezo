@@ -1,6 +1,6 @@
 export const OTP_STORAGE = Symbol('OTP_STORAGE');
 
-export interface OtpStorage {
+export interface IOtpStorage {
   save(email: string, otpHash: string, ttlSeconds: number): Promise<void>;
 
   find(email: string): Promise<string | null>;

@@ -19,7 +19,7 @@ export interface ListUsersQuery {
   search?: string;
 }
 
-export interface UserRepository {
+export interface IUserRepository {
   findById(id: string): Promise<UserEntity | null>;
   findByEmail(email: string): Promise<UserEntity | null>;
   existsByEmail(email: string): Promise<boolean>;

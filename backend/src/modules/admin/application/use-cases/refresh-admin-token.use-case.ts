@@ -4,10 +4,10 @@ import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service.js'
 import { createHash, randomBytes } from 'node:crypto';
 
 import { REFRESH_TOKEN_STORAGE } from '../../../auth/application/ports/refresh-token-storage.js';
-import type { RefreshTokenStorage } from '../../../auth/application/ports/refresh-token-storage.js';
+import type { IRefreshTokenStorage } from '../../../auth/application/ports/refresh-token-storage.js';
 
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
 
 import {
   AccountStatus,
@@ -32,10 +32,10 @@ export interface RefreshAdminTokenResult {
 export class RefreshAdminTokenUseCase {
   constructor(
     @Inject(REFRESH_TOKEN_STORAGE)
-    private readonly refreshTokenStorage: RefreshTokenStorage,
+    private readonly refreshTokenStorage: IRefreshTokenStorage,
 
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
 
     @Inject(TOKEN_SERVICE)
     private readonly tokenService: ITokenService,

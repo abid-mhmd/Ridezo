@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { OTP_STORAGE } from '../ports/otp-storage.js';
-import type { OtpStorage } from '../ports/otp-storage.js';
+import type { IOtpStorage } from '../ports/otp-storage.js';
 import { EMAIL_SENDER } from '../ports/email.sender.js';
-import type { EmailSender } from '../ports/email.sender.js';
+import type { IEmailSender } from '../ports/email.sender.js';
 import { OtpGeneratorService } from '../services/otp-generator.service.js';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
 import { OtpHasherService } from '../services/otp-hasher.service.js';
 import { PinoLogger } from 'nestjs-pino';
 
@@ -16,15 +16,15 @@ const OTP_RESEND_COOLDOWN_SECONDS = 60;
 export class SendEmailOtpUseCase {
   constructor(
     @Inject(OTP_STORAGE)
-    private readonly otpStorage: OtpStorage,
+    private readonly otpStorage: IOtpStorage,
 
     @Inject(EMAIL_SENDER)
-    private readonly emailSender: EmailSender,
+    private readonly emailSender: IEmailSender,
 
     private readonly otpGenrator: OtpGeneratorService,
 
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
 
     private readonly otpHasher: OtpHasherService,
 

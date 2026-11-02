@@ -15,7 +15,7 @@ import { AdminLoginDto } from './dto/admin-login.dto.js';
 import { AdminLoginUseCase } from '../application/use-cases/admin-login.use-case.js';
 import { RefreshAdminTokenUseCase } from '../application/use-cases/refresh-admin-token.use-case.js';
 import { REFRESH_TOKEN_STORAGE } from '../../auth/application/ports/refresh-token-storage.js';
-import type { RefreshTokenStorage } from '../../auth/application/ports/refresh-token-storage.js';
+import type { IRefreshTokenStorage } from '../../auth/application/ports/refresh-token-storage.js';
 import { API_MESSAGES } from '../../../common/constants/message.constants.js';
 import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
 import { AdminLogoutUseCase } from '../application/use-cases/admin-logout.use-case.js';
@@ -29,7 +29,7 @@ export class AdminAuthController {
     private readonly adminLogoutUseCase: AdminLogoutUseCase,
 
     @Inject(REFRESH_TOKEN_STORAGE)
-    private readonly refreshTokenStorage: RefreshTokenStorage,
+    private readonly refreshTokenStorage: IRefreshTokenStorage,
   ) {}
 
   @Post(API_ENDPOINTS.ADMIN.LOGIN)

@@ -1,7 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { USER_REPOSITORY } from '../../domain/repositories/user.repository.js';
-import type { UserRepository } from '../../domain/repositories/user.repository.js';
+import type { IUserRepository } from '../../domain/repositories/user.repository.js';
 import type { UserEntity } from '../../domain/entities/user.entity.js';
 
 import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
@@ -10,7 +10,7 @@ import { API_MESSAGES } from '../../../../common/constants/message.constants.js'
 export class GetUserProfileUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
   ) {}
 
   async execute(userId: string): Promise<UserEntity> {

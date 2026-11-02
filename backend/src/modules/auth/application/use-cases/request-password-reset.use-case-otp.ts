@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
 import {
   PASSWORD_RESET_STORAGE,
-  type PasswordResetStorage,
+  type IPasswordResetStorage,
 } from '../ports/password-reset-storage.js';
 import { EMAIL_SENDER } from '../ports/email.sender.js';
-import type { EmailSender } from '../ports/email.sender.js';
+import type { IEmailSender } from '../ports/email.sender.js';
 import { OtpGeneratorService } from '../services/otp-generator.service.js';
 import { OtpHasherService } from '../services/otp-hasher.service.js';
 import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
@@ -15,13 +15,13 @@ import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
 export class RequestPasswordResetOtpUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
 
     @Inject(PASSWORD_RESET_STORAGE)
-    private readonly passwordResetStorage: PasswordResetStorage,
+    private readonly passwordResetStorage: IPasswordResetStorage,
 
     @Inject(EMAIL_SENDER)
-    private readonly emailSender: EmailSender,
+    private readonly emailSender: IEmailSender,
 
     private readonly otpGenerator: OtpGeneratorService,
     private readonly otpHasher: OtpHasherService,

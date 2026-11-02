@@ -1,14 +1,14 @@
 import type { UserEntity } from '../../../users/domain/entities/user.entity.js';
 import type {
   CreateUserData,
-  UserRepository,
+  IUserRepository,
 } from '../../../users/domain/repositories/user.repository.js';
 import { Inject, Injectable } from '@nestjs/common';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
 import { PASSWORD_HASHER } from '../ports/passwordhasher.js';
 import { PinoLogger } from 'nestjs-pino';
 import type { RegisterUserDto } from '../dto/register-user.dto.js';
-import type { PasswordHasher } from '../ports/passwordhasher.js';
+import type { IPasswordHasher } from '../ports/passwordhasher.js';
 
 export class EmailAlreadyRegisteredError extends Error {
   constructor() {
@@ -21,10 +21,10 @@ export class EmailAlreadyRegisteredError extends Error {
 export class RegisterUserUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
 
     @Inject(PASSWORD_HASHER)
-    private readonly passwordHasher: PasswordHasher,
+    private readonly passwordHasher: IPasswordHasher,
 
     private readonly logger: PinoLogger,
   ) {

@@ -1,6 +1,6 @@
 export const PASSWORD_RESET_STORAGE = Symbol('PASSWORD_RESET_STORAGE');
 
-export interface PasswordResetStorage {
+export interface IPasswordResetStorage {
   save(
     email: string,
     otpHash: string,

@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
 import { OTP_STORAGE } from '../ports/otp-storage.js';
-import type { OtpStorage } from '../ports/otp-storage.js';
+import type { IOtpStorage } from '../ports/otp-storage.js';
 import { OtpHasherService } from '../services/otp-hasher.service.js';
 import { PinoLogger } from 'nestjs-pino';
 
@@ -27,10 +27,10 @@ const OTP_EXPIRY_SECONDS = 300;
 export class VerifyEmailOtpUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
 
     @Inject(OTP_STORAGE)
-    private readonly otpStorage: OtpStorage,
+    private readonly otpStorage: IOtpStorage,
 
     private readonly otpHasher: OtpHasherService,
 

@@ -2,11 +2,11 @@ import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { createHash, randomBytes } from 'node:crypto';
 import type { UserEntity } from '../../../users/domain/entities/user.entity.js';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
 import { PASSWORD_HASHER } from '../ports/passwordhasher.js';
-import type { PasswordHasher } from '../ports/passwordhasher.js';
+import type { IPasswordHasher } from '../ports/passwordhasher.js';
 import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage.js';
-import type { RefreshTokenStorage } from '../ports/refresh-token-storage.js';
+import type { IRefreshTokenStorage } from '../ports/refresh-token-storage.js';
 import { LoginUserDto } from '../dto/login-user.dto.js';
 import {
   UserRole,
@@ -43,13 +43,13 @@ export interface LoginUserResult {
 export class LoginUserUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
 
     @Inject(PASSWORD_HASHER)
-    private readonly passwordHasher: PasswordHasher,
+    private readonly passwordHasher: IPasswordHasher,
 
     @Inject(REFRESH_TOKEN_STORAGE)
-    private readonly refreshTokenStorage: RefreshTokenStorage,
+    private readonly refreshTokenStorage: IRefreshTokenStorage,
 
     @Inject(TOKEN_SERVICE)
     private readonly tokenService: ITokenService,

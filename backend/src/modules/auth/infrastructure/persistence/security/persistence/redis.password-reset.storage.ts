@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { RedisService } from '../../../../../../infrastructure/redis/redis.service.js';
-import type { PasswordResetStorage } from '../../../../application/ports/password-reset-storage.js';
+import type { IPasswordResetStorage } from '../../../../application/ports/password-reset-storage.js';
 
 @Injectable()
-export class RedisPasswordResetStorage implements PasswordResetStorage {
+export class RedisPasswordResetStorage implements IPasswordResetStorage {
   constructor(private readonly redisService: RedisService) {}
 
   async save(

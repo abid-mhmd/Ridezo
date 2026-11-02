@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
 
 import {
   AccountStatus,
@@ -20,7 +20,7 @@ import { API_MESSAGES } from '../../../../common/constants/message.constants.js'
 export class ChangeUserAccountStatusUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
   ) {}
 
   async execute(userId: string, status: AccountStatus) {

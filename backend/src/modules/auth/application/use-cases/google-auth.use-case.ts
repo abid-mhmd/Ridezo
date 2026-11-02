@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
 import type { UserEntity } from '../../../users/domain/entities/user.entity.js';
 import { createHash, randomBytes } from 'node:crypto';
 import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage.js';
-import type { RefreshTokenStorage } from '../ports/refresh-token-storage.js';
+import type { IRefreshTokenStorage } from '../ports/refresh-token-storage.js';
 import type { ITokenService } from '../ports/token.service.js';
 import { TOKEN_SERVICE } from '../ports/token.service.js';
 
@@ -28,10 +28,10 @@ export class GoogleAccountLinkRequiredError extends Error {
 export class GoogleAuthUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
 
     @Inject(REFRESH_TOKEN_STORAGE)
-    private readonly refreshTokenStorage: RefreshTokenStorage,
+    private readonly refreshTokenStorage: IRefreshTokenStorage,
 
     @Inject(TOKEN_SERVICE)
     private readonly tokenService: ITokenService,

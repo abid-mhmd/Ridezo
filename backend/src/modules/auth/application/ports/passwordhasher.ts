@@ -1,6 +1,6 @@
 export const PASSWORD_HASHER = Symbol('PASSWORD_HASHER');
 
-export interface PasswordHasher {
+export interface IPasswordHasher {
   hash(password: string): Promise<string>;
   verify(password: string, passwordHash: string): Promise<boolean>;
 }

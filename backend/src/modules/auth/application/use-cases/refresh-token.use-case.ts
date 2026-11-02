@@ -3,9 +3,9 @@ import type { ITokenService } from '../ports/token.service.js';
 import { TOKEN_SERVICE } from '../ports/token.service.js';
 import { createHash, randomBytes } from 'node:crypto';
 import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage.js';
-import type { RefreshTokenStorage } from '../ports/refresh-token-storage.js';
+import type { IRefreshTokenStorage } from '../ports/refresh-token-storage.js';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
 import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
 import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
 
@@ -19,10 +19,10 @@ interface RefreshTokenPayload {
 export class RefreshAccessTokenUseCase {
   constructor(
     @Inject(REFRESH_TOKEN_STORAGE)
-    private readonly refreshTokenStorage: RefreshTokenStorage,
+    private readonly refreshTokenStorage: IRefreshTokenStorage,
 
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
 
     @Inject(TOKEN_SERVICE)
     private readonly tokenService: ITokenService,

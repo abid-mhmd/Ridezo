@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
 import type { ListUsersQuery } from '../../../users/domain/repositories/user.repository.js';
 
 import type { AdminUserListResult } from '../dto/admin-user.list-responce.dto.js';
@@ -9,7 +9,7 @@ import type { AdminUserListResult } from '../dto/admin-user.list-responce.dto.js
 export class ListUsersUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
   ) {}
 
   async execute(query: ListUsersQuery): Promise<AdminUserListResult> {

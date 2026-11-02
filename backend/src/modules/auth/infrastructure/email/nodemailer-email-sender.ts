@@ -3,10 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 
-import type { EmailSender } from '../../application/ports/email.sender.js';
+import type { IEmailSender } from '../../application/ports/email.sender.js';
 
 @Injectable()
-export class NodemailerEmailSender implements EmailSender {
+export class NodemailerEmailSender implements IEmailSender {
   private readonly transporter: Transporter;
   private readonly from: string;
 

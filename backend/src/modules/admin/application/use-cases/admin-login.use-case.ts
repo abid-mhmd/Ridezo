@@ -1,10 +1,10 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { createHash, randomBytes } from 'node:crypto';
-import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { PasswordHasher } from '../../../auth/application/ports/passwordhasher.js';
+import type { IPasswordHasher } from '../../../auth/application/ports/passwordhasher.js';
 import { PASSWORD_HASHER } from '../../../auth/application/ports/passwordhasher.js';
-import type { RefreshTokenStorage } from '../../../auth/application/ports/refresh-token-storage.js';
+import type { IRefreshTokenStorage } from '../../../auth/application/ports/refresh-token-storage.js';
 import { REFRESH_TOKEN_STORAGE } from '../../../auth/application/ports/refresh-token-storage.js';
 import type { ITokenService } from '../../../auth/application/ports/token.service.js';
 import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service.js';
@@ -19,13 +19,13 @@ import type { AdminLoginInput } from '../dto/admin-login.input.js';
 export class AdminLoginUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
 
     @Inject(PASSWORD_HASHER)
-    private readonly passwordHasher: PasswordHasher,
+    private readonly passwordHasher: IPasswordHasher,
 
     @Inject(REFRESH_TOKEN_STORAGE)
-    private readonly refreshTokenStorage: RefreshTokenStorage,
+    private readonly refreshTokenStorage: IRefreshTokenStorage,
 
     @Inject(TOKEN_SERVICE)
     private readonly tokenService: ITokenService,

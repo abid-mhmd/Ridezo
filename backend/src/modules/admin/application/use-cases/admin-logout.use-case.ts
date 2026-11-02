@@ -3,13 +3,13 @@ import type { ITokenService } from '../../../auth/application/ports/token.servic
 import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service.js';
 import { createHash } from 'node:crypto';
 import { REFRESH_TOKEN_STORAGE } from '../../../auth/application/ports/refresh-token-storage.js';
-import type { RefreshTokenStorage } from '../../../auth/application/ports/refresh-token-storage.js';
+import type { IRefreshTokenStorage } from '../../../auth/application/ports/refresh-token-storage.js';
 
 @Injectable()
 export class AdminLogoutUseCase {
   constructor(
     @Inject(REFRESH_TOKEN_STORAGE)
-    private readonly refreshTokenStorage: RefreshTokenStorage,
+    private readonly refreshTokenStorage: IRefreshTokenStorage,
     @Inject(TOKEN_SERVICE)
     private readonly tokenService: ITokenService,
   ) {}

@@ -1,6 +1,6 @@
 export const REFRESH_TOKEN_STORAGE = Symbol('REFRESH_TOKEN_STORAGE');
 
-export interface RefreshTokenStorage {
+export interface IRefreshTokenStorage {
   store(
     sessionId: string,
     tokenHash: string,

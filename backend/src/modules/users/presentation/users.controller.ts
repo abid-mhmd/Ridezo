@@ -27,7 +27,7 @@ import { API_MESSAGES } from '../../../common/constants/message.constants.js';
 import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
 import { UserProfileMapper } from './mappers/user-profile.mapper.js';
 import type { UserProfileResponseDto } from './dto/user-profile-responce.dto.js';
-import { ApiResponse } from '../../../common/interfaces/api-responce.interface.js';
+import type { ApiResponse } from '../../../common/interfaces/api-responce.interface.js';
 
 @Controller()
 export class UsersController {

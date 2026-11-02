@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import {
   CreateUserData,
   ListUsersQuery,
-  UserRepository,
+  IUserRepository,
 } from '../../../domain/repositories/user.repository.js';
 import type { UserEntity } from '../../../domain/entities/user.entity.js';
 import { User, type UserDocument } from './user.schema.js';
@@ -13,7 +13,7 @@ import { BaseMongooseRepository } from '../../../../../infrastructure/persistenc
 @Injectable()
 export class MongooseUserRepository
   extends BaseMongooseRepository<User>
-  implements UserRepository
+  implements IUserRepository
 {
   constructor(
     @InjectModel(User.name)

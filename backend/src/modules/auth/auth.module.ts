@@ -6,8 +6,8 @@ import { RegisterUserUseCase } from './application/use-cases/register-user.use-c
 import { Argon2PasswordHasher } from './infrastructure/persistence/security/persistence/argon2-password-hasher.js';
 import { REFRESH_TOKEN_STORAGE } from './application/ports/refresh-token-storage.js';
 import { RedisRefreshTokenStorage } from './infrastructure/persistence/security/persistence/redis-refresh-token.storage.js';
-import type { UserRepository } from '../users/domain/repositories/user.repository.js';
-import type { PasswordHasher } from './application/ports/passwordhasher.js';
+import type { IUserRepository } from '../users/domain/repositories/user.repository.js';
+import type { IPasswordHasher } from './application/ports/passwordhasher.js';
 import { AuthController } from './presentation/auth.controller.js';
 import { OTP_STORAGE } from './application/ports/otp-storage.js';
 import { RedisOtpStorage } from './infrastructure/persistence/security/persistence/redise.otp.storage.js';

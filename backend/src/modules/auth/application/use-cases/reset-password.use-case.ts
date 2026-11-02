@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
 import { PASSWORD_HASHER } from '../ports/passwordhasher.js';
-import type { PasswordHasher } from '../ports/passwordhasher.js';
+import type { IPasswordHasher } from '../ports/passwordhasher.js';
 import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
 import type { ITokenService } from '../ports/token.service.js';
 import { TOKEN_SERVICE } from '../ports/token.service.js';
@@ -18,10 +18,10 @@ export class InvalidPasswordResetTokenError extends Error {
 export class ResetPasswordUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
 
     @Inject(PASSWORD_HASHER)
-    private readonly passwordHasher: PasswordHasher,
+    private readonly passwordHasher: IPasswordHasher,
 
     @Inject(TOKEN_SERVICE)
     private readonly tokenService: ITokenService,

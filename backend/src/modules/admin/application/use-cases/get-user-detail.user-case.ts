@@ -7,7 +7,7 @@ import {
 import { Types } from 'mongoose';
 
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
 
 import { Inject } from '@nestjs/common';
 import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
@@ -16,7 +16,7 @@ import { API_MESSAGES } from '../../../../common/constants/message.constants.js'
 export class GetUserDetailsUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
   ) {}
 
   async execute(userId: string) {
