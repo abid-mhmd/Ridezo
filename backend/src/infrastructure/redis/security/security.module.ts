@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { TOKEN_SERVICE } from '../../../modules/auth/application/ports/token.service.js';
 import { JwtTokenService } from '../../security/jwt-token.service.js';
+
 @Module({
   imports: [
     JwtModule.registerAsync({

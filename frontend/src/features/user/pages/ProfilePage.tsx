@@ -528,11 +528,7 @@ export default function ProfilePage() {
                 <span className="text-[#929bad]">Climate control</span>
 
                 <span className="rounded-full border border-[#30394b] bg-[#161b27] px-2.5 py-1 text-[11px] text-white">
-                  {profile.preferences?.climateControl === 'ac-preferred'
-                    ? 'AC Preferred'
-                    : profile.preferences?.climateControl === 'non-ac-preferred'
-                      ? 'Non-AC Preferred'
-                      : 'No preference'}
+                  {profile.preferences?.climateControl }
                 </span>
               </div>
             </div>

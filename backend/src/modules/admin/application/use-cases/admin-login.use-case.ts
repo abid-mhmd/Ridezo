@@ -83,7 +83,7 @@ export class AdminLoginUseCase {
     return {
       accessToken,
       refreshToken,
-      expiresIn: 900,
+      expiresIn: this.tokenService.getAccessTokenTtl(),
       refreshTtl,
       user,
     };

@@ -42,13 +42,19 @@ export class RedisService implements OnModuleDestroy, OnModuleInit {
   }
 
   async incrementWithExpiry(key: string, ttlSeconds: number): Promise<number> {
-    const result = await this.redis.incr(key);
+    const script = `
+    local result = redis.call('INCR', KEYS[1])
 
-    if (result === 1) {
-      await this.redis.expire(key, ttlSeconds);
-    }
+    if result == 1 then
+      redis.call('EXPIRE', KEYS[1], ARGV[1])
+    end
 
-    return result;
+    return result
+  `;
+
+    const result = await this.redis.eval(script, 1, key, ttlSeconds);
+
+    return Number(result);
   }
 
   async setIfNotExists(

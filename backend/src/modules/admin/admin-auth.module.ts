@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module.js';
 import { UsersModule } from '../users/users.module.js';
 import { SecurityModule } from '../../infrastructure/redis/security/security.module.js';
-import { RedisModule } from '../../infrastructure/redis/redis.module.js';
 import { AdminAuthController } from './presentation/admin-auth.controller.js';
 import { AdminLoginUseCase } from './application/use-cases/admin-login.use-case.js';
 import { AdminUsersController } from './presentation/admin-users.controller.js';
@@ -14,7 +13,7 @@ import { RefreshAdminTokenUseCase } from './application/use-cases/refresh-admin-
 import { AdminLogoutUseCase } from './application/use-cases/admin-logout.use-case.js';
 
 @Module({
-  imports: [AuthModule, UsersModule, RedisModule, SecurityModule],
+  imports: [AuthModule, UsersModule, SecurityModule],
   controllers: [AdminAuthController, AdminUsersController],
   providers: [
     AdminLoginUseCase,

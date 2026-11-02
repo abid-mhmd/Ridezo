@@ -10,7 +10,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AdminLoginDto } from './dto/admin-login.dto.js';
 import { AdminLoginUseCase } from '../application/use-cases/admin-login.use-case.js';
@@ -26,7 +25,6 @@ export class AdminAuthController {
   constructor(
     private readonly adminLoginUseCase: AdminLoginUseCase,
     private readonly refreshAdminTokenUseCase: RefreshAdminTokenUseCase,
-    private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly adminLogoutUseCase: AdminLogoutUseCase,
 

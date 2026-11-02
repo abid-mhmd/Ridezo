@@ -7,8 +7,14 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Inject,
+  UnauthorizedException,
+  ForbiddenException,
+  Get,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
-import { Inject } from '@nestjs/common';
 import {
   EmailAlreadyRegisteredError,
   RegisterUserUseCase,
@@ -22,18 +28,13 @@ import {
   TooManyOtpAttemptsError,
   VerifyEmailOtpUseCase,
 } from '../application/use-cases/verify-email-otp.use-case.js';
-import { UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import {
   InvalidCredentialsError,
   EmailNotVerifiedError,
   LoginUserUseCase,
 } from '../application/use-cases/login-user.use-case.js';
 import { LoginUserDto } from '../application/dto/login-user.dto.js';
-// import { JwtService } from '@nestjs/jwt';
-// import { REFRESH_TOKEN_STORAGE } from '../application/ports/refresh-token-storage.js';
-// import type { RefreshTokenStorage } from '../application/ports/refresh-token-storage.js';
 import { ConfigService } from '@nestjs/config';
-import { Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AccessTokenPayload, JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import { RefreshAccessTokenUseCase } from '../application/use-cases/refresh-token.use-case.js';
 import type { Request } from 'express';
@@ -67,6 +68,8 @@ import {
   RegisterResponseDto,
 } from '../application/dto/auth-response.dto.js';
 import { LogoutUserUseCase } from '../application/use-cases/logout-user.use-case.js';
+import { TOKEN_SERVICE } from '../application/ports/token.service.js';
+import type { ITokenService } from '../application/ports/token.service.js';
 
 @Controller()
 export class AuthController {
@@ -95,18 +98,16 @@ export class AuthController {
     @Inject(GoogleAuthUseCase)
     private readonly googleAuthUseCase: GoogleAuthUseCase,
 
-    // @Inject(REFRESH_TOKEN_STORAGE)
-    // private readonly refreshTokenStorage: RefreshTokenStorage,
-
     @Inject(RefreshAccessTokenUseCase)
     private readonly refreshAccessTokenUseCase: RefreshAccessTokenUseCase,
 
     @Inject(LogoutUserUseCase)
     private readonly logoutUserUseCase: LogoutUserUseCase,
 
-    private readonly configService: ConfigService,
+    @Inject(TOKEN_SERVICE)
+    private readonly tokenService: ITokenService,
 
-    // private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Post(API_ENDPOINTS.AUTH.REGISTER)
@@ -237,9 +238,6 @@ export class AuthController {
 
       throw new UnauthorizedException('Refresh token is required.');
     }
-    if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token is required.');
-    }
 
     try {
       const result = await this.refreshAccessTokenUseCase.execute(refreshToken);
@@ -261,7 +259,7 @@ export class AuthController {
         message: API_MESSAGES.AUTH.REFRESH_SUCCESS,
         data: {
           accessToken: result.accessToken,
-          expiresIn: 900,
+          expiresIn: this.tokenService.getAccessTokenTtl(),
         },
       };
     } catch (error) {
@@ -309,17 +307,13 @@ export class AuthController {
   async forgotPassword(
     @Body() input: ForgotPasswordDto,
   ): Promise<ApiResponse<ForgotPasswordResponseDto>> {
-    const otpSent = await this.requestPasswordResetOtpUseCase.execute(
-      input.email,
-    );
+    await this.requestPasswordResetOtpUseCase.execute(input.email);
 
     return {
       success: true,
-      message: otpSent
-        ? 'OTP sent successfully.'
-        : 'Unable to process this email. Please check your email address and try again.',
+      message: 'If an account exists, a password reset code will be sent.',
       data: {
-        otpSent,
+        otpSent: true,
       },
     };
   }

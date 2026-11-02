@@ -13,6 +13,7 @@ export class UserProfileMapper {
       phone: user.phone,
       profilePhoto: user.profilePhoto,
       languages: user.languages,
+      preferences: user.preferences,
       location: user.location,
       completedRideCount: user.completedRideCount,
       rating: user.rating,

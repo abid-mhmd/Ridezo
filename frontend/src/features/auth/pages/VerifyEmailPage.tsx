@@ -30,7 +30,7 @@ export default function VerifyEmailPage() {
   const [message, setMessage] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendCooldown, setResendCooldown] = useState(60);
 
   useEffect(() => {
     if (!email) {

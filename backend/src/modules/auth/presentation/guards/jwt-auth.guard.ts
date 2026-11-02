@@ -5,12 +5,12 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
 import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
 import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
+import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service.js';
+import type { ITokenService } from '../../../auth/application/ports/token.service.js';
 
 export interface AccessTokenPayload {
   sub: string;
@@ -25,8 +25,8 @@ type AuthenticatedRequest = Request & {
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    @Inject(TOKEN_SERVICE)
+    private readonly tokenService: ITokenService,
 
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
@@ -49,9 +49,8 @@ export class JwtAuthGuard implements CanActivate {
     let payload: AccessTokenPayload;
 
     try {
-      payload = await this.jwtService.verifyAsync<AccessTokenPayload>(token, {
-        secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-      });
+      payload =
+        await this.tokenService.verifyAccessToken<AccessTokenPayload>(token);
     } catch {
       throw new UnauthorizedException('Invalid or expired access token.');
     }

@@ -14,6 +14,12 @@ export interface UserProfileResponseDto {
   phoneVerified: boolean;
   idVerified: boolean;
   role: string;
+  preferences?: {
+    smoking?: string;
+    pets?: string;
+    seatingComfort?: string;
+    climateControl?: string;
+  };
   location?: {
     city?: string;
     state?: string;

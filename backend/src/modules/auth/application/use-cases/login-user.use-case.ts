@@ -15,6 +15,7 @@ import {
 import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
 import type { ITokenService } from '../ports/token.service.js';
 import { TOKEN_SERVICE } from '../ports/token.service.js';
+import { PinoLogger } from 'nestjs-pino';
 
 export class InvalidCredentialsError extends Error {
   constructor() {
@@ -52,7 +53,11 @@ export class LoginUserUseCase {
 
     @Inject(TOKEN_SERVICE)
     private readonly tokenService: ITokenService,
-  ) {}
+
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(LoginUserUseCase.name);
+  }
 
   async execute(input: LoginUserDto): Promise<LoginUserResult> {
     const email = input.email.trim().toLowerCase();
@@ -60,6 +65,7 @@ export class LoginUserUseCase {
     const user = await this.userRepository.findByEmailForAuthentication(email);
 
     if (!user || !user.passwordHash) {
+      this.logger.warn('Login failed: invalid credentials');
       throw new InvalidCredentialsError();
     }
 
@@ -69,6 +75,7 @@ export class LoginUserUseCase {
     );
 
     if (!passwordIsValid) {
+      this.logger.warn('Login failed: invalid credentials');
       throw new InvalidCredentialsError();
     }
 
@@ -77,6 +84,7 @@ export class LoginUserUseCase {
     }
 
     if (!user.emailVerified) {
+      this.logger.warn('Login failed: email not verified');
       throw new EmailNotVerifiedError();
     }
 
@@ -110,11 +118,13 @@ export class LoginUserUseCase {
       role: user.role,
     });
 
+    this.logger.info({ userId: user.id }, 'User logged in successfully');
+
     return {
       user,
       accessToken,
       refreshToken,
-      expiresIn: 900,
+      expiresIn: this.tokenService.getAccessTokenTtl(),
       refreshTtl,
     };
   }

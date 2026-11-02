@@ -7,6 +7,7 @@ import { OtpGeneratorService } from '../services/otp-generator.service.js';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
 import type { UserRepository } from '../../../users/domain/repositories/user.repository.js';
 import { OtpHasherService } from '../services/otp-hasher.service.js';
+import { PinoLogger } from 'nestjs-pino';
 
 const OTP_EXPIRY_SECONDS = 300;
 const OTP_RESEND_COOLDOWN_SECONDS = 60;
@@ -16,14 +17,21 @@ export class SendEmailOtpUseCase {
   constructor(
     @Inject(OTP_STORAGE)
     private readonly otpStorage: OtpStorage,
+
     @Inject(EMAIL_SENDER)
     private readonly emailSender: EmailSender,
+
     private readonly otpGenrator: OtpGeneratorService,
 
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
+
     private readonly otpHasher: OtpHasherService,
-  ) {}
+
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(SendEmailOtpUseCase.name);
+  }
 
   async execute(email: string): Promise<void> {
     const normalizedEmail = email.trim().toLowerCase();
@@ -40,12 +48,27 @@ export class SendEmailOtpUseCase {
     );
 
     if (!cooldownAcquired) {
+      this.logger.warn('OTP request rejected: resend cooldown active');
       return;
     }
+
     const otp = this.otpGenrator.generate();
     const otpHash = this.otpHasher.hash(normalizedEmail, otp);
 
-    await this.otpStorage.save(normalizedEmail, otpHash, OTP_EXPIRY_SECONDS);
-    await this.emailSender.sendVerificationOtp(normalizedEmail, otp);
+    try {
+      await this.otpStorage.save(normalizedEmail, otpHash, OTP_EXPIRY_SECONDS);
+      await this.emailSender.sendVerificationOtp(normalizedEmail, otp);
+      this.logger.info('Email verification OTP sent successfully');
+    } catch (error) {
+      await this.otpStorage.delete(normalizedEmail);
+      await this.otpStorage.releaseResendCooldown(normalizedEmail);
+
+      this.logger.error(
+        'Failed to send email verification OTP',
+        error instanceof Error ? error.stack : undefined,
+      );
+
+      throw error;
+    }
   }
 }

@@ -114,7 +114,7 @@ export class RefreshAdminTokenUseCase {
     return {
       accessToken,
       refreshToken: newRefreshToken,
-      expiresIn: 900,
+      expiresIn: this.tokenService.getAccessTokenTtl(),
     };
   }
 }

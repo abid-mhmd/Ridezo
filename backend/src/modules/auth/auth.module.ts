@@ -60,14 +60,7 @@ import { LogoutUserUseCase } from './application/use-cases/logout-user.use-case.
       provide: PASSWORD_RESET_STORAGE,
       useClass: RedisPasswordResetStorage,
     },
-    {
-      provide: RegisterUserUseCase,
-      useFactory: (
-        userRepostory: UserRepository,
-        passwordHasher: PasswordHasher,
-      ) => new RegisterUserUseCase(userRepostory, passwordHasher),
-      inject: [USER_REPOSITORY, PASSWORD_HASHER],
-    },
+    RegisterUserUseCase,
     OtpGeneratorService,
     SendEmailOtpUseCase,
     OtpHasherService,

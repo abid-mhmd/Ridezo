@@ -1,10 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import {
   PASSWORD_RESET_STORAGE,
   type PasswordResetStorage,
 } from '../ports/password-reset-storage.js';
 import { OtpHasherService } from '../services/otp-hasher.service.js';
+import { TOKEN_SERVICE } from '../ports/token.service.js';
+import type { ITokenService } from '../ports/token.service.js';
 
 export class InvalidPasswordResetOtpError extends Error {
   constructor() {
@@ -28,7 +29,8 @@ export class VerifyPasswordResetOtpUseCase {
 
     private readonly otpHasherService: OtpHasherService,
 
-    private readonly jwtService: JwtService,
+    @Inject(TOKEN_SERVICE)
+    private readonly tokenService: ITokenService,
   ) {}
 
   async execute(email: string, otp: string): Promise<{ resetToken: string }> {
@@ -62,15 +64,10 @@ export class VerifyPasswordResetOtpUseCase {
 
     await this.passwordResetStorage.delete(normalizedEmail);
 
-    const resetToken = await this.jwtService.signAsync(
-      {
-        sub: stored.userId,
-        purpose: 'password_reset',
-      },
-      {
-        expiresIn: '10m',
-      },
-    );
+    const resetToken = await this.tokenService.generatePasswordResetToken({
+      sub: stored.userId,
+      purpose: 'password_reset',
+    });
     return { resetToken };
   }
 }

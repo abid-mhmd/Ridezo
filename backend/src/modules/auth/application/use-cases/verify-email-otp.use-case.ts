@@ -4,6 +4,7 @@ import type { UserRepository } from '../../../users/domain/repositories/user.rep
 import { OTP_STORAGE } from '../ports/otp-storage.js';
 import type { OtpStorage } from '../ports/otp-storage.js';
 import { OtpHasherService } from '../services/otp-hasher.service.js';
+import { PinoLogger } from 'nestjs-pino';
 
 export class InvalidEmailOtpError extends Error {
   constructor() {
@@ -32,7 +33,11 @@ export class VerifyEmailOtpUseCase {
     private readonly otpStorage: OtpStorage,
 
     private readonly otpHasher: OtpHasherService,
-  ) {}
+
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(VerifyEmailOtpUseCase.name);
+  }
 
   async execute(email: string, otp: string): Promise<void> {
     const normalizedEmail = email.trim().toLowerCase();
@@ -56,16 +61,19 @@ export class VerifyEmailOtpUseCase {
 
     if (attempts > MAX_OTP_ATTEMPTS) {
       await this.otpStorage.delete(normalizedEmail);
+      this.logger.warn('OTP verification blocked: maximum attempts exceeded');
       throw new TooManyOtpAttemptsError();
     }
 
     const isValid = this.otpHasher.verify(normalizedEmail, otp, storedHash);
 
     if (!isValid) {
+      this.logger.warn('OTP verification failed: invalid code');
       throw new InvalidEmailOtpError();
     }
 
     await this.userRepository.markEmailVerified(user.id);
     await this.otpStorage.delete(normalizedEmail);
+    this.logger.info('Email verification completed successfully');
   }
 }

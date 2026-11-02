@@ -12,7 +12,7 @@ export class OtpHasherService {
 
   hash(email: string, otp: string): string {
     return createHmac('sha256', this.secret)
-      .update(`${email.trim().toLocaleLowerCase()}:${otp}`)
+      .update(`${email.trim().toLowerCase()}:${otp}`)
       .digest('hex');
   }
 
