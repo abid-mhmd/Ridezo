@@ -16,10 +16,7 @@ export class JwtTokenService implements ITokenService {
     email: string;
     role: string;
   }): Promise<string> {
-    return this.jwtService.signAsync(payload, {
-      secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'),
-      expiresIn: 900,
-    });
+    return this.jwtService.signAsync(payload);
   }
 
   async generateRefreshToken(payload: {

@@ -81,6 +81,6 @@ import { LogoutUserUseCase } from './application/use-cases/logout-user.use-case.
     RefreshAccessTokenUseCase,
     LogoutUserUseCase,
   ],
-  exports: [RegisterUserUseCase, PASSWORD_HASHER],
+  exports: [RegisterUserUseCase, PASSWORD_HASHER, REFRESH_TOKEN_STORAGE],
 })
 export class AuthModule {}

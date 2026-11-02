@@ -5,8 +5,6 @@ import { SecurityModule } from '../../infrastructure/redis/security/security.mod
 import { RedisModule } from '../../infrastructure/redis/redis.module.js';
 import { AdminAuthController } from './presentation/admin-auth.controller.js';
 import { AdminLoginUseCase } from './application/use-cases/admin-login.use-case.js';
-import { REFRESH_TOKEN_STORAGE } from '../auth/application/ports/refresh-token-storage.js';
-import { RedisRefreshTokenStorage } from '../auth/infrastructure/persistence/security/persistence/redis-refresh-token.storage.js';
 import { AdminUsersController } from './presentation/admin-users.controller.js';
 import { ListUsersUseCase } from './application/use-cases/list-users.use-case.js';
 import { AdminRoleGuard } from './presentation/guards/admin-role.guard.js';
@@ -26,10 +24,6 @@ import { AdminLogoutUseCase } from './application/use-cases/admin-logout.use-cas
     GetUserDetailsUseCase,
     ChangeUserAccountStatusUseCase,
     AdminLogoutUseCase,
-    {
-      provide: REFRESH_TOKEN_STORAGE,
-      useClass: RedisRefreshTokenStorage,
-    },
   ],
 })
 export class AdminAuthModule {}

@@ -5,19 +5,20 @@ import {
   NotFoundException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { v2 as cloudinary } from 'cloudinary';
-import { ConfigService } from '@nestjs/config';
-import { configureCloudinary } from '../../../../infrastructure/config/Cloudinary.config.js';
 import { USER_REPOSITORY } from '../../domain/repositories/user.repository.js';
 import type { UserRepository } from '../../domain/repositories/user.repository.js';
 import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
+import { PROFILE_PHOTO_STORAGE } from '../ports/profile-photo-storage.js';
+import type { IProfilePhotoStorage } from '../ports/profile-photo-storage.js';
 
 @Injectable()
 export class UploadProfilePhotoUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
-    private readonly configService: ConfigService,
+
+    @Inject(PROFILE_PHOTO_STORAGE)
+    private readonly profilePhotoStorage: IProfilePhotoStorage,
   ) {}
 
   async execute(
@@ -43,35 +44,13 @@ export class UploadProfilePhotoUseCase {
       throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
-    configureCloudinary(this.configService);
-
     let result: {
-      secure_url: string;
-      public_id: string;
+      secureUrl: string;
+      publicId: string;
     };
 
     try {
-      result = await new Promise((resolve, reject) => {
-        const upload = cloudinary.uploader.upload_stream(
-          {
-            folder: 'ridezo/profile-photos',
-            resource_type: 'image',
-          },
-          (error, uploaded) => {
-            if (error || !uploaded) {
-              reject(error ?? new Error('Image upload failed.'));
-              return;
-            }
-
-            resolve({
-              secure_url: uploaded.secure_url,
-              public_id: uploaded.public_id,
-            });
-          },
-        );
-
-        upload.end(file.buffer);
-      });
+      result = await this.profilePhotoStorage.upload(file.buffer);
     } catch {
       throw new InternalServerErrorException(
         'Profile photo upload failed. Please try again.',
@@ -79,17 +58,17 @@ export class UploadProfilePhotoUseCase {
     }
 
     const updatedUser = await this.userRepository.updateProfile(userId, {
-      profilePhoto: result.secure_url,
+      profilePhoto: result.secureUrl,
     });
 
     if (!updatedUser) {
-      await cloudinary.uploader.destroy(result.public_id);
+      await this.profilePhotoStorage.delete(result.publicId);
       throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
     return {
       message: API_MESSAGES.USERS.PROFILE_UPDATED,
-      profilePhoto: result.secure_url,
+      profilePhoto: result.secureUrl,
     };
   }
 }

@@ -12,6 +12,8 @@ import { SecurityModule } from '../../infrastructure/redis/security/security.mod
 import { UpdateProfileUseCase } from './application/use-cases/update-profile.use-case.js';
 import { UploadProfilePhotoUseCase } from './application/use-cases/upload-profile-photo.use-case.js';
 import { RemoveProfilePhotoUseCase } from './application/use-cases/remove-profile-phot.use-case.js';
+import { PROFILE_PHOTO_STORAGE } from './application/ports/profile-photo-storage.js';
+import { CloudinaryProfilePhotoStorage } from './infrastructure/storage/cloudinary-profile-photo.storage.js';
 
 @Module({
   imports: [
@@ -28,6 +30,10 @@ import { RemoveProfilePhotoUseCase } from './application/use-cases/remove-profil
     {
       provide: USER_REPOSITORY,
       useClass: MongooseUserRepository,
+    },
+    {
+      provide: PROFILE_PHOTO_STORAGE,
+      useClass: CloudinaryProfilePhotoStorage,
     },
     GetUserProfileUseCase,
     UpdateProfileUseCase,
