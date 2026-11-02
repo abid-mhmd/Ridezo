@@ -1,24 +1,22 @@
 import { apiRequest } from '../../../api/http';
 import { API_ENDPOINTS } from '../../../common/constants/api_endpoints';
 import type { UserProfile, UpdateProfilePayload } from '../types/profile.type';
+import type { ApiResponse } from '../../../common/types/api-response.types';
 
-interface MyProfileResponse {
-  user: UserProfile;
-}
-
-type UpdateProfileResponse = UserProfile | MyProfileResponse;
+type MyProfileResponse = ApiResponse<UserProfile>;
 
 export async function getMyProfile(): Promise<UserProfile> {
   const response = await apiRequest<MyProfileResponse>(
     API_ENDPOINTS.USERS.PROFILE,
   );
-  return response.user;
+
+  return response.data!;
 }
 
 export async function updateMyProfile(
   payload: UpdateProfilePayload,
 ): Promise<UserProfile> {
-  const response = await apiRequest<UpdateProfileResponse>(
+  const response = await apiRequest<MyProfileResponse>(
     API_ENDPOINTS.USERS.PROFILE,
     {
       method: 'PATCH',
@@ -26,7 +24,7 @@ export async function updateMyProfile(
     },
   );
 
-  return 'user' in response ? response.user : response;
+  return response.data!;
 }
 
 export async function uploadProfilePhoto(

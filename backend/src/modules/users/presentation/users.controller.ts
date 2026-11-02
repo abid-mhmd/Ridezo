@@ -27,6 +27,7 @@ import { API_MESSAGES } from '../../../common/constants/message.constants.js';
 import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
 import { UserProfileMapper } from './mappers/user-profile.mapper.js';
 import type { UserProfileResponseDto } from './dto/user-profile-responce.dto.js';
+import { ApiResponse } from '../../../common/interfaces/api-responce.interface.js';
 
 @Controller()
 export class UsersController {
@@ -41,10 +42,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   async getMyProfile(
     @Req() request: Request & { user?: AccessTokenPayload },
-  ): Promise<{
-    success: boolean;
-    user: UserProfileResponseDto;
-  }> {
+  ): Promise<ApiResponse<UserProfileResponseDto>> {
     const user = request.user;
 
     if (!user) {
@@ -57,7 +55,8 @@ export class UsersController {
 
     return {
       success: true,
-      user: UserProfileMapper.toResponse(profile),
+      message: API_MESSAGES.USERS.USER_RETRIEVED_SUCCESS,
+      data: UserProfileMapper.toResponse(profile),
     };
   }
 
@@ -66,10 +65,7 @@ export class UsersController {
   async updateProfile(
     @Req() request: Request & { user?: AccessTokenPayload },
     @Body() dto: UpdateProfileDto,
-  ): Promise<{
-    success: boolean;
-    user: UserProfileResponseDto;
-  }> {
+  ): Promise<ApiResponse<UserProfileResponseDto>> {
     if (!request.user) {
       throw new UnauthorizedException(
         API_MESSAGES.AUTH.AUTHENTICATION_REQUIRED,
@@ -83,7 +79,8 @@ export class UsersController {
 
     return {
       success: true,
-      user: UserProfileMapper.toResponse(updatedUser),
+      message: API_MESSAGES.USERS.PROFILE_UPDATED,
+      data: UserProfileMapper.toResponse(updatedUser),
     };
   }
 
