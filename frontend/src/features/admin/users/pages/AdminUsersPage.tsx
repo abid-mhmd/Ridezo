@@ -12,9 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import StatusBadge from '../../components/StatusBadge';
 import { getAdminUsers } from '../api/admin-users.api';
 import UserAvatar from '../../../../components/UserAvatar';
-import type {
-  AdminUserListResponse,
-} from '../types/admin-user.types';
+import type { AdminUserListResponse } from '../types/admin-user.types';
 
 interface AdminUsersPageProps {
   accessToken: string;
@@ -35,8 +33,6 @@ function formatDate(value: string): string {
     year: 'numeric',
   }).format(date);
 }
-
-
 
 function VerificationBadge({ verified }: { verified: boolean }) {
   return (

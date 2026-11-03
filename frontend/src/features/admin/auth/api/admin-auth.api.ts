@@ -92,4 +92,3 @@ export async function logoutAdmin(): Promise<void> {
     throw new Error('Unable to complete admin logout.');
   }
 }
-

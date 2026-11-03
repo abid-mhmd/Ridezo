@@ -35,9 +35,7 @@ export default function ReviewCard({
         </div>
       </div>
 
-      <p className="mt-3 text-xs leading-relaxed text-[#c7cddd]">
-        {review}
-      </p>
+      <p className="mt-3 text-xs leading-relaxed text-[#c7cddd]">{review}</p>
     </div>
   );
 }
