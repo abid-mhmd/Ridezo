@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   FiArrowLeft,
@@ -53,37 +53,44 @@ export default function AdminUserDetailsPage({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [retryCount, setRetryCount] = useState(0);
 
   // Modal states
   const [isSuspendModalOpen, setIsSuspendModalOpen] = useState(false);
   const [isReactivateModalOpen, setIsReactivateModalOpen] = useState(false);
   const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
 
-  const loadUserDetails = useCallback(async () => {
-    if (!userId) {
-      setError('A user ID is required.');
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const response = await getAdminUserDetails(accessToken, userId);
-      setUser(response.user);
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : 'Unable to load user details.',
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accessToken, userId]);
-
   useEffect(() => {
-    void loadUserDetails();
-  }, [loadUserDetails]);
+    let isActive = true;
+
+    const request = userId
+      ? getAdminUserDetails(accessToken, userId)
+      : Promise.reject(new Error('A user ID is required.'));
+
+    request
+      .then((response) => {
+        if (isActive) {
+          setUser(response.user);
+          setError('');
+        }
+      })
+      .catch((err: unknown) => {
+        if (isActive) {
+          setError(
+            err instanceof Error ? err.message : 'Unable to load user details.',
+          );
+        }
+      })
+      .finally(() => {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [accessToken, userId, retryCount]);
 
   const handleStatusChange = async (newStatus: 'active' | 'suspended') => {
     if (!userId) return;
@@ -183,7 +190,11 @@ export default function AdminUserDetailsPage({
           </p>
           <button
             type="button"
-            onClick={() => void loadUserDetails()}
+            onClick={() => {
+              setIsLoading(true);
+              setError('');
+              setRetryCount((count) => count + 1);
+            }}
             className="mt-4 inline-flex items-center gap-2 rounded-xl border border-[#263044] bg-[#080B12] px-4 py-2 text-xs font-semibold text-[#F8FAFC]"
           >
             <FiRefreshCw size={13} /> Try again
