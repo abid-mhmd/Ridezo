@@ -9,10 +9,10 @@ import {
   FiEye,
 } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-
+import StatusBadge from '../../components/StatusBadge';
 import { getAdminUsers } from '../api/admin-users.api';
+import UserAvatar from '../../../../components/UserAvatar';
 import type {
-  AdminUserListItem,
   AdminUserListResponse,
 } from '../types/admin-user.types';
 
@@ -36,40 +36,7 @@ function formatDate(value: string): string {
   }).format(date);
 }
 
-function getInitials(firstName: string, lastName: string): string {
-  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
-}
 
-function getStatusStyles(status: string): string {
-  switch (status.toLowerCase()) {
-    case 'active':
-      return 'border-[#34D399]/20 bg-[#34D399]/10 text-[#34D399]';
-    case 'suspended':
-      return 'border-amber-500/20 bg-amber-500/10 text-amber-300';
-    case 'deactivated':
-      return 'border-red-500/20 bg-red-500/10 text-red-300';
-    default:
-      return 'border-gray-500/20 bg-gray-500/10 text-gray-300';
-  }
-}
-
-function UserAvatar({ user }: { user: AdminUserListItem }) {
-  if (user.profilePhoto) {
-    return (
-      <img
-        src={user.profilePhoto}
-        alt={`${user.firstName} ${user.lastName}`}
-        className="h-9 w-9 shrink-0 rounded-xl border border-[#263044] object-cover"
-      />
-    );
-  }
-
-  return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#C37DF5]/20 bg-gradient-to-br from-[#C37DF5]/20 to-[#D56BCF]/20 text-xs font-bold text-[#C37DF5]">
-      {getInitials(user.firstName, user.lastName)}
-    </div>
-  );
-}
 
 function VerificationBadge({ verified }: { verified: boolean }) {
   return (
@@ -332,7 +299,11 @@ export default function AdminUsersPage({ accessToken }: AdminUsersPageProps) {
                   >
                     <td className="px-6 py-3.5">
                       <div className="flex items-center gap-3">
-                        <UserAvatar user={user} />
+                        <UserAvatar
+                          firstName={user.firstName}
+                          lastName={user.lastName}
+                          profilePhoto={user.profilePhoto}
+                        />
                         <div className="min-w-0">
                           <p className="whitespace-nowrap text-xs font-medium text-[#F8FAFC]">
                             {user.firstName} {user.lastName}
@@ -345,14 +316,7 @@ export default function AdminUsersPage({ accessToken }: AdminUsersPageProps) {
                     </td>
 
                     <td className="px-6 py-3.5">
-                      <span
-                        className={`inline-flex items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[11px] font-medium capitalize ${getStatusStyles(
-                          user.accountStatus,
-                        )}`}
-                      >
-                        <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-current" />
-                        {user.accountStatus}
-                      </span>
+                      <StatusBadge status={user.accountStatus} />
                     </td>
 
                     <td className="px-6 py-3.5">

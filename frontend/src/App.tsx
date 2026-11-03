@@ -24,7 +24,7 @@ import { getMyProfile } from './features/user/api/profile.api';
 import AdminLoginPage from './features/admin/auth/pages/AdminLoginPage';
 import AdminUsersPage from './features/admin/users/pages/AdminUsersPage';
 import AdminLayout from './features/admin/components/AdminLayout';
-import AdminUserDetailsPage from './features/admin/users/pages/AdminuserDetailsPage';
+import AdminUserDetailsPage from './features/admin/users/pages/AdmiUserDetailsPage';
 import {
   refreshAdminSession,
   logoutAdmin,

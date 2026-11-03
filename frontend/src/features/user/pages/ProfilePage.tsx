@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import {
   BadgeCheck,
   CalendarDays,
-  CheckCircle2,
   CircleAlert,
   Mail,
   MapPin,
@@ -13,8 +12,13 @@ import {
   UserRound,
   Edit3,
 } from 'lucide-react';
+import ReviewCard from '../../../components/ReviewCard';
 import { getMyProfile } from '../api/profile.api';
 import type { UserProfile } from '../types/profile.type';
+import UserAvatar from '../../../components/UserAvatar';
+import VerificationStatus from '../../../components/VerificationStatus';
+import PreferenceItem from '../../../components/PrefrerenceItem';
+import RecentRideCard from '../../../components/RecentRideCard';
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -108,20 +112,12 @@ export default function ProfilePage() {
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
             {/* Avatar with status badge */}
             <div className="relative">
-              {profile.profilePhoto ? (
-                <img
-                  src={profile.profilePhoto}
-                  alt={fullName}
-                  className="h-24 w-24 shrink-0 rounded-2xl border border-[#30394b] object-cover"
-                />
-              ) : (
-                <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl border border-[#30394b] bg-[#1b2030] text-3xl font-semibold text-[#b6a8ff]">
-                  {profile.firstName?.charAt(0).toUpperCase() || 'T'}
-                </div>
-              )}
-              <span className="absolute -bottom-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#111722] bg-[#36e0c0] text-[10px] text-[#080b12]">
-                ✓
-              </span>
+              <UserAvatar
+                firstName={profile.firstName}
+                lastName={profile.lastName}
+                profilePhoto={profile.profilePhoto}
+                size="profile"
+              />
             </div>
 
             {/* Details */}
@@ -182,14 +178,6 @@ export default function ProfilePage() {
               <Edit3 size={14} />
               Edit Profile
             </Link>
-
-            {/* <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-xl border border-[#30394b] bg-[#161b27] px-4 py-2.5 text-xs font-medium text-[#c7cddd] transition hover:bg-[#202838] hover:text-white"
-            >
-              <Share2 size={14} />
-              Share
-            </button> */}
           </div>
         </div>
 
@@ -285,60 +273,25 @@ export default function ProfilePage() {
             </div>
 
             {/* Recent Journeys sub-section */}
-            <div className="mt-6 border-t border-[#252e3e] pt-5">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-semibold text-white">
-                  Recent journeys
-                </h3>
-                <Link
-                  to="/my-rides"
-                  className="text-xs text-[#b6a8ff] transition hover:underline"
-                >
-                  View My Rides →
-                </Link>
-              </div>
 
-              <div className="mt-3 space-y-2.5">
-                <div className="flex items-center justify-between rounded-xl border border-[#252e3e] bg-[#080b12] p-3.5">
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#8b78ff]/10 text-[#8b78ff]">
-                      🚗
-                    </span>
-                    <div>
-                      <p className="text-xs font-medium text-white">
-                        Kasaragod <span className="text-[#8b78ff]">→</span>{' '}
-                        Kochi
-                      </p>
-                      <p className="mt-0.5 text-[11px] text-[#929bad]">
-                        Oct 1, 2026 · Passenger · ₹350
-                      </p>
-                    </div>
-                  </div>
-                  <span className="rounded-full bg-[#36e0c0]/10 px-2.5 py-1 text-[10px] font-medium text-[#36e0c0]">
-                    Completed
-                  </span>
-                </div>
+            <div className="mt-3 space-y-2.5">
+              <RecentRideCard
+                from="Kasaragod"
+                to="Kochi"
+                date="Oct 1, 2026"
+                role="Passenger"
+                detail="₹350"
+                status="Completed"
+              />
 
-                <div className="flex items-center justify-between rounded-xl border border-[#252e3e] bg-[#080b12] p-3.5">
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#36e0c0]/10 text-[#36e0c0]">
-                      🚙
-                    </span>
-                    <div>
-                      <p className="text-xs font-medium text-white">
-                        Kochi <span className="text-[#36e0c0]">→</span>{' '}
-                        Kasaragod
-                      </p>
-                      <p className="mt-0.5 text-[11px] text-[#929bad]">
-                        Sep 28, 2026 · Driver · 3 passengers
-                      </p>
-                    </div>
-                  </div>
-                  <span className="rounded-full bg-[#36e0c0]/10 px-2.5 py-1 text-[10px] font-medium text-[#36e0c0]">
-                    Completed
-                  </span>
-                </div>
-              </div>
+              <RecentRideCard
+                from="Kochi"
+                to="Kasaragod"
+                date="Sep 28, 2026"
+                role="Driver"
+                detail="3 passengers"
+                status="Completed"
+              />
             </div>
           </section>
 
@@ -354,58 +307,21 @@ export default function ProfilePage() {
             </div>
 
             <div className="mt-4 space-y-3">
-              <div className="rounded-xl border border-[#252e3e] bg-[#080b12] p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1b2030] text-xs font-semibold text-[#b6a8ff]">
-                      RM
-                    </span>
-                    <div>
-                      <p className="text-xs font-medium text-white">Rahul M.</p>
-                      <p className="text-[10px] text-[#929bad]">
-                        Kasaragod → Kochi (Sep 2026)
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex text-amber-400">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} size={12} className="fill-amber-400" />
-                    ))}
-                  </div>
-                </div>
-                <p className="mt-3 text-xs leading-relaxed text-[#c7cddd]">
-                  "Very punctual and friendly. The trip was comfortable, car was
-                  clean, and communication was seamless before the Kasaragod
-                  junction pickup."
-                </p>
-              </div>
+              <ReviewCard
+                initials="RM"
+                reviewerName="Rahul M."
+                journey="Kasaragod → Kochi (Sep 2026)"
+                review="Very punctual and friendly. The trip was comfortable, car was clean, and communication was seamless before the Kasaragod junction pickup."
+                rating={5}
+              />
 
-              <div className="rounded-xl border border-[#252e3e] bg-[#080b12] p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1b2030] text-xs font-semibold text-[#b6a8ff]">
-                      AS
-                    </span>
-                    <div>
-                      <p className="text-xs font-medium text-white">
-                        Anjali S.
-                      </p>
-                      <p className="text-[10px] text-[#929bad]">
-                        Kochi → Kasaragod (Aug 2026)
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex text-amber-400">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} size={12} className="fill-amber-400" />
-                    ))}
-                  </div>
-                </div>
-                <p className="mt-3 text-xs leading-relaxed text-[#c7cddd]">
-                  "Smooth pickup and good communication. Arjun was driving
-                  calmly and respected quiet travel time when asked."
-                </p>
-              </div>
+              <ReviewCard
+                initials="AS"
+                reviewerName="Anjali S."
+                journey="Kochi → Kasaragod (Aug 2026)"
+                review="Smooth pickup and good communication. Arjun was driving calmly and respected quiet travel time when asked."
+                rating={5}
+              />
             </div>
           </section>
         </div>
@@ -431,15 +347,7 @@ export default function ProfilePage() {
                     </p>
                   </div>
                 </div>
-                {profile.emailVerified ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] text-[#36e0c0]">
-                    <CheckCircle2 size={13} /> Verified
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-[11px] text-amber-400">
-                    <CircleAlert size={13} /> Not verified
-                  </span>
-                )}
+                <VerificationStatus isVerified={profile.emailVerified} />
               </div>
 
               <div className="flex items-center justify-between rounded-xl border border-[#252e3e] bg-[#080b12] p-3">
@@ -454,15 +362,7 @@ export default function ProfilePage() {
                     </p>
                   </div>
                 </div>
-                {profile.phoneVerified ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] text-[#36e0c0]">
-                    <CheckCircle2 size={13} /> Verified
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-[11px] text-amber-400">
-                    <CircleAlert size={13} /> Not verified
-                  </span>
-                )}
+                <VerificationStatus isVerified={profile.phoneVerified} />
               </div>
 
               <div className="flex items-center justify-between rounded-xl border border-[#252e3e] bg-[#080b12] p-3">
@@ -477,15 +377,7 @@ export default function ProfilePage() {
                     </p>
                   </div>
                 </div>
-                {profile.idVerified ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] text-[#36e0c0]">
-                    <CheckCircle2 size={13} /> Verified
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-[11px] text-amber-400">
-                    <CircleAlert size={13} /> Not verified
-                  </span>
-                )}
+                <VerificationStatus isVerified={profile.idVerified} />
               </div>
             </div>
           </section>
@@ -505,32 +397,25 @@ export default function ProfilePage() {
             </div>
 
             <div className="mt-4 space-y-3 text-xs">
-              <div className="flex items-center justify-between border-b border-[#252e3e] pb-2.5">
-                <span className="text-[#929bad]">Smoking</span>
-                <span className="rounded-full bg-[#161b27] px-2.5 py-1 text-[11px] text-white border border-[#30394b]">
-                  {profile.preferences?.smoking}
-                </span>
-              </div>
-              <div className="flex items-center justify-between border-b border-[#252e3e] pb-2.5">
-                <span className="text-[#929bad]">Pets in cabin</span>
-                <span className="rounded-full bg-[#161b27] px-2.5 py-1 text-[11px] text-white border border-[#30394b]">
-                  {profile.preferences?.pets}
-                </span>
-              </div>
-              <div className="flex items-center justify-between border-b border-[#252e3e] pb-2.5">
-                <span className="text-[#929bad]">Seating comfort</span>
-                <span className="rounded-full bg-[#161b27] px-2.5 py-1 text-[11px] text-white border border-[#30394b]">
-                  {profile.preferences?.seatingComfort}
-                </span>
-              </div>
+              <PreferenceItem
+                label="Smoking"
+                value={profile.preferences?.smoking}
+              />
 
-              <div className="flex items-center justify-between">
-                <span className="text-[#929bad]">Climate control</span>
+              <PreferenceItem
+                label="Pets in cabin"
+                value={profile.preferences?.pets}
+              />
 
-                <span className="rounded-full border border-[#30394b] bg-[#161b27] px-2.5 py-1 text-[11px] text-white">
-                  {profile.preferences?.climateControl }
-                </span>
-              </div>
+              <PreferenceItem
+                label="Seating comfort"
+                value={profile.preferences?.seatingComfort}
+              />
+
+              <PreferenceItem
+                label="Climate control"
+                value={profile.preferences?.climateControl}
+              />
             </div>
           </section>
 

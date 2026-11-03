@@ -7,6 +7,7 @@ import {
   updateMyProfile,
   uploadProfilePhoto,
 } from '../api/profile.api';
+import UserAvatar from '../../../components/UserAvatar';
 import type { UserProfile, UserPreferences } from '../types/profile.type';
 
 const inputClass =
@@ -235,8 +236,6 @@ export default function EditProfilePage() {
     );
   }
 
-  const fullName = `${firstName} ${lastName}`.trim();
-
   return (
     <main className="mx-auto max-w-4xl space-y-6 pb-12">
       <header>
@@ -272,17 +271,12 @@ export default function EditProfilePage() {
           <h2 className="text-sm font-semibold text-white">Profile photo</h2>
 
           <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center">
-            {profile.profilePhoto ? (
-              <img
-                src={profile.profilePhoto}
-                alt={fullName || 'Profile photo'}
-                className="h-24 w-24 rounded-2xl border border-[#30394b] object-cover"
-              />
-            ) : (
-              <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-[#30394b] bg-[#1b2030] text-3xl font-semibold text-[#b6a8ff]">
-                {firstName.charAt(0).toUpperCase() || '?'}
-              </div>
-            )}
+            <UserAvatar
+              firstName={firstName}
+              lastName={lastName}
+              profilePhoto={profile.profilePhoto}
+              size="profile"
+            />
 
             <div>
               <p className="text-sm font-medium text-white">

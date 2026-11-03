@@ -14,7 +14,8 @@ import {
   FiFileText,
   FiTruck,
 } from 'react-icons/fi';
-
+import StatusBadge from '../../components/StatusBadge';
+import UserAvatar from '../../../../components/UserAvatar';
 import {
   getAdminUserDetails,
   updateAdminUserStatus,
@@ -40,19 +41,6 @@ function formatDate(value?: string): string {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);
-}
-
-function getStatusStyles(status: string): string {
-  switch (status.toLowerCase()) {
-    case 'active':
-      return 'border-[#34D399]/20 bg-[#34D399]/10 text-[#34D399]';
-    case 'suspended':
-      return 'border-amber-500/20 bg-amber-500/10 text-amber-300';
-    case 'deactivated':
-      return 'border-red-500/20 bg-red-500/10 text-red-300';
-    default:
-      return 'border-gray-500/20 bg-gray-500/10 text-gray-300';
-  }
 }
 
 export default function AdminUserDetailsPage({
@@ -94,43 +82,8 @@ export default function AdminUserDetailsPage({
   }, [accessToken, userId]);
 
   useEffect(() => {
-    let isActive = true;
-
-    const fetchUserDetails = async () => {
-      if (!userId) {
-        setError('A user ID is required.');
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(true);
-      setError('');
-
-      try {
-        const response = await getAdminUserDetails(accessToken, userId);
-
-        if (isActive) {
-          setUser(response.user);
-        }
-      } catch (err: unknown) {
-        if (isActive) {
-          setError(
-            err instanceof Error ? err.message : 'Unable to load user details.',
-          );
-        }
-      } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    void fetchUserDetails();
-
-    return () => {
-      isActive = false;
-    };
-  }, [accessToken, userId]);
+    void loadUserDetails();
+  }, [loadUserDetails]);
 
   const handleStatusChange = async (newStatus: 'active' | 'suspended') => {
     if (!userId) return;
@@ -186,16 +139,7 @@ export default function AdminUserDetailsPage({
             <h1 className="text-2xl font-bold tracking-tight text-[#F8FAFC]">
               {user ? `${user.firstName} ${user.lastName}` : 'User Details'}
             </h1>
-            {user && (
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold capitalize ${getStatusStyles(
-                  user.accountStatus,
-                )}`}
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                {user.accountStatus}
-              </span>
-            )}
+            {user && <StatusBadge status={user.accountStatus} />}
           </div>
         </div>
 
@@ -253,18 +197,12 @@ export default function AdminUserDetailsPage({
 
             <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-5">
-                {user.profilePhoto ? (
-                  <img
-                    src={user.profilePhoto}
-                    alt={`${user.firstName} ${user.lastName}`}
-                    className="h-20 w-20 shrink-0 rounded-2xl border border-[#263044] object-cover shadow-lg"
-                  />
-                ) : (
-                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border border-[#C37DF5]/20 bg-[#C37DF5]/10 text-2xl font-bold text-[#C37DF5]">
-                    {`${user.firstName[0] ?? ''}${user.lastName[0] ?? ''}`.toUpperCase()}
-                  </div>
-                )}
-
+                <UserAvatar
+                  firstName={user.firstName}
+                  lastName={user.lastName}
+                  profilePhoto={user.profilePhoto}
+                  size="large"
+                />
                 <div className="min-w-0">
                   <div className="flex items-center gap-2.5">
                     <h2 className="text-xl font-bold text-[#F8FAFC]">
