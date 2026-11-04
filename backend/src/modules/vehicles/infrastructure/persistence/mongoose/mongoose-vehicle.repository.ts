@@ -76,13 +76,18 @@ export class MongooseVehicleRepository
     ) {
       return null;
     }
+
+    const vehicleObjectId = new Types.ObjectId(vehicleId);
+    const ownerObjectId = new Types.ObjectId(ownerId);
+
     const vehicle = await this.model
       .findOneAndUpdate(
-        { _id: vehicleId, ownerId },
+        { _id: vehicleObjectId, ownerId: ownerObjectId },
         { $set: data },
         { new: true, runValidators: true },
       )
       .exec();
+
     return vehicle ? this.toEntity(vehicle) : null;
   }
 

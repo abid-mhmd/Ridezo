@@ -4,6 +4,7 @@ import {
   Post,
   Req,
   Get,
+  Patch,
   UnauthorizedException,
   UseGuards,
   ConflictException,
@@ -25,6 +26,8 @@ import {
 } from '../application/use-cases/add-vehicle.use-case.js';
 import { GetMyVehiclesUseCase } from '../application/use-cases/get-my-vehicles.js';
 import { GetVehicleByIdUseCase } from '../application/use-cases/get-vehicle-by-id.use-case.js';
+import { UpdateVehicleUseCase } from '../application/use-cases/update-vehicle.use-case.js';
+import { UpdateVehicleDto } from '../application/dto/update-vehicle.dto.js';
 
 @Controller()
 export class VehicleController {
@@ -32,6 +35,7 @@ export class VehicleController {
     private readonly addVehicleUseCase: AddVehicleUseCase,
     private readonly getMyVehiclesUseCase: GetMyVehiclesUseCase,
     private readonly getVehicleByIdUseCase: GetVehicleByIdUseCase,
+    private readonly updateVehicleUseCase: UpdateVehicleUseCase,
   ) {}
 
   @Post(VEHICLE_ENDPOINTS.ROOT)
@@ -93,6 +97,25 @@ export class VehicleController {
     return {
       success: true,
       message: VEHICLE_MESSAGES.RETRIEVED,
+      data: VehicleMapper.toResponse(vehicle),
+    };
+  }
+  @Patch(VEHICLE_ENDPOINTS.BY_ID)
+  @UseGuards(JwtAuthGuard)
+  async updateVehicle(
+    @Param('vehicleId') vehicleId: string,
+    @Req() request: Request & { user: AccessTokenPayload },
+    @Body() dto: UpdateVehicleDto,
+  ): Promise<ApiResponse<VehicleResponseDto>> {
+    const vehicle = await this.updateVehicleUseCase.execute(
+      vehicleId,
+      request.user.sub,
+      dto,
+    );
+
+    return {
+      success: true,
+      message: VEHICLE_MESSAGES.UPDATED,
       data: VehicleMapper.toResponse(vehicle),
     };
   }

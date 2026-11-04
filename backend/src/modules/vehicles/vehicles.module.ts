@@ -12,6 +12,7 @@ import { SecurityModule } from '../../infrastructure/redis/security/security.mod
 import { UsersModule } from '../users/users.module.js';
 import { GetMyVehiclesUseCase } from './application/use-cases/get-my-vehicles.js';
 import { GetVehicleByIdUseCase } from './application/use-cases/get-vehicle-by-id.use-case.js';
+import { UpdateVehicleUseCase } from './application/use-cases/update-vehicle.use-case.js';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { GetVehicleByIdUseCase } from './application/use-cases/get-vehicle-by-id
     AddVehicleUseCase,
     GetMyVehiclesUseCase,
     GetVehicleByIdUseCase,
+    UpdateVehicleUseCase,
   ],
   exports: [VEHICLE_REPOSITORY],
 })
