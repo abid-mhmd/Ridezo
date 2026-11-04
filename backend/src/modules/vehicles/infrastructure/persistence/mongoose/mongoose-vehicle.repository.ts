@@ -41,8 +41,11 @@ export class MongooseVehicleRepository
     ) {
       return null;
     }
+    const vehicleObjectId = new Types.ObjectId(vehicleId);
+    const ownerObjectId = new Types.ObjectId(ownerId);
+
     const vehicle = await this.model
-      .findOne({ _id: vehicleId, ownerId })
+      .findOne({ _id: vehicleObjectId, ownerId: ownerObjectId })
       .exec();
 
     return vehicle ? this.toEntity(vehicle) : null;

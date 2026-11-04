@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
   UseGuards,
   ConflictException,
+  Param,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard.js';
@@ -23,12 +24,14 @@ import {
   VehicleRegistrationAlreadyExistsError,
 } from '../application/use-cases/add-vehicle.use-case.js';
 import { GetMyVehiclesUseCase } from '../application/use-cases/get-my-vehicles.js';
+import { GetVehicleByIdUseCase } from '../application/use-cases/get-vehicle-by-id.use-case.js';
 
 @Controller()
 export class VehicleController {
   constructor(
     private readonly addVehicleUseCase: AddVehicleUseCase,
     private readonly getMyVehiclesUseCase: GetMyVehiclesUseCase,
+    private readonly getVehicleByIdUseCase: GetVehicleByIdUseCase,
   ) {}
 
   @Post(VEHICLE_ENDPOINTS.ROOT)
@@ -73,6 +76,24 @@ export class VehicleController {
       success: true,
       message: VEHICLE_MESSAGES.RETRIEVED,
       data: VehicleMapper.toRepsoseList(vehicles),
+    };
+  }
+
+  @Get(VEHICLE_ENDPOINTS.BY_ID)
+  @UseGuards(JwtAuthGuard)
+  async getVehicleById(
+    @Param('vehicleId') vehicleId: string,
+    @Req() request: Request & { user: AccessTokenPayload },
+  ): Promise<ApiResponse<VehicleResponseDto>> {
+    const vehicle = await this.getVehicleByIdUseCase.execute(
+      vehicleId,
+      request.user.sub,
+    );
+
+    return {
+      success: true,
+      message: VEHICLE_MESSAGES.RETRIEVED,
+      data: VehicleMapper.toResponse(vehicle),
     };
   }
 }
