@@ -10,6 +10,7 @@ import { AddVehicleUseCase } from './application/use-cases/add-vehicle.use-case.
 import { VehicleController } from './presentation/vehicles.controller.js';
 import { SecurityModule } from '../../infrastructure/redis/security/security.module.js';
 import { UsersModule } from '../users/users.module.js';
+import { GetMyVehiclesUseCase } from './application/use-cases/get-my-vehicles.js';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { UsersModule } from '../users/users.module.js';
       useClass: MongooseVehicleRepository,
     },
     AddVehicleUseCase,
+    GetMyVehiclesUseCase,
   ],
   exports: [VEHICLE_REPOSITORY],
 })

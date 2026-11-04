@@ -3,6 +3,7 @@ import {
   Controller,
   Post,
   Req,
+  Get,
   UnauthorizedException,
   UseGuards,
   ConflictException,
@@ -21,10 +22,14 @@ import {
   AddVehicleUseCase,
   VehicleRegistrationAlreadyExistsError,
 } from '../application/use-cases/add-vehicle.use-case.js';
+import { GetMyVehiclesUseCase } from '../application/use-cases/get-my-vehicles.js';
 
 @Controller()
 export class VehicleController {
-  constructor(private readonly addVehicleUseCase: AddVehicleUseCase) {}
+  constructor(
+    private readonly addVehicleUseCase: AddVehicleUseCase,
+    private readonly getMyVehiclesUseCase: GetMyVehiclesUseCase,
+  ) {}
 
   @Post(VEHICLE_ENDPOINTS.ROOT)
   @UseGuards(JwtAuthGuard)
@@ -55,5 +60,19 @@ export class VehicleController {
 
       throw error;
     }
+  }
+
+  @Get(VEHICLE_ENDPOINTS.ROOT)
+  @UseGuards(JwtAuthGuard)
+  async getMyVehicles(
+    @Req() request: Request & { user: AccessTokenPayload },
+  ): Promise<ApiResponse<VehicleResponseDto[]>> {
+    const vehicles = await this.getMyVehiclesUseCase.execute(request.user.sub);
+
+    return {
+      success: true,
+      message: VEHICLE_MESSAGES.RETRIEVED,
+      data: VehicleMapper.toRepsoseList(vehicles),
+    };
   }
 }

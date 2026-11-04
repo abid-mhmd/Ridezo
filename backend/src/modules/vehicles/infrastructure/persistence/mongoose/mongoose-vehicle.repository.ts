@@ -52,11 +52,13 @@ export class MongooseVehicleRepository
     if (!Types.ObjectId.isValid(ownerId)) {
       return [];
     }
+    const vehicleOwnerId = new Types.ObjectId(ownerId);
 
     const vehicle = await this.model
-      .find({ ownerId })
+      .find({ ownerId: vehicleOwnerId })
       .sort({ createdAt: -1 })
       .exec();
+
     return vehicle.map((vehicle) => this.toEntity(vehicle));
   }
 
