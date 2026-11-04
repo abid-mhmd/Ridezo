@@ -9,6 +9,7 @@ import { UsersModule } from './modules/users/users.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { RedisModule } from './infrastructure/redis/redis.module.js';
 import { AdminAuthModule } from './modules/admin/admin-auth.module.js';
+import { VehiclesModule } from './modules/vehicles/vehicles.moudle.js';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { AdminAuthModule } from './modules/admin/admin-auth.module.js';
     loggerModule,
     UsersModule,
     AuthModule,
+    VehiclesModule,
     RedisModule,
     AdminAuthModule,
   ],

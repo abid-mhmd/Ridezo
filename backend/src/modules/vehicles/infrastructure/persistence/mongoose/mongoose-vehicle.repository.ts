@@ -1,0 +1,127 @@
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Types, type Model } from 'mongoose';
+
+import type {
+  CreateVehicleData,
+  IVehicleRepository,
+  UpdateVehicleData,
+} from '../../../domain/repositories/vehicle.repository.js';
+import type { VehicleEntity } from '../../../domain/entities/vehicle.entity.js';
+import { Vehicle, type VehicleDocument } from './vehicle.schema.js';
+import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository.js';
+
+@Injectable()
+export class MongooseVehicleRepository
+  extends BaseMongooseRepository<Vehicle>
+  implements IVehicleRepository
+{
+  constructor(
+    @InjectModel(Vehicle.name)
+    model: Model<Vehicle>,
+  ) {
+    super(model);
+  }
+
+  async create(data: CreateVehicleData): Promise<VehicleEntity> {
+    const vehicle = await this.createDocument({
+      ...data,
+      ownerId: new Types.ObjectId(data.ownerId),
+    });
+    return this.toEntity(vehicle);
+  }
+
+  async findByIdAndOwner(
+    vehicleId: string,
+    ownerId: string,
+  ): Promise<VehicleEntity | null> {
+    if (
+      !Types.ObjectId.isValid(vehicleId) ||
+      !Types.ObjectId.isValid(ownerId)
+    ) {
+      return null;
+    }
+    const vehicle = await this.model
+      .findOne({ _id: vehicleId, ownerId })
+      .exec();
+
+    return vehicle ? this.toEntity(vehicle) : null;
+  }
+
+  async findByOwnerId(ownerId: string): Promise<VehicleEntity[]> {
+    if (!Types.ObjectId.isValid(ownerId)) {
+      return [];
+    }
+
+    const vehicle = await this.model
+      .find({ ownerId })
+      .sort({ createdAt: -1 })
+      .exec();
+    return vehicle.map((vehicle) => this.toEntity(vehicle));
+  }
+
+  async update(
+    vehicleId: string,
+    ownerId: string,
+    data: UpdateVehicleData,
+  ): Promise<VehicleEntity | null> {
+    if (
+      !Types.ObjectId.isValid(vehicleId) ||
+      !Types.ObjectId.isValid(ownerId)
+    ) {
+      return null;
+    }
+    const vehicle = await this.model
+      .findOneAndUpdate(
+        { _id: vehicleId, ownerId },
+        { $set: data },
+        { new: true, runValidators: true },
+      )
+      .exec();
+    return vehicle ? this.toEntity(vehicle) : null;
+  }
+
+  async deactivate(vehicleId: string, ownerId: string): Promise<boolean> {
+    if (
+      !Types.ObjectId.isValid(vehicleId) ||
+      !Types.ObjectId.isValid(ownerId)
+    ) {
+      return false;
+    }
+
+    const result = await this.model
+      .updateOne({ _id: vehicleId, ownerId }, { $set: { isActive: false } })
+      .exec();
+
+    return result.matchedCount > 0;
+  }
+
+  async existsByRegistrationNumber(
+    registrationNumber: string,
+  ): Promise<boolean> {
+    const vehicle = await this.model.exists({ registrationNumber }).exec();
+
+    return vehicle !== null;
+  }
+
+  private toEntity(vehicle: VehicleDocument): VehicleEntity {
+    return {
+      id: vehicle._id.toString(),
+      ownerId: vehicle.ownerId.toString(),
+
+      vehicleType: vehicle.vehicleType,
+      brand: vehicle.brand,
+      model: vehicle.model,
+      year: vehicle.year,
+      color: vehicle.color,
+      registrationNumber: vehicle.registrationNumber,
+      seatCapacity: vehicle.seatCapacity,
+      fuelType: vehicle.fuelType,
+      vehiclePhoto: vehicle.vehiclePhoto,
+      verificationStatus: vehicle.verificationStatus,
+      isActive: vehicle.isActive,
+      createdAt: vehicle.createdAt,
+      updatedAt: vehicle.updatedAt,
+    };
+  }
+}
