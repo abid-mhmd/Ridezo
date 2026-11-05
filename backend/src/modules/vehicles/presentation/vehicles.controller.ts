@@ -113,17 +113,25 @@ export class VehicleController {
     @Req() request: Request & { user: AccessTokenPayload },
     @Body() dto: UpdateVehicleDto,
   ): Promise<ApiResponse<VehicleResponseDto>> {
-    const vehicle = await this.updateVehicleUseCase.execute(
-      vehicleId,
-      request.user.sub,
-      dto,
-    );
+    try {
+      const vehicle = await this.updateVehicleUseCase.execute(
+        vehicleId,
+        request.user.sub,
+        dto,
+      );
 
-    return {
-      success: true,
-      message: VEHICLE_MESSAGES.UPDATED,
-      data: VehicleMapper.toResponse(vehicle),
-    };
+      return {
+        success: true,
+        message: VEHICLE_MESSAGES.UPDATED,
+        data: VehicleMapper.toResponse(vehicle),
+      };
+    } catch (error) {
+      if (error instanceof VehicleRegistrationAlreadyExistsError) {
+        throw new ConflictException(VEHICLE_MESSAGES.DUPLICATE_REGISTRATION);
+      }
+
+      throw error;
+    }
   }
 
   @Delete(VEHICLE_ENDPOINTS.BY_ID)

@@ -82,7 +82,7 @@ export class MongooseVehicleRepository
 
     const vehicle = await this.model
       .findOneAndUpdate(
-        { _id: vehicleObjectId, ownerId: ownerObjectId },
+        { _id: vehicleObjectId, ownerId: ownerObjectId, isActive: true },
         { $set: data },
         { new: true, runValidators: true },
       )
@@ -114,9 +114,16 @@ export class MongooseVehicleRepository
 
   async existsByRegistrationNumber(
     registrationNumber: string,
+    excludeVehicleId?: string,
   ): Promise<boolean> {
-    const vehicle = await this.model.exists({ registrationNumber }).exec();
+    const filter: Record<string, unknown> = {
+      registrationNumber,
+    };
 
+    if (excludeVehicleId && Types.ObjectId.isValid(excludeVehicleId)) {
+      filter._id = { $ne: new Types.ObjectId(excludeVehicleId) };
+    }
+    const vehicle = await this.model.exists(filter).exec();
     return vehicle !== null;
   }
 

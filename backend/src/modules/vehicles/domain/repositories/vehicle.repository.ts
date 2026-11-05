@@ -38,5 +38,8 @@ export interface IVehicleRepository {
   ): Promise<VehicleEntity | null>;
 
   deactivate(vehicleId: string, ownerId: string): Promise<boolean>;
-  existsByRegistrationNumber(registrationNumber: string): Promise<boolean>;
+  existsByRegistrationNumber(
+    registrationNumber: string,
+    excludeVehicleId?: string,
+  ): Promise<boolean>;
 }
