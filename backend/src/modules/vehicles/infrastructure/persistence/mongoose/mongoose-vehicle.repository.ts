@@ -58,7 +58,7 @@ export class MongooseVehicleRepository
     const vehicleOwnerId = new Types.ObjectId(ownerId);
 
     const vehicle = await this.model
-      .find({ ownerId: vehicleOwnerId })
+      .find({ ownerId: vehicleOwnerId, isActive: true })
       .sort({ createdAt: -1 })
       .exec();
 
@@ -103,7 +103,10 @@ export class MongooseVehicleRepository
     const ownerObjectId = new Types.ObjectId(ownerId);
 
     const result = await this.model
-      .updateOne({ _id: vehicleObjectId, ownerId : ownerObjectId }, { $set: { isActive: false } })
+      .updateOne(
+        { _id: vehicleObjectId, ownerId: ownerObjectId },
+        { $set: { isActive: false } },
+      )
       .exec();
 
     return result.matchedCount > 0;
