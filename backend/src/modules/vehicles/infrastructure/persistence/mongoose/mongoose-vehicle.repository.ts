@@ -99,8 +99,11 @@ export class MongooseVehicleRepository
       return false;
     }
 
+    const vehicleObjectId = new Types.ObjectId(vehicleId);
+    const ownerObjectId = new Types.ObjectId(ownerId);
+
     const result = await this.model
-      .updateOne({ _id: vehicleId, ownerId }, { $set: { isActive: false } })
+      .updateOne({ _id: vehicleObjectId, ownerId : ownerObjectId }, { $set: { isActive: false } })
       .exec();
 
     return result.matchedCount > 0;

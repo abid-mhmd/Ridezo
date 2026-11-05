@@ -13,6 +13,7 @@ import { UsersModule } from '../users/users.module.js';
 import { GetMyVehiclesUseCase } from './application/use-cases/get-my-vehicles.js';
 import { GetVehicleByIdUseCase } from './application/use-cases/get-vehicle-by-id.use-case.js';
 import { UpdateVehicleUseCase } from './application/use-cases/update-vehicle.use-case.js';
+import { DeactivateVehicleUseCase } from './application/use-cases/deactivate-vehicle.use-case.js';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { UpdateVehicleUseCase } from './application/use-cases/update-vehicle.use
     GetMyVehiclesUseCase,
     GetVehicleByIdUseCase,
     UpdateVehicleUseCase,
+    DeactivateVehicleUseCase,
   ],
   exports: [VEHICLE_REPOSITORY],
 })

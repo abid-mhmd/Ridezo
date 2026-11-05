@@ -9,6 +9,9 @@ import {
   UseGuards,
   ConflictException,
   Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard.js';
@@ -28,6 +31,7 @@ import { GetMyVehiclesUseCase } from '../application/use-cases/get-my-vehicles.j
 import { GetVehicleByIdUseCase } from '../application/use-cases/get-vehicle-by-id.use-case.js';
 import { UpdateVehicleUseCase } from '../application/use-cases/update-vehicle.use-case.js';
 import { UpdateVehicleDto } from '../application/dto/update-vehicle.dto.js';
+import { DeactivateVehicleUseCase } from '../application/use-cases/deactivate-vehicle.use-case.js';
 
 @Controller()
 export class VehicleController {
@@ -36,6 +40,7 @@ export class VehicleController {
     private readonly getMyVehiclesUseCase: GetMyVehiclesUseCase,
     private readonly getVehicleByIdUseCase: GetVehicleByIdUseCase,
     private readonly updateVehicleUseCase: UpdateVehicleUseCase,
+    private readonly deactivateVehicleUseCase: DeactivateVehicleUseCase,
   ) {}
 
   @Post(VEHICLE_ENDPOINTS.ROOT)
@@ -100,6 +105,7 @@ export class VehicleController {
       data: VehicleMapper.toResponse(vehicle),
     };
   }
+
   @Patch(VEHICLE_ENDPOINTS.BY_ID)
   @UseGuards(JwtAuthGuard)
   async updateVehicle(
@@ -117,6 +123,21 @@ export class VehicleController {
       success: true,
       message: VEHICLE_MESSAGES.UPDATED,
       data: VehicleMapper.toResponse(vehicle),
+    };
+  }
+
+  @Delete(VEHICLE_ENDPOINTS.BY_ID)
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async deactivateVehicle(
+    @Param('vehicleId') vehicleId: string,
+    @Req() request: Request & { user: AccessTokenPayload },
+  ): Promise<ApiResponse<undefined>> {
+    await this.deactivateVehicleUseCase.execute(vehicleId, request.user.sub);
+
+    return {
+      success: true,
+      message: VEHICLE_MESSAGES.DEACTIVATED,
     };
   }
 }
