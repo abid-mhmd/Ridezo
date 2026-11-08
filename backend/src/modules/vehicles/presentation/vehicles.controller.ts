@@ -12,6 +12,11 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UploadedFile,
+  UseInterceptors,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard.js';
@@ -23,6 +28,7 @@ import { VEHICLE_ENDPOINTS } from './constants/vehicle-endpoints.constants.js';
 import { VEHICLE_MESSAGES } from './constants/vehicle-messages.constants.js';
 import type { ApiResponse } from '../../../common/interfaces/api-responce.interface.js';
 import { API_MESSAGES } from '../../../common/constants/message.constants.js';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   AddVehicleUseCase,
   VehicleRegistrationAlreadyExistsError,
@@ -32,6 +38,7 @@ import { GetVehicleByIdUseCase } from '../application/use-cases/get-vehicle-by-i
 import { UpdateVehicleUseCase } from '../application/use-cases/update-vehicle.use-case.js';
 import { UpdateVehicleDto } from '../application/dto/update-vehicle.dto.js';
 import { DeactivateVehicleUseCase } from '../application/use-cases/deactivate-vehicle.use-case.js';
+import { UploadVehiclePhotoUseCase } from '../application/use-cases/upload-vehicle-photo.use-case.js';
 
 @Controller()
 export class VehicleController {
@@ -41,6 +48,7 @@ export class VehicleController {
     private readonly getVehicleByIdUseCase: GetVehicleByIdUseCase,
     private readonly updateVehicleUseCase: UpdateVehicleUseCase,
     private readonly deactivateVehicleUseCase: DeactivateVehicleUseCase,
+    private readonly uploadVehiclePhotoUseCase: UploadVehiclePhotoUseCase,
   ) {}
 
   @Post(VEHICLE_ENDPOINTS.ROOT)
@@ -146,6 +154,33 @@ export class VehicleController {
     return {
       success: true,
       message: VEHICLE_MESSAGES.DEACTIVATED,
+    };
+  }
+
+  @Post(VEHICLE_ENDPOINTS.PHOTO)
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('photo'))
+  async uploadVehiclePhoto(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({
+            maxSize: 5 * 1024 * 1024,
+          }),
+          new FileTypeValidator({
+            fileType: /^image\/(jpeg|png|webp)$/,
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ): Promise<ApiResponse<{ vehiclePhoto: string }>> {
+    const result = await this.uploadVehiclePhotoUseCase.execute(file);
+
+    return {
+      success: true,
+      message: 'Vehicle photo uploaded successfully.',
+      data: result,
     };
   }
 }

@@ -45,7 +45,7 @@ export const vehicleSchema = z.object({
 
   vehiclePhoto: z
     .string()
-    .url('Enter a valid image URL.')
+    .url('Please provide a valid vehicle photo.')
     .optional()
     .or(z.literal('')),
 });

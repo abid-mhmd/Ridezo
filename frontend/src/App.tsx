@@ -31,6 +31,7 @@ import {
 } from './features/admin/auth/api/admin-auth.api';
 import VehiclesPage from './features/vehicles/pages/VehiclesPage';
 import AddVehiclePage from './features/vehicles/pages/AddVehiclePage';
+import EditVehiclePage from './features/vehicles/pages/EditVehiclePage';
 
 function GoogleCallbackHandler({
   onLoginSuccess,
@@ -314,6 +315,10 @@ function App() {
           <Route path="/profile/edit" element={<EditProfilePage />} />
           <Route path="/vehicles" element={<VehiclesPage />} />
           <Route path="/vehicles/add" element={<AddVehiclePage />} />
+          <Route
+            path="/vehicles/:vehicleId/edit"
+            element={<EditVehiclePage />}
+          />
         </Route>
 
         {/* Fallback */}

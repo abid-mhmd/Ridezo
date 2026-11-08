@@ -52,6 +52,6 @@ export class UpdateVehicleDto {
   fuelType?: FuelType;
 
   @IsOptional()
-  @IsUrl()
+  @IsUrl({}, { message: 'Please provide a valid vehicle photo.' })
   vehiclePhoto?: string;
 }

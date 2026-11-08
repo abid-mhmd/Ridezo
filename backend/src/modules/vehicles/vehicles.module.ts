@@ -14,6 +14,9 @@ import { GetMyVehiclesUseCase } from './application/use-cases/get-my-vehicles.js
 import { GetVehicleByIdUseCase } from './application/use-cases/get-vehicle-by-id.use-case.js';
 import { UpdateVehicleUseCase } from './application/use-cases/update-vehicle.use-case.js';
 import { DeactivateVehicleUseCase } from './application/use-cases/deactivate-vehicle.use-case.js';
+import { VEHICLE_PHOTO_STORAGE } from './application/ports/vehicle-photo-storage.js';
+import { CloudinaryVehiclePhotoStorage } from './infrastructure/persistence/mongoose/storage/cloudinary-vehicle-photo.storage.js';
+import { UploadVehiclePhotoUseCase } from './application/use-cases/upload-vehicle-photo.use-case.js';
 
 @Module({
   imports: [
@@ -32,6 +35,11 @@ import { DeactivateVehicleUseCase } from './application/use-cases/deactivate-veh
       provide: VEHICLE_REPOSITORY,
       useClass: MongooseVehicleRepository,
     },
+    {
+      provide: VEHICLE_PHOTO_STORAGE,
+      useClass: CloudinaryVehiclePhotoStorage,
+    },
+    UploadVehiclePhotoUseCase,
     AddVehicleUseCase,
     GetMyVehiclesUseCase,
     GetVehicleByIdUseCase,

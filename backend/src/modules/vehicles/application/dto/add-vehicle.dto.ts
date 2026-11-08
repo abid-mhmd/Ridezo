@@ -49,6 +49,7 @@ export class AddVehicleDto {
   fuelType: FuelType;
 
   @IsOptional()
-  @IsUrl()
+  @IsOptional()
+  @IsUrl({}, { message: 'Please provide a valid vehicle photo.' })
   vehiclePhoto?: string;
 }
