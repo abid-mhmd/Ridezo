@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { ITokenService } from '../../../auth/application/ports/token.service.js';
-import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service.js';
+import type { ITokenService } from '../../../auth/application/ports/token.service';
+import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service';
 import { createHash } from 'node:crypto';
-import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage.js';
-import type { IRefreshTokenStorage } from '../ports/refresh-token-storage.js';
+import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage';
+import type { IRefreshTokenStorage } from '../ports/refresh-token-storage';
 
 @Injectable()
 export class LogoutUserUseCase {

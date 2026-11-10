@@ -1,20 +1,20 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { createHash, randomBytes } from 'node:crypto';
-import type { UserEntity } from '../../../users/domain/entities/user.entity.js';
-import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
-import { PASSWORD_HASHER } from '../ports/passwordhasher.js';
-import type { IPasswordHasher } from '../ports/passwordhasher.js';
-import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage.js';
-import type { IRefreshTokenStorage } from '../ports/refresh-token-storage.js';
-import { LoginUserDto } from '../dto/login-user.dto.js';
+import type { UserEntity } from '../../../users/domain/entities/user.entity';
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
+import { PASSWORD_HASHER } from '../ports/passwordhasher';
+import type { IPasswordHasher } from '../ports/passwordhasher';
+import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage';
+import type { IRefreshTokenStorage } from '../ports/refresh-token-storage';
+import { LoginUserDto } from '../dto/login-user.dto';
 import {
   UserRole,
   AccountStatus,
-} from '../../../users/domain/enums/user.enums.js';
-import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
-import type { ITokenService } from '../ports/token.service.js';
-import { TOKEN_SERVICE } from '../ports/token.service.js';
+} from '../../../users/domain/enums/user.enums';
+import { API_MESSAGES } from '../../../../common/constants/message.constants';
+import type { ITokenService } from '../ports/token.service';
+import { TOKEN_SERVICE } from '../ports/token.service';
 import { PinoLogger } from 'nestjs-pino';
 
 export class InvalidCredentialsError extends Error {

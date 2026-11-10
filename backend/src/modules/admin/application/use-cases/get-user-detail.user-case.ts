@@ -6,11 +6,11 @@ import {
 
 import { Types } from 'mongoose';
 
-import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
 
 import { Inject } from '@nestjs/common';
-import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
+import { API_MESSAGES } from '../../../../common/constants/message.constants';
 
 @Injectable()
 export class GetUserDetailsUseCase {

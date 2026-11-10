@@ -6,10 +6,10 @@ import type {
   CreateVehicleData,
   IVehicleRepository,
   UpdateVehicleData,
-} from '../../../domain/repositories/vehicle.repository.js';
-import type { VehicleEntity } from '../../../domain/entities/vehicle.entity.js';
-import { Vehicle, type VehicleDocument } from './vehicle.schema.js';
-import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository.js';
+} from '../../../domain/repositories/vehicle.repository';
+import type { VehicleEntity } from '../../../domain/entities/vehicle.entity';
+import { Vehicle, type VehicleDocument } from './vehicle.schema';
+import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository';
 
 @Injectable()
 export class MongooseVehicleRepository

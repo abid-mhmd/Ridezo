@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
-import { PASSWORD_HASHER } from '../ports/passwordhasher.js';
-import type { IPasswordHasher } from '../ports/passwordhasher.js';
-import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
-import type { ITokenService } from '../ports/token.service.js';
-import { TOKEN_SERVICE } from '../ports/token.service.js';
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
+import { PASSWORD_HASHER } from '../ports/passwordhasher';
+import type { IPasswordHasher } from '../ports/passwordhasher';
+import { AccountStatus } from '../../../users/domain/enums/user.enums';
+import type { ITokenService } from '../ports/token.service';
+import { TOKEN_SERVICE } from '../ports/token.service';
 
 export class InvalidPasswordResetTokenError extends Error {
   constructor() {

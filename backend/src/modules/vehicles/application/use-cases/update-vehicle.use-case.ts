@@ -1,10 +1,10 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { VEHICLE_REPOSITORY } from '../../domain/repositories/vehicle.repository.js';
-import type { IVehicleRepository } from '../../domain/repositories/vehicle.repository.js';
-import type { UpdateVehicleDto } from '../dto/update-vehicle.dto.js';
-import type { VehicleEntity } from '../../domain/entities/vehicle.entity.js';
-import { VEHICLE_MESSAGES } from '../../presentation/constants/vehicle-messages.constants.js';
-import { VehicleRegistrationAlreadyExistsError } from './add-vehicle.use-case.js';
+import { VEHICLE_REPOSITORY } from '../../domain/repositories/vehicle.repository';
+import type { IVehicleRepository } from '../../domain/repositories/vehicle.repository';
+import type { UpdateVehicleDto } from '../dto/update-vehicle.dto';
+import type { VehicleEntity } from '../../domain/entities/vehicle.entity';
+import { VEHICLE_MESSAGES } from '../../presentation/constants/vehicle-messages.constants';
+import { VehicleRegistrationAlreadyExistsError } from './add-vehicle.use-case';
 
 @Injectable()
 export class UpdateVehicleUseCase {

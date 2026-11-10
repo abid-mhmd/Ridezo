@@ -6,11 +6,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
-import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
-import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service.js';
-import type { ITokenService } from '../../../auth/application/ports/token.service.js';
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
+import { AccountStatus } from '../../../users/domain/enums/user.enums';
+import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service';
+import type { ITokenService } from '../../../auth/application/ports/token.service';
 
 export interface AccessTokenPayload {
   sub: string;

@@ -1,4 +1,4 @@
-import type { VehicleEntity } from '../entities/vehicle.entity.js';
+import type { VehicleEntity } from '../entities/vehicle.entity';
 
 export const VEHICLE_REPOSITORY = Symbol('VEHICLE_REPOSITORY');
 

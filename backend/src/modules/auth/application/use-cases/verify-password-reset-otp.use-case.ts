@@ -2,10 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   PASSWORD_RESET_STORAGE,
   type IPasswordResetStorage,
-} from '../ports/password-reset-storage.js';
-import { OtpHasherService } from '../services/otp-hasher.service.js';
-import { TOKEN_SERVICE } from '../ports/token.service.js';
-import type { ITokenService } from '../ports/token.service.js';
+} from '../ports/password-reset-storage';
+import { OtpHasherService } from '../services/otp-hasher.service';
+import { TOKEN_SERVICE } from '../ports/token.service';
+import type { ITokenService } from '../ports/token.service';
 
 export class InvalidPasswordResetOtpError extends Error {
   constructor() {

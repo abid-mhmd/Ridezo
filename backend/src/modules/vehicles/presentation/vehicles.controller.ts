@@ -19,26 +19,26 @@ import {
   FileTypeValidator,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard.js';
-import type { AccessTokenPayload } from '../../auth/presentation/guards/jwt-auth.guard.js';
-import { AddVehicleDto } from '../application/dto/add-vehicle.dto.js';
-import { VehicleMapper } from './mappers/vehicle-mapper.js';
-import type { VehicleResponseDto } from './dto/vehicle-response.dto.js';
-import { VEHICLE_ENDPOINTS } from './constants/vehicle-endpoints.constants.js';
-import { VEHICLE_MESSAGES } from './constants/vehicle-messages.constants.js';
-import type { ApiResponse } from '../../../common/interfaces/api-responce.interface.js';
-import { API_MESSAGES } from '../../../common/constants/message.constants.js';
+import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard';
+import type { AccessTokenPayload } from '../../auth/presentation/guards/jwt-auth.guard';
+import { AddVehicleDto } from '../application/dto/add-vehicle.dto';
+import { VehicleMapper } from './mappers/vehicle-mapper';
+import type { VehicleResponseDto } from './dto/vehicle-response.dto';
+import { VEHICLE_ENDPOINTS } from './constants/vehicle-endpoints.constants';
+import { VEHICLE_MESSAGES } from './constants/vehicle-messages.constants';
+import type { ApiResponse } from '../../../common/interfaces/api-responce.interface';
+import { API_MESSAGES } from '../../../common/constants/message.constants';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   AddVehicleUseCase,
   VehicleRegistrationAlreadyExistsError,
-} from '../application/use-cases/add-vehicle.use-case.js';
-import { GetMyVehiclesUseCase } from '../application/use-cases/get-my-vehicles.js';
-import { GetVehicleByIdUseCase } from '../application/use-cases/get-vehicle-by-id.use-case.js';
-import { UpdateVehicleUseCase } from '../application/use-cases/update-vehicle.use-case.js';
-import { UpdateVehicleDto } from '../application/dto/update-vehicle.dto.js';
-import { DeactivateVehicleUseCase } from '../application/use-cases/deactivate-vehicle.use-case.js';
-import { UploadVehiclePhotoUseCase } from '../application/use-cases/upload-vehicle-photo.use-case.js';
+} from '../application/use-cases/add-vehicle.use-case';
+import { GetMyVehiclesUseCase } from '../application/use-cases/get-my-vehicles';
+import { GetVehicleByIdUseCase } from '../application/use-cases/get-vehicle-by-id.use-case';
+import { UpdateVehicleUseCase } from '../application/use-cases/update-vehicle.use-case';
+import { UpdateVehicleDto } from '../application/dto/update-vehicle.dto';
+import { DeactivateVehicleUseCase } from '../application/use-cases/deactivate-vehicle.use-case';
+import { UploadVehiclePhotoUseCase } from '../application/use-cases/upload-vehicle-photo.use-case';
 
 @Controller()
 export class VehicleController {

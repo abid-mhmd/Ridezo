@@ -5,10 +5,10 @@ import {
   CreateUserData,
   ListUsersQuery,
   IUserRepository,
-} from '../../../domain/repositories/user.repository.js';
-import type { UserEntity } from '../../../domain/entities/user.entity.js';
-import { User, type UserDocument } from './user.schema.js';
-import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository.js';
+} from '../../../domain/repositories/user.repository';
+import type { UserEntity } from '../../../domain/entities/user.entity';
+import { User, type UserDocument } from './user.schema';
+import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository';
 
 @Injectable()
 export class MongooseUserRepository

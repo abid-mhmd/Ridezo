@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
-import type { ListUsersQuery } from '../../../users/domain/repositories/user.repository.js';
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
+import type { ListUsersQuery } from '../../../users/domain/repositories/user.repository';
 
-import type { AdminUserListResult } from '../dto/admin-user.list-responce.dto.js';
+import type { AdminUserListResult } from '../dto/admin-user.list-responce.dto';
 
 @Injectable()
 export class ListUsersUseCase {

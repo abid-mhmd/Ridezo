@@ -1,15 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
 import {
   PASSWORD_RESET_STORAGE,
   type IPasswordResetStorage,
-} from '../ports/password-reset-storage.js';
-import { EMAIL_SENDER } from '../ports/email.sender.js';
-import type { IEmailSender } from '../ports/email.sender.js';
-import { OtpGeneratorService } from '../services/otp-generator.service.js';
-import { OtpHasherService } from '../services/otp-hasher.service.js';
-import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
+} from '../ports/password-reset-storage';
+import { EMAIL_SENDER } from '../ports/email.sender';
+import type { IEmailSender } from '../ports/email.sender';
+import { OtpGeneratorService } from '../services/otp-generator.service';
+import { OtpHasherService } from '../services/otp-hasher.service';
+import { AccountStatus } from '../../../users/domain/enums/user.enums';
 
 @Injectable()
 export class RequestPasswordResetOtpUseCase {

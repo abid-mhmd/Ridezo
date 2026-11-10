@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
-import type { UserEntity } from '../../../users/domain/entities/user.entity.js';
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
+import type { UserEntity } from '../../../users/domain/entities/user.entity';
 import { createHash, randomBytes } from 'node:crypto';
-import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage.js';
-import type { IRefreshTokenStorage } from '../ports/refresh-token-storage.js';
-import type { ITokenService } from '../ports/token.service.js';
-import { TOKEN_SERVICE } from '../ports/token.service.js';
+import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage';
+import type { IRefreshTokenStorage } from '../ports/refresh-token-storage';
+import type { ITokenService } from '../ports/token.service';
+import { TOKEN_SERVICE } from '../ports/token.service';
 
 export interface GoogleProfile {
   googleId: string;

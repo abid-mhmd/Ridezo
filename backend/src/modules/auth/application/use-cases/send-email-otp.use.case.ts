@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { OTP_STORAGE } from '../ports/otp-storage.js';
-import type { IOtpStorage } from '../ports/otp-storage.js';
-import { EMAIL_SENDER } from '../ports/email.sender.js';
-import type { IEmailSender } from '../ports/email.sender.js';
-import { OtpGeneratorService } from '../services/otp-generator.service.js';
-import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
-import { OtpHasherService } from '../services/otp-hasher.service.js';
+import { OTP_STORAGE } from '../ports/otp-storage';
+import type { IOtpStorage } from '../ports/otp-storage';
+import { EMAIL_SENDER } from '../ports/email.sender';
+import type { IEmailSender } from '../ports/email.sender';
+import { OtpGeneratorService } from '../services/otp-generator.service';
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
+import { OtpHasherService } from '../services/otp-hasher.service';
 import { PinoLogger } from 'nestjs-pino';
 
 const OTP_EXPIRY_SECONDS = 300;

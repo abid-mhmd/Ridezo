@@ -5,16 +5,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
 
 import {
   AccountStatus,
   UserRole,
-} from '../../../users/domain/enums/user.enums.js';
+} from '../../../users/domain/enums/user.enums';
 
 import { Types } from 'mongoose';
-import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
+import { API_MESSAGES } from '../../../../common/constants/message.constants';
 
 @Injectable()
 export class ChangeUserAccountStatusUseCase {

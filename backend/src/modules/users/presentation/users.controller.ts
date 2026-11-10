@@ -16,18 +16,18 @@ import {
 import { memoryStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request } from 'express';
-import { GetUserProfileUseCase } from '../application/use-cases/get-user-profile.use-case.js';
-import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard.js';
-import type { AccessTokenPayload } from '../../auth/presentation/guards/jwt-auth.guard.js';
-import { UpdateProfileUseCase } from '../application/use-cases/update-profile.use-case.js';
-import { UpdateProfileDto } from '../application/dto/update-profile.dto.js';
-import { UploadProfilePhotoUseCase } from '../application/use-cases/upload-profile-photo.use-case.js';
-import { RemoveProfilePhotoUseCase } from '../application/use-cases/remove-profile-phot.use-case.js';
-import { API_MESSAGES } from '../../../common/constants/message.constants.js';
-import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
-import { UserProfileMapper } from './mappers/user-profile.mapper.js';
-import type { UserProfileResponseDto } from './dto/user-profile-responce.dto.js';
-import type { ApiResponse } from '../../../common/interfaces/api-responce.interface.js';
+import { GetUserProfileUseCase } from '../application/use-cases/get-user-profile.use-case';
+import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard';
+import type { AccessTokenPayload } from '../../auth/presentation/guards/jwt-auth.guard';
+import { UpdateProfileUseCase } from '../application/use-cases/update-profile.use-case';
+import { UpdateProfileDto } from '../application/dto/update-profile.dto';
+import { UploadProfilePhotoUseCase } from '../application/use-cases/upload-profile-photo.use-case';
+import { RemoveProfilePhotoUseCase } from '../application/use-cases/remove-profile-phot.use-case';
+import { API_MESSAGES } from '../../../common/constants/message.constants';
+import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants';
+import { UserProfileMapper } from './mappers/user-profile.mapper';
+import type { UserProfileResponseDto } from './dto/user-profile-responce.dto';
+import type { ApiResponse } from '../../../common/interfaces/api-responce.interface';
 
 @Controller()
 export class UsersController {

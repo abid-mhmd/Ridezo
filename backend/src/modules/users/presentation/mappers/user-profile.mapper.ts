@@ -1,6 +1,6 @@
-import type { UserEntity } from '../../domain/entities/user.entity.js';
-import { IdentityVerificationStatus } from '../../domain/enums/user.enums.js';
-import type { UserProfileResponseDto } from '../dto/user-profile-responce.dto.js';
+import type { UserEntity } from '../../domain/entities/user.entity';
+import { IdentityVerificationStatus } from '../../domain/enums/user.enums';
+import type { UserProfileResponseDto } from '../dto/user-profile-responce.dto';
 
 export class UserProfileMapper {
   static toResponse(user: UserEntity): UserProfileResponseDto {

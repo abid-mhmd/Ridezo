@@ -1,19 +1,19 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { createHash, randomBytes } from 'node:crypto';
-import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
-import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { IPasswordHasher } from '../../../auth/application/ports/passwordhasher.js';
-import { PASSWORD_HASHER } from '../../../auth/application/ports/passwordhasher.js';
-import type { IRefreshTokenStorage } from '../../../auth/application/ports/refresh-token-storage.js';
-import { REFRESH_TOKEN_STORAGE } from '../../../auth/application/ports/refresh-token-storage.js';
-import type { ITokenService } from '../../../auth/application/ports/token.service.js';
-import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service.js';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository';
+import type { IPasswordHasher } from '../../../auth/application/ports/passwordhasher';
+import { PASSWORD_HASHER } from '../../../auth/application/ports/passwordhasher';
+import type { IRefreshTokenStorage } from '../../../auth/application/ports/refresh-token-storage';
+import { REFRESH_TOKEN_STORAGE } from '../../../auth/application/ports/refresh-token-storage';
+import type { ITokenService } from '../../../auth/application/ports/token.service';
+import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service';
 import {
   AccountStatus,
   UserRole,
-} from '../../../users/domain/enums/user.enums.js';
-import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
-import type { AdminLoginInput } from '../dto/admin-login.input.js';
+} from '../../../users/domain/enums/user.enums';
+import { API_MESSAGES } from '../../../../common/constants/message.constants';
+import type { AdminLoginInput } from '../dto/admin-login.input';
 
 @Injectable()
 export class AdminLoginUseCase {

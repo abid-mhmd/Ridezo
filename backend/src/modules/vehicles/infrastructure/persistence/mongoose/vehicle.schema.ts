@@ -4,7 +4,7 @@ import {
   FuelType,
   VehicleType,
   VehicleVerificationStatus,
-} from '../../../domain/enums/vehicle.enums.js';
+} from '../../../domain/enums/vehicle.enums';
 
 export type VehicleDocument = HydratedDocument<Vehicle> & {
   createdAt: Date;

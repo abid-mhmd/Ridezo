@@ -18,58 +18,58 @@ import {
 import {
   EmailAlreadyRegisteredError,
   RegisterUserUseCase,
-} from '../application/use-cases/register-user.use-case.js';
-import { RegisterUserDto } from '../application/dto/register-user.dto.js';
-import { RequestEmailOtpDto } from '../application/dto/request-email-otp.dto.js';
-import { SendEmailOtpUseCase } from '../application/use-cases/send-email-otp.use.case.js';
-import { VerifyEmailOtpDto } from '../application/dto/verify-email-otp.dto.js';
+} from '../application/use-cases/register-user.use-case';
+import { RegisterUserDto } from '../application/dto/register-user.dto';
+import { RequestEmailOtpDto } from '../application/dto/request-email-otp.dto';
+import { SendEmailOtpUseCase } from '../application/use-cases/send-email-otp.use.case';
+import { VerifyEmailOtpDto } from '../application/dto/verify-email-otp.dto';
 import {
   InvalidEmailOtpError,
   TooManyOtpAttemptsError,
   VerifyEmailOtpUseCase,
-} from '../application/use-cases/verify-email-otp.use-case.js';
+} from '../application/use-cases/verify-email-otp.use-case';
 import {
   InvalidCredentialsError,
   EmailNotVerifiedError,
   LoginUserUseCase,
-} from '../application/use-cases/login-user.use-case.js';
-import { LoginUserDto } from '../application/dto/login-user.dto.js';
+} from '../application/use-cases/login-user.use-case';
+import { LoginUserDto } from '../application/dto/login-user.dto';
 import { ConfigService } from '@nestjs/config';
-import { AccessTokenPayload, JwtAuthGuard } from './guards/jwt-auth.guard.js';
-import { RefreshAccessTokenUseCase } from '../application/use-cases/refresh-token.use-case.js';
+import { AccessTokenPayload, JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RefreshAccessTokenUseCase } from '../application/use-cases/refresh-token.use-case';
 import type { Request } from 'express';
-import { ForgotPasswordDto } from '../application/dto/forgot-password.dto.js';
-import { RequestPasswordResetOtpUseCase } from '../application/use-cases/request-password-reset.use-case-otp.js';
-import { VerifyPasswordResetOtpUseCase } from '../application/use-cases/verify-password-reset-otp.use-case.js';
+import { ForgotPasswordDto } from '../application/dto/forgot-password.dto';
+import { RequestPasswordResetOtpUseCase } from '../application/use-cases/request-password-reset.use-case-otp';
+import { VerifyPasswordResetOtpUseCase } from '../application/use-cases/verify-password-reset-otp.use-case';
 import {
   InvalidPasswordResetOtpError,
   TooManyPasswordResetAttemptsError,
-} from '../application/use-cases/verify-password-reset-otp.use-case.js';
-import { ResetPasswordDto } from '../application/dto/reset-password.dto.js';
+} from '../application/use-cases/verify-password-reset-otp.use-case';
+import { ResetPasswordDto } from '../application/dto/reset-password.dto';
 import {
   ResetPasswordUseCase,
   InvalidPasswordResetTokenError,
-} from '../application/use-cases/reset-password.use-case.js';
+} from '../application/use-cases/reset-password.use-case';
 import { AuthGuard } from '@nestjs/passport';
 import type { Response } from 'express';
 import {
   GoogleAuthUseCase,
   GoogleAccountLinkRequiredError,
-} from '../application/use-cases/google-auth.use-case.js';
-import type { GoogleProfile } from '../application/use-cases/google-auth.use-case.js';
-import { API_MESSAGES } from '../../../common/constants/message.constants.js';
-import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
-import type { ApiResponse } from '../../../common/interfaces/api-responce.interface.js';
+} from '../application/use-cases/google-auth.use-case';
+import type { GoogleProfile } from '../application/use-cases/google-auth.use-case';
+import { API_MESSAGES } from '../../../common/constants/message.constants';
+import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants';
+import type { ApiResponse } from '../../../common/interfaces/api-responce.interface';
 import {
   CurrentUserResponseDto,
   ForgotPasswordResponseDto,
   LoginResponseDto,
   RefreshResponseDto,
   RegisterResponseDto,
-} from '../application/dto/auth-response.dto.js';
-import { LogoutUserUseCase } from '../application/use-cases/logout-user.use-case.js';
-import { TOKEN_SERVICE } from '../application/ports/token.service.js';
-import type { ITokenService } from '../application/ports/token.service.js';
+} from '../application/dto/auth-response.dto';
+import { LogoutUserUseCase } from '../application/use-cases/logout-user.use-case';
+import { TOKEN_SERVICE } from '../application/ports/token.service';
+import type { ITokenService } from '../application/ports/token.service';
 
 @Controller()
 export class AuthController {

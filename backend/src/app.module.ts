@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import Joi from 'joi';
-import { loggerModule } from './infrastructure/logging/logger.config.js';
+import { loggerModule } from './infrastructure/logging/logger.config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
-import { UsersModule } from './modules/users/users.module.js';
-import { AuthModule } from './modules/auth/auth.module.js';
-import { RedisModule } from './infrastructure/redis/redis.module.js';
-import { AdminAuthModule } from './modules/admin/admin-auth.module.js';
-import { VehiclesModule } from './modules/vehicles/vehicles.module.js';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { RedisModule } from './infrastructure/redis/redis.module';
+import { AdminAuthModule } from './modules/admin/admin-auth.module';
+import { VehiclesModule } from './modules/vehicles/vehicles.module';
 
 @Module({
   imports: [

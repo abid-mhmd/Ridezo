@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { VEHICLE_REPOSITORY } from '../../domain/repositories/vehicle.repository.js';
-import type { IVehicleRepository } from '../../domain/repositories/vehicle.repository.js';
-import type { AddVehicleDto } from '../dto/add-vehicle.dto.js';
-import type { VehicleEntity } from '../../domain/entities/vehicle.entity.js';
+import { VEHICLE_REPOSITORY } from '../../domain/repositories/vehicle.repository';
+import type { IVehicleRepository } from '../../domain/repositories/vehicle.repository';
+import type { AddVehicleDto } from '../dto/add-vehicle.dto';
+import type { VehicleEntity } from '../../domain/entities/vehicle.entity';
 
 export class VehicleRegistrationAlreadyExistsError extends Error {
   constructor() {

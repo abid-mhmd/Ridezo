@@ -11,14 +11,14 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
-import { AdminLoginDto } from './dto/admin-login.dto.js';
-import { AdminLoginUseCase } from '../application/use-cases/admin-login.use-case.js';
-import { RefreshAdminTokenUseCase } from '../application/use-cases/refresh-admin-token.use-case.js';
-import { REFRESH_TOKEN_STORAGE } from '../../auth/application/ports/refresh-token-storage.js';
-import type { IRefreshTokenStorage } from '../../auth/application/ports/refresh-token-storage.js';
-import { API_MESSAGES } from '../../../common/constants/message.constants.js';
-import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
-import { AdminLogoutUseCase } from '../application/use-cases/admin-logout.use-case.js';
+import { AdminLoginDto } from './dto/admin-login.dto';
+import { AdminLoginUseCase } from '../application/use-cases/admin-login.use-case';
+import { RefreshAdminTokenUseCase } from '../application/use-cases/refresh-admin-token.use-case';
+import { REFRESH_TOKEN_STORAGE } from '../../auth/application/ports/refresh-token-storage';
+import type { IRefreshTokenStorage } from '../../auth/application/ports/refresh-token-storage';
+import { API_MESSAGES } from '../../../common/constants/message.constants';
+import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants';
+import { AdminLogoutUseCase } from '../application/use-cases/admin-logout.use-case';
 
 @Controller()
 export class AdminAuthController {

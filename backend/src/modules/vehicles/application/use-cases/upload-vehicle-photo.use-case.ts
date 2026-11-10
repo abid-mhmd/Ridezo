@@ -5,8 +5,8 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 
-import { VEHICLE_PHOTO_STORAGE } from '../ports/vehicle-photo-storage.js';
-import type { IVehiclePhotoStorage } from '../ports/vehicle-photo-storage.js';
+import { VEHICLE_PHOTO_STORAGE } from '../ports/vehicle-photo-storage';
+import type { IVehiclePhotoStorage } from '../ports/vehicle-photo-storage';
 
 @Injectable()
 export class UploadVehiclePhotoUseCase {

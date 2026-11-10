@@ -1,4 +1,4 @@
-import type { UserEntity } from '../../../users/domain/entities/user.entity.js';
+import type { UserEntity } from '../../../users/domain/entities/user.entity';
 
 export interface AdminUserListResult {
   users: UserEntity[];

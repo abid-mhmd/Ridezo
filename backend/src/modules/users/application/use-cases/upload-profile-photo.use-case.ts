@@ -5,11 +5,11 @@ import {
   NotFoundException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { USER_REPOSITORY } from '../../domain/repositories/user.repository.js';
-import type { IUserRepository } from '../../domain/repositories/user.repository.js';
-import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
-import { PROFILE_PHOTO_STORAGE } from '../ports/profile-photo-storage.js';
-import type { IProfilePhotoStorage } from '../ports/profile-photo-storage.js';
+import { USER_REPOSITORY } from '../../domain/repositories/user.repository';
+import type { IUserRepository } from '../../domain/repositories/user.repository';
+import { API_MESSAGES } from '../../../../common/constants/message.constants';
+import { PROFILE_PHOTO_STORAGE } from '../ports/profile-photo-storage';
+import type { IProfilePhotoStorage } from '../ports/profile-photo-storage';
 
 @Injectable()
 export class UploadProfilePhotoUseCase {

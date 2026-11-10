@@ -1,7 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { VEHICLE_REPOSITORY } from '../../domain/repositories/vehicle.repository.js';
-import type { IVehicleRepository } from '../../domain/repositories/vehicle.repository.js';
-import { VEHICLE_MESSAGES } from '../../presentation/constants/vehicle-messages.constants.js';
+import { VEHICLE_REPOSITORY } from '../../domain/repositories/vehicle.repository';
+import type { IVehicleRepository } from '../../domain/repositories/vehicle.repository';
+import { VEHICLE_MESSAGES } from '../../presentation/constants/vehicle-messages.constants';
 
 @Injectable()
 export class DeactivateVehicleUseCase {

@@ -1,5 +1,5 @@
-import type { VehicleEntity } from '../../domain/entities/vehicle.entity.js';
-import type { VehicleResponseDto } from '../dto/vehicle-response.dto.js';
+import type { VehicleEntity } from '../../domain/entities/vehicle.entity';
+import type { VehicleResponseDto } from '../dto/vehicle-response.dto';
 
 export class VehicleMapper {
   static toResponse(vehicle: VehicleEntity): VehicleResponseDto {

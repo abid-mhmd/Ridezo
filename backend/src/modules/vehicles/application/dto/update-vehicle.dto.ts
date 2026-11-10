@@ -8,7 +8,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { FuelType, VehicleType } from '../../domain/enums/vehicle.enums.js';
+import { FuelType, VehicleType } from '../../domain/enums/vehicle.enums';
 
 export class UpdateVehicleDto {
   @IsOptional()

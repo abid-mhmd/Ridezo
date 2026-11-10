@@ -2,7 +2,7 @@ import {
   FuelType,
   VehicleType,
   VehicleVerificationStatus,
-} from '../../domain/enums/vehicle.enums.js';
+} from '../../domain/enums/vehicle.enums';
 
 export interface VehicleResponseDto {
   id: string;

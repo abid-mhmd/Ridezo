@@ -1,7 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { USER_REPOSITORY } from '../../domain/repositories/user.repository.js';
-import type { IUserRepository } from '../../domain/repositories/user.repository.js';
-import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
+import { USER_REPOSITORY } from '../../domain/repositories/user.repository';
+import type { IUserRepository } from '../../domain/repositories/user.repository';
+import { API_MESSAGES } from '../../../../common/constants/message.constants';
 
 @Injectable()
 export class RemoveProfilePhotoUseCase {

@@ -1,8 +1,8 @@
-import type { UserEntity } from '../../../users/domain/entities/user.entity.js';
+import type { UserEntity } from '../../../users/domain/entities/user.entity';
 import type {
   AdminUserListItem,
   AdminUserDetailsResponse,
-} from '../../presentation/dto/admin-user-response.dto.js';
+} from '../../presentation/dto/admin-user-response.dto';
 
 export class AdminUserMapper {
   static toListItem(user: UserEntity): AdminUserListItem {

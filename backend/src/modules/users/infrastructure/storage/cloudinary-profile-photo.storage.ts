@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { configureCloudinary } from '../../../../infrastructure/config/Cloudinary.config.js';
-import type { IProfilePhotoStorage } from '../../application/ports/profile-photo-storage.js';
+import { configureCloudinary } from '../../../../infrastructure/config/Cloudinary.config';
+import type { IProfilePhotoStorage } from '../../application/ports/profile-photo-storage';
 
 @Injectable()
 export class CloudinaryProfilePhotoStorage implements IProfilePhotoStorage {

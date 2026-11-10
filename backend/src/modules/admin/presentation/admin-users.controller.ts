@@ -7,18 +7,18 @@ import {
   Patch,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard.js';
-import { AdminRoleGuard } from './guards/admin-role.guard.js';
-import { AdminUserListQueryDto } from '../application/dto/admin-user-list-query.dto.js';
-import { ListUsersUseCase } from '../application/use-cases/list-users.use-case.js';
-import { GetUserDetailsUseCase } from '../application/use-cases/get-user-detail.user-case.js';
-import { ChangeUserAccountStatusUseCase } from '../application/use-cases/change-user-account-status.use-case.js';
-import { AccountStatus } from '../../users/domain/enums/user.enums.js';
-import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
-import { API_MESSAGES } from '../../../common/constants/message.constants.js';
-import type { ApiResponse } from '../../../common/interfaces/api-responce.interface.js';
-import { AdminUserMapper } from './mappers/admin-user.mapper.js';
-import type { AdminUserListItem } from './dto/admin-user-response.dto.js';
+import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard';
+import { AdminRoleGuard } from './guards/admin-role.guard';
+import { AdminUserListQueryDto } from '../application/dto/admin-user-list-query.dto';
+import { ListUsersUseCase } from '../application/use-cases/list-users.use-case';
+import { GetUserDetailsUseCase } from '../application/use-cases/get-user-detail.user-case';
+import { ChangeUserAccountStatusUseCase } from '../application/use-cases/change-user-account-status.use-case';
+import { AccountStatus } from '../../users/domain/enums/user.enums';
+import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants';
+import { API_MESSAGES } from '../../../common/constants/message.constants';
+import type { ApiResponse } from '../../../common/interfaces/api-responce.interface';
+import { AdminUserMapper } from './mappers/admin-user.mapper';
+import type { AdminUserListItem } from './dto/admin-user-response.dto';
 
 @Controller(API_ENDPOINTS.ADMIN.USERS)
 @UseGuards(JwtAuthGuard, AdminRoleGuard)

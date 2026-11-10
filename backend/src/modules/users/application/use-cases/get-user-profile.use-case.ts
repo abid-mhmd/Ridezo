@@ -1,10 +1,10 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
-import { USER_REPOSITORY } from '../../domain/repositories/user.repository.js';
-import type { IUserRepository } from '../../domain/repositories/user.repository.js';
-import type { UserEntity } from '../../domain/entities/user.entity.js';
+import { USER_REPOSITORY } from '../../domain/repositories/user.repository';
+import type { IUserRepository } from '../../domain/repositories/user.repository';
+import type { UserEntity } from '../../domain/entities/user.entity';
 
-import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
+import { API_MESSAGES } from '../../../../common/constants/message.constants';
 
 @Injectable()
 export class GetUserProfileUseCase {
