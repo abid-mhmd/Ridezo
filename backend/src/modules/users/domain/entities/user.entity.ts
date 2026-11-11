@@ -36,6 +36,7 @@ export interface UserEntity {
 
   about: string;
   profilePhoto: string;
+  profilePhotoKey: string;
 
   role: UserRole;
   accountStatus: AccountStatus;

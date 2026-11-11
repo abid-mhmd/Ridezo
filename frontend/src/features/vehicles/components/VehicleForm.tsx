@@ -8,10 +8,14 @@ import {
 } from '../schemas/vehicle.schema';
 import { uploadVehiclePhoto } from '../api/vehicle.api';
 
+export type VehicleFormSubmitValues = Omit<VehicleFormValues, 'vehiclePhoto'> & {
+  vehiclePhotoKey?: string;
+};
+
 interface VehicleFormProps {
   initialValues?: VehicleFormValues;
   submitLabel: string;
-  onSubmit: (values: VehicleFormValues) => Promise<void>;
+  onSubmit: (values: VehicleFormSubmitValues) => Promise<void>;
 }
 
 const defaultValues: VehicleFormValues = {
@@ -137,17 +141,24 @@ export default function VehicleForm({
       setSubmitError('');
       setErrors({});
 
-      let vehiclePhoto = result.data.vehiclePhoto || '';
+      let vehiclePhotoKey: string | undefined;
 
-      // Upload the selected image first.
+      // Upload selected image to S3.
       if (selectedFile) {
-        vehiclePhoto = await uploadVehiclePhoto(selectedFile);
+        const uploaded = await uploadVehiclePhoto(selectedFile);
+
+        vehiclePhotoKey = uploaded.vehiclePhotoKey;
+
+        // Keep the preview URL for display.
+        setPhotoPreviewUrl(uploaded.vehiclePhoto);
       }
 
-      // Submit vehicle details with the Cloudinary URL.
+      // Exclude the display URL from the API payload.
+      const { vehiclePhoto: _vehiclePhoto, ...vehicleDetails } = result.data;
+
       await onSubmit({
-        ...result.data,
-        vehiclePhoto,
+        ...vehicleDetails,
+        vehiclePhotoKey,
       });
     } catch (error) {
       setSubmitError(

@@ -13,7 +13,7 @@ import { UpdateProfileUseCase } from './application/use-cases/update-profile.use
 import { UploadProfilePhotoUseCase } from './application/use-cases/upload-profile-photo.use-case';
 import { RemoveProfilePhotoUseCase } from './application/use-cases/remove-profile-phot.use-case';
 import { PROFILE_PHOTO_STORAGE } from './application/ports/profile-photo-storage';
-import { CloudinaryProfilePhotoStorage } from './infrastructure/storage/cloudinary-profile-photo.storage';
+import { S3ProfilePhotoStorage } from './infrastructure/storage/s3-profile-photo.storage';
 
 @Module({
   imports: [
@@ -33,13 +33,13 @@ import { CloudinaryProfilePhotoStorage } from './infrastructure/storage/cloudina
     },
     {
       provide: PROFILE_PHOTO_STORAGE,
-      useClass: CloudinaryProfilePhotoStorage,
+      useClass: S3ProfilePhotoStorage,
     },
     GetUserProfileUseCase,
     UpdateProfileUseCase,
     UploadProfilePhotoUseCase,
     RemoveProfilePhotoUseCase,
   ],
-  exports: [USER_REPOSITORY],
+  exports: [USER_REPOSITORY, PROFILE_PHOTO_STORAGE],
 })
 export class UsersModule {}

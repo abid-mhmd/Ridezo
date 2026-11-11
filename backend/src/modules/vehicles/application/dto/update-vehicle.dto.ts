@@ -3,7 +3,6 @@ import {
   IsInt,
   IsOptional,
   IsString,
-  IsUrl,
   Max,
   MaxLength,
   Min,
@@ -52,6 +51,7 @@ export class UpdateVehicleDto {
   fuelType?: FuelType;
 
   @IsOptional()
-  @IsUrl({}, { message: 'Please provide a valid vehicle photo.' })
-  vehiclePhoto?: string;
+  @IsString()
+  @MaxLength(500)
+  vehiclePhotoKey?: string;
 }

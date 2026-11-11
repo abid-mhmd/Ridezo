@@ -6,7 +6,7 @@ import { getVehicleById, updateVehicle } from '../api/vehicle.api';
 import VehicleForm from '../components/VehicleForm';
 
 import type { VehicleFormValues } from '../schemas/vehicle.schema';
-
+import type { VehicleFormSubmitValues } from '../components/VehicleForm';
 export default function EditVehiclePage() {
   const { vehicleId } = useParams<{ vehicleId: string }>();
   const navigate = useNavigate();
@@ -54,7 +54,7 @@ export default function EditVehiclePage() {
     void fetchVehicle();
   }, [vehicleId]);
 
-  const handleSubmit = async (values: VehicleFormValues) => {
+  const handleSubmit = async (values: VehicleFormSubmitValues) => {
     if (!vehicleId) return;
 
     await updateVehicle(vehicleId, values);

@@ -87,6 +87,12 @@ export class Vehicle {
 
   @Prop({
     type: String,
+    default: '',
+  })
+  vehiclePhotoKey: string;
+
+  @Prop({
+    type: String,
     enum: Object.values(VehicleVerificationStatus),
     default: VehicleVerificationStatus.PENDING,
   })

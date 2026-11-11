@@ -3,17 +3,14 @@ import { ArrowLeft, ShieldAlert } from 'lucide-react';
 
 import { addVehicle } from '../api/vehicle.api';
 import VehicleForm from '../components/VehicleForm';
+import type { VehicleFormSubmitValues } from '../components/VehicleForm';
 
-import type { VehicleFormValues } from '../schemas/vehicle.schema';
 
 export default function AddVehiclePage() {
   const navigate = useNavigate();
 
-  const handleSubmit = async (values: VehicleFormValues) => {
-    await addVehicle({
-      ...values,
-      vehiclePhoto: values.vehiclePhoto || undefined,
-    });
+  const handleSubmit = async (values: VehicleFormSubmitValues) => {
+    await addVehicle(values);
 
     navigate('/vehicles');
   };

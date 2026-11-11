@@ -141,6 +141,7 @@ export class MongooseVehicleRepository
       seatCapacity: vehicle.seatCapacity,
       fuelType: vehicle.fuelType,
       vehiclePhoto: vehicle.vehiclePhoto,
+      vehiclePhotoKey: vehicle.vehiclePhotoKey,
       verificationStatus: vehicle.verificationStatus,
       isActive: vehicle.isActive,
       createdAt: vehicle.createdAt,

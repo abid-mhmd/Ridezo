@@ -29,10 +29,18 @@ export class UploadVehiclePhotoUseCase {
     }
 
     try {
-      const result = await this.vehiclePhotoStorage.upload(file.buffer);
+      const result = await this.vehiclePhotoStorage.upload(
+        file.buffer,
+        file.mimetype,
+      );
+
+      const vehiclePhoto = await this.vehiclePhotoStorage.getUrl(
+        result.objectKey,
+      );
 
       return {
-        vehiclePhoto: result.secureUrl,
+        vehiclePhoto,
+        vehiclePhotoKey: result.objectKey,
       };
     } catch {
       throw new InternalServerErrorException(

@@ -30,7 +30,7 @@ export interface AddVehiclePayload {
   registrationNumber: string;
   seatCapacity: number;
   fuelType: FuelType;
-  vehiclePhoto?: string;
+  vehiclePhotoKey?: string;
 }
 
 export type UpdateVehiclePayload = Partial<AddVehiclePayload>;

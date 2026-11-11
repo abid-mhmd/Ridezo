@@ -14,8 +14,8 @@ import { GetMyVehiclesUseCase } from './application/use-cases/get-my-vehicles';
 import { GetVehicleByIdUseCase } from './application/use-cases/get-vehicle-by-id.use-case';
 import { UpdateVehicleUseCase } from './application/use-cases/update-vehicle.use-case';
 import { DeactivateVehicleUseCase } from './application/use-cases/deactivate-vehicle.use-case';
+import { S3VehiclePhotoStorage } from './infrastructure/persistence/mongoose/storage/s3-vehicle-photo.storage';
 import { VEHICLE_PHOTO_STORAGE } from './application/ports/vehicle-photo-storage';
-import { CloudinaryVehiclePhotoStorage } from './infrastructure/persistence/mongoose/storage/cloudinary-vehicle-photo.storage';
 import { UploadVehiclePhotoUseCase } from './application/use-cases/upload-vehicle-photo.use-case';
 
 @Module({
@@ -37,7 +37,7 @@ import { UploadVehiclePhotoUseCase } from './application/use-cases/upload-vehicl
     },
     {
       provide: VEHICLE_PHOTO_STORAGE,
-      useClass: CloudinaryVehiclePhotoStorage,
+      useClass: S3VehiclePhotoStorage,
     },
     UploadVehiclePhotoUseCase,
     AddVehicleUseCase,

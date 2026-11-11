@@ -36,7 +36,8 @@ export class AddVehicleUseCase {
       ...dto,
       ownerId,
       registrationNumber,
-      vehiclePhoto: dto.vehiclePhoto ?? '',
+      vehiclePhoto: '',
+      vehiclePhotoKey: dto.vehiclePhotoKey ?? '',
     });
   }
 }

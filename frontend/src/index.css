@@ -27,14 +27,26 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+  overflow-anchor: none !important;
 }
 
-body {
+html {
+  height: 100%;
+  overflow-y: scroll;
+  overflow-anchor: none !important;
+  scroll-behavior: auto !important;
+}
+
+body,
+#root {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh;
+  min-height: 100%;
+  overflow-anchor: none !important;
 }
 
 button,

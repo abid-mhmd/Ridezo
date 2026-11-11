@@ -41,12 +41,19 @@ export async function addVehicle(payload: AddVehiclePayload): Promise<Vehicle> {
   return response.data;
 }
 
-export async function uploadVehiclePhoto(file: File): Promise<string> {
+export interface VehiclePhotoUploadResponse {
+  vehiclePhoto: string;
+  vehiclePhotoKey: string;
+}
+
+export async function uploadVehiclePhoto(
+  file: File,
+): Promise<VehiclePhotoUploadResponse> {
   const formData = new FormData();
 
   formData.append('photo', file);
 
-  const response = await apiRequest<ApiResponse<{ vehiclePhoto: string }>>(
+  const response = await apiRequest<ApiResponse<VehiclePhotoUploadResponse>>(
     VEHICLE_ENDPOINTS.PHOTO,
     {
       method: 'POST',
@@ -54,7 +61,7 @@ export async function uploadVehiclePhoto(file: File): Promise<string> {
     },
   );
 
-  return response.data.vehiclePhoto;
+  return response.data;
 }
 
 export async function updateVehicle(
