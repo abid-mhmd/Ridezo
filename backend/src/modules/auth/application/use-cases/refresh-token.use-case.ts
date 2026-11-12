@@ -8,6 +8,8 @@ import { USER_REPOSITORY } from '../../../users/domain/repositories/user.reposit
 import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
 import { AccountStatus } from '../../../users/domain/enums/user.enums';
 import { API_MESSAGES } from '../../../../common/constants/message.constants';
+import type { IRefreshAccessTokenUseCase } from '../interfaces/refresh-access-token.use-case.interface';
+import type { RefreshAccessTokenResult } from '../interfaces/refresh-access-token.use-case.interface';
 
 interface RefreshTokenPayload {
   sub: string;
@@ -16,7 +18,7 @@ interface RefreshTokenPayload {
 }
 
 @Injectable()
-export class RefreshAccessTokenUseCase {
+export class RefreshAccessTokenUseCase implements IRefreshAccessTokenUseCase {
   constructor(
     @Inject(REFRESH_TOKEN_STORAGE)
     private readonly refreshTokenStorage: IRefreshTokenStorage,
@@ -28,9 +30,7 @@ export class RefreshAccessTokenUseCase {
     private readonly tokenService: ITokenService,
   ) {}
 
-  async execute(
-    refreshToken: string,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  async execute(refreshToken: string): Promise<RefreshAccessTokenResult> {
     let payload: RefreshTokenPayload;
 
     try {

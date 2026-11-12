@@ -3,6 +3,7 @@ import { VEHICLE_REPOSITORY } from '../../domain/repositories/vehicle.repository
 import type { IVehicleRepository } from '../../domain/repositories/vehicle.repository';
 import type { AddVehicleDto } from '../dto/add-vehicle.dto';
 import type { VehicleEntity } from '../../domain/entities/vehicle.entity';
+import type { IAddVehicleUseCase } from '../interfaces/add-vehicle.use-case.interface';
 
 export class VehicleRegistrationAlreadyExistsError extends Error {
   constructor() {
@@ -12,7 +13,7 @@ export class VehicleRegistrationAlreadyExistsError extends Error {
 }
 
 @Injectable()
-export class AddVehicleUseCase {
+export class AddVehicleUseCase implements IAddVehicleUseCase {
   constructor(
     @Inject(VEHICLE_REPOSITORY)
     private readonly vehicleRepository: IVehicleRepository,

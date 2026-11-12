@@ -14,6 +14,10 @@ import { UploadProfilePhotoUseCase } from './application/use-cases/upload-profil
 import { RemoveProfilePhotoUseCase } from './application/use-cases/remove-profile-phot.use-case';
 import { PROFILE_PHOTO_STORAGE } from './application/ports/profile-photo-storage';
 import { S3ProfilePhotoStorage } from './infrastructure/storage/s3-profile-photo.storage';
+import { GET_USER_PROFILE_USE_CASE } from './application/interfaces/get-user-profile.use-case.interface';
+import { UPDATE_PROFILE_USE_CASE } from './application/interfaces/update-profile.use-case.interface';
+import { UPLOAD_PROFILE_PHOTO_USE_CASE } from './application/interfaces/upload-profile-photo.use-case.interface';
+import { REMOVE_PROFILE_PHOTO_USE_CASE } from './application/interfaces/remove-profile-photo.use-case.interface';
 
 @Module({
   imports: [
@@ -35,10 +39,22 @@ import { S3ProfilePhotoStorage } from './infrastructure/storage/s3-profile-photo
       provide: PROFILE_PHOTO_STORAGE,
       useClass: S3ProfilePhotoStorage,
     },
-    GetUserProfileUseCase,
-    UpdateProfileUseCase,
-    UploadProfilePhotoUseCase,
-    RemoveProfilePhotoUseCase,
+    {
+      provide: GET_USER_PROFILE_USE_CASE,
+      useClass: GetUserProfileUseCase,
+    },
+    {
+      provide: UPDATE_PROFILE_USE_CASE,
+      useClass: UpdateProfileUseCase,
+    },
+    {
+      provide: UPLOAD_PROFILE_PHOTO_USE_CASE,
+      useClass: UploadProfilePhotoUseCase,
+    },
+    {
+      provide: REMOVE_PROFILE_PHOTO_USE_CASE,
+      useClass: RemoveProfilePhotoUseCase,
+    },
   ],
   exports: [USER_REPOSITORY, PROFILE_PHOTO_STORAGE],
 })

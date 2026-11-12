@@ -7,6 +7,7 @@ import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage';
 import type { IRefreshTokenStorage } from '../ports/refresh-token-storage';
 import type { ITokenService } from '../ports/token.service';
 import { TOKEN_SERVICE } from '../ports/token.service';
+import type { IGoogleAuthUseCase } from '../interfaces/google-auth.use-case.interface';
 
 export interface GoogleProfile {
   googleId: string;
@@ -25,7 +26,7 @@ export class GoogleAccountLinkRequiredError extends Error {
 }
 
 @Injectable()
-export class GoogleAuthUseCase {
+export class GoogleAuthUseCase implements IGoogleAuthUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,

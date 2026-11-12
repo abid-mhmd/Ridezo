@@ -2,12 +2,13 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { VEHICLE_REPOSITORY } from '../../domain/repositories/vehicle.repository';
 import type { IVehicleRepository } from '../../domain/repositories/vehicle.repository';
-
+import { VehicleEntity } from '../../domain/entities/vehicle.entity';
 import { VEHICLE_PHOTO_STORAGE } from '../ports/vehicle-photo-storage';
 import type { IVehiclePhotoStorage } from '../ports/vehicle-photo-storage';
+import type { IGetMyVehiclesUseCase } from '../interfaces/get-my-vehicles.use-case.interface';
 
 @Injectable()
-export class GetMyVehiclesUseCase {
+export class GetMyVehiclesUseCase implements IGetMyVehiclesUseCase {
   constructor(
     @Inject(VEHICLE_REPOSITORY)
     private readonly vehicleRepository: IVehicleRepository,
@@ -16,7 +17,7 @@ export class GetMyVehiclesUseCase {
     private readonly vehiclePhotoStorage: IVehiclePhotoStorage,
   ) {}
 
-  async execute(ownerId: string) {
+  async execute(ownerId: string): Promise<VehicleEntity[]> {
     const vehicles = await this.vehicleRepository.findByOwnerId(ownerId);
 
     return Promise.all(

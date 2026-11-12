@@ -15,15 +15,22 @@ import {
 
 import { Types } from 'mongoose';
 import { API_MESSAGES } from '../../../../common/constants/message.constants';
+import {
+  ChangeUserAccountStatusResult,
+  IChangeUserAccountStatusUseCase,
+} from '../interfaces/change-user-account-status.use-case.interface';
 
 @Injectable()
-export class ChangeUserAccountStatusUseCase {
+export class ChangeUserAccountStatusUseCase implements IChangeUserAccountStatusUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
   ) {}
 
-  async execute(userId: string, status: AccountStatus) {
+  async execute(
+    userId: string,
+    status: AccountStatus,
+  ): Promise<ChangeUserAccountStatusResult> {
     if (!Types.ObjectId.isValid(userId)) {
       throw new BadRequestException('Invalid user ID.');
     }

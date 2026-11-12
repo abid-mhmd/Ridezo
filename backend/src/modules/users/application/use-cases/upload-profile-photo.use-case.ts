@@ -13,9 +13,10 @@ import type { IUserRepository } from '../../domain/repositories/user.repository'
 import { API_MESSAGES } from '../../../../common/constants/message.constants';
 import { PROFILE_PHOTO_STORAGE } from '../ports/profile-photo-storage';
 import type { IProfilePhotoStorage } from '../ports/profile-photo-storage';
+import { IUploadProfilePhotoUseCase } from '../interfaces/upload-profile-photo.use-case.interface';
 
 @Injectable()
-export class UploadProfilePhotoUseCase {
+export class UploadProfilePhotoUseCase implements IUploadProfilePhotoUseCase {
   private readonly logger = new Logger(UploadProfilePhotoUseCase.name);
 
   constructor(

@@ -5,6 +5,7 @@ import { OTP_STORAGE } from '../ports/otp-storage';
 import type { IOtpStorage } from '../ports/otp-storage';
 import { OtpHasherService } from '../services/otp-hasher.service';
 import { PinoLogger } from 'nestjs-pino';
+import type { IVerifyEmailOtpUseCase } from '../interfaces/verify-email-otp.use-case.interface';
 
 export class InvalidEmailOtpError extends Error {
   constructor() {
@@ -24,7 +25,7 @@ const MAX_OTP_ATTEMPTS = 5;
 const OTP_EXPIRY_SECONDS = 300;
 
 @Injectable()
-export class VerifyEmailOtpUseCase {
+export class VerifyEmailOtpUseCase implements IVerifyEmailOtpUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,

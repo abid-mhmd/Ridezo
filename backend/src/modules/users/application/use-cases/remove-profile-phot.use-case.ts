@@ -7,9 +7,10 @@ import { PROFILE_PHOTO_STORAGE } from '../ports/profile-photo-storage';
 import type { IProfilePhotoStorage } from '../ports/profile-photo-storage';
 
 import { API_MESSAGES } from '../../../../common/constants/message.constants';
+import { IRemoveProfilePhotoUseCase } from '../interfaces/remove-profile-photo.use-case.interface';
 
 @Injectable()
-export class RemoveProfilePhotoUseCase {
+export class RemoveProfilePhotoUseCase implements IRemoveProfilePhotoUseCase {
   private readonly logger = new Logger(RemoveProfilePhotoUseCase.name);
 
   constructor(

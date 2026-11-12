@@ -11,6 +11,7 @@ import {
   Param,
   Delete,
   HttpCode,
+  Inject,
   HttpStatus,
   UploadedFile,
   UseInterceptors,
@@ -30,25 +31,54 @@ import type { ApiResponse } from '../../../common/interfaces/api-responce.interf
 import { API_MESSAGES } from '../../../common/constants/message.constants';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
-  AddVehicleUseCase,
   VehicleRegistrationAlreadyExistsError,
 } from '../application/use-cases/add-vehicle.use-case';
-import { GetMyVehiclesUseCase } from '../application/use-cases/get-my-vehicles';
-import { GetVehicleByIdUseCase } from '../application/use-cases/get-vehicle-by-id.use-case';
-import { UpdateVehicleUseCase } from '../application/use-cases/update-vehicle.use-case';
 import { UpdateVehicleDto } from '../application/dto/update-vehicle.dto';
-import { DeactivateVehicleUseCase } from '../application/use-cases/deactivate-vehicle.use-case';
-import { UploadVehiclePhotoUseCase } from '../application/use-cases/upload-vehicle-photo.use-case';
+import {
+  ADD_VEHICLE_USE_CASE,
+  IAddVehicleUseCase,
+} from '../application/interfaces/add-vehicle.use-case.interface';
+import {
+  GET_MY_VEHICLES_USE_CASE,
+  IGetMyVehiclesUseCase,
+} from '../application/interfaces/get-my-vehicles.use-case.interface';
+import {
+  GET_VEHICLE_BY_ID_USE_CASE,
+  IGetVehicleByIdUseCase,
+} from '../application/interfaces/get-vehicle-by-id.use-case.interface';
+import {
+  IUpdateVehicleUseCase,
+  UPDATE_VEHICLE_USE_CASE,
+} from '../application/interfaces/update-vehicle.use-case.interface';
+import {
+  DEACTIVATE_VEHICLE_USE_CASE,
+  IDeactivateVehicleUseCase,
+} from '../application/interfaces/deactivate-vehicle.use-case.interface';
+import {
+  IUploadVehiclePhotoUseCase,
+  UPLOAD_VEHICLE_PHOTO_USE_CASE,
+} from '../application/interfaces/upload-vehicle-photo.use-case.interface';
 
 @Controller()
 export class VehicleController {
   constructor(
-    private readonly addVehicleUseCase: AddVehicleUseCase,
-    private readonly getMyVehiclesUseCase: GetMyVehiclesUseCase,
-    private readonly getVehicleByIdUseCase: GetVehicleByIdUseCase,
-    private readonly updateVehicleUseCase: UpdateVehicleUseCase,
-    private readonly deactivateVehicleUseCase: DeactivateVehicleUseCase,
-    private readonly uploadVehiclePhotoUseCase: UploadVehiclePhotoUseCase,
+    @Inject(ADD_VEHICLE_USE_CASE)
+    private readonly addVehicleUseCase: IAddVehicleUseCase,
+
+    @Inject(GET_MY_VEHICLES_USE_CASE)
+    private readonly getMyVehiclesUseCase: IGetMyVehiclesUseCase,
+
+    @Inject(GET_VEHICLE_BY_ID_USE_CASE)
+    private readonly getVehicleByIdUseCase: IGetVehicleByIdUseCase,
+
+    @Inject(UPDATE_VEHICLE_USE_CASE)
+    private readonly updateVehicleUseCase: IUpdateVehicleUseCase,
+
+    @Inject(DEACTIVATE_VEHICLE_USE_CASE)
+    private readonly deactivateVehicleUseCase: IDeactivateVehicleUseCase,
+
+    @Inject(UPLOAD_VEHICLE_PHOTO_USE_CASE)
+    private readonly uploadVehiclePhotoUseCase: IUploadVehiclePhotoUseCase,
   ) {}
 
   @Post(VEHICLE_ENDPOINTS.ROOT)

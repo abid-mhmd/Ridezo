@@ -10,9 +10,10 @@ import type { IEmailSender } from '../ports/email.sender';
 import { OtpGeneratorService } from '../services/otp-generator.service';
 import { OtpHasherService } from '../services/otp-hasher.service';
 import { AccountStatus } from '../../../users/domain/enums/user.enums';
+import type { IRequestPasswordResetOtpUseCase } from '../interfaces/request-password-reset-otp.use-case.interface';
 
 @Injectable()
-export class RequestPasswordResetOtpUseCase {
+export class RequestPasswordResetOtpUseCase implements IRequestPasswordResetOtpUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,

@@ -27,6 +27,16 @@ import { GoogleAuthUseCase } from './application/use-cases/google-auth.use-case'
 import { SecurityModule } from '../../infrastructure/redis/security/security.module';
 import { RefreshAccessTokenUseCase } from './application/use-cases/refresh-token.use-case';
 import { LogoutUserUseCase } from './application/use-cases/logout-user.use-case';
+import { REGISTER_USER_USE_CASE } from './application/interfaces/register-user.use-case.interface';
+import { SEND_EMAIL_OTP_USE_CASE } from './application/interfaces/send-email-otp.use-case.interface';
+import { VERIFY_EMAIL_OTP_USE_CASE } from './application/interfaces/verify-email-otp.use-case.interface';
+import { LOGIN_USER_USE_CASE } from './application/interfaces/login-user.use-case.interface';
+import { GOOGLE_AUTH_USE_CASE } from './application/interfaces/google-auth.use-case.interface';
+import { REFRESH_ACCESS_TOKEN_USE_CASE } from './application/interfaces/refresh-access-token.use-case.interface';
+import { LOGOUT_USER_USE_CASE } from './application/interfaces/logout-user.use-case.interface';
+import { REQUEST_PASSWORD_RESET_OTP_USE_CASE } from './application/interfaces/request-password-reset-otp.use-case.interface';
+import { VERIFY_PASSWORD_RESET_OTP_USE_CASE } from './application/interfaces/verify-password-reset-otp.use-case.interface';
+import { RESET_PASSWORD_USE_CASE } from './application/interfaces/reset-password.use-case.interface';
 
 @Module({
   imports: [
@@ -57,20 +67,50 @@ import { LogoutUserUseCase } from './application/use-cases/logout-user.use-case'
       provide: PASSWORD_RESET_STORAGE,
       useClass: RedisPasswordResetStorage,
     },
-    RegisterUserUseCase,
+    {
+      provide: REGISTER_USER_USE_CASE,
+      useClass: RegisterUserUseCase,
+    },
+    {
+      provide: SEND_EMAIL_OTP_USE_CASE,
+      useClass: SendEmailOtpUseCase,
+    },
     OtpGeneratorService,
-    SendEmailOtpUseCase,
     OtpHasherService,
-    VerifyEmailOtpUseCase,
-    LoginUserUseCase,
-    RequestPasswordResetOtpUseCase,
-    VerifyPasswordResetOtpUseCase,
-    ResetPasswordUseCase,
+    {
+      provide: VERIFY_EMAIL_OTP_USE_CASE,
+      useClass: VerifyEmailOtpUseCase,
+    },
+    {
+      provide: LOGIN_USER_USE_CASE,
+      useClass: LoginUserUseCase,
+    },
+    {
+      provide: REQUEST_PASSWORD_RESET_OTP_USE_CASE,
+      useClass: RequestPasswordResetOtpUseCase,
+    },
+    {
+      provide: VERIFY_PASSWORD_RESET_OTP_USE_CASE,
+      useClass: VerifyPasswordResetOtpUseCase,
+    },
+    {
+      provide: RESET_PASSWORD_USE_CASE,
+      useClass: ResetPasswordUseCase,
+    },
     GoogleStrategy,
-    GoogleAuthUseCase,
-    RefreshAccessTokenUseCase,
-    LogoutUserUseCase,
+    {
+      provide: GOOGLE_AUTH_USE_CASE,
+      useClass: GoogleAuthUseCase,
+    },
+    {
+      provide: REFRESH_ACCESS_TOKEN_USE_CASE,
+      useClass: RefreshAccessTokenUseCase,
+    },
+    {
+      provide: LOGOUT_USER_USE_CASE,
+      useClass: LogoutUserUseCase,
+    },
   ],
-  exports: [RegisterUserUseCase, PASSWORD_HASHER, REFRESH_TOKEN_STORAGE],
+  exports: [REGISTER_USER_USE_CASE, PASSWORD_HASHER, REFRESH_TOKEN_STORAGE],
 })
 export class AuthModule {}

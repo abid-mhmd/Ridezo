@@ -8,12 +8,13 @@ import { USER_REPOSITORY } from '../../../users/domain/repositories/user.reposit
 import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
 import { OtpHasherService } from '../services/otp-hasher.service';
 import { PinoLogger } from 'nestjs-pino';
+import type { ISendEmailOtpUseCase } from '../interfaces/send-email-otp.use-case.interface';
 
 const OTP_EXPIRY_SECONDS = 300;
 const OTP_RESEND_COOLDOWN_SECONDS = 60;
 
 @Injectable()
-export class SendEmailOtpUseCase {
+export class SendEmailOtpUseCase implements ISendEmailOtpUseCase {
   constructor(
     @Inject(OTP_STORAGE)
     private readonly otpStorage: IOtpStorage,

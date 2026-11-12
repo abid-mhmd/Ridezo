@@ -11,18 +11,42 @@ import { GetUserDetailsUseCase } from './application/use-cases/get-user-detail.u
 import { ChangeUserAccountStatusUseCase } from './application/use-cases/change-user-account-status.use-case';
 import { RefreshAdminTokenUseCase } from './application/use-cases/refresh-admin-token.use-case';
 import { AdminLogoutUseCase } from './application/use-cases/admin-logout.use-case';
+import { ADMIN_LOGIN_USE_CASE } from './application/interfaces/admin-login.use-case.interface';
+import { ADMIN_LOGOUT_USE_CASE } from './application/interfaces/admin-logout.use-case.interface';
+import { REFRESH_ADMIN_TOKEN_USE_CASE } from './application/interfaces/refresh-admin-token.use-case.interface';
+import { LIST_USERS_USE_CASE } from './application/interfaces/list-users.use-case.interface';
+import { GET_USER_DETAILS_USE_CASE } from './application/interfaces/get-user-details.use-case.interface';
+import { CHANGE_USER_ACCOUNT_STATUS_USE_CASE } from './application/interfaces/change-user-account-status.use-case.interface';
 
 @Module({
   imports: [AuthModule, UsersModule, SecurityModule],
   controllers: [AdminAuthController, AdminUsersController],
   providers: [
-    AdminLoginUseCase,
-    RefreshAdminTokenUseCase,
-    ListUsersUseCase,
+    {
+      provide: ADMIN_LOGIN_USE_CASE,
+      useClass: AdminLoginUseCase,
+    },
+    {
+      provide: REFRESH_ADMIN_TOKEN_USE_CASE,
+      useClass: RefreshAdminTokenUseCase,
+    },
+    {
+      provide: LIST_USERS_USE_CASE,
+      useClass: ListUsersUseCase,
+    },
     AdminRoleGuard,
-    GetUserDetailsUseCase,
-    ChangeUserAccountStatusUseCase,
-    AdminLogoutUseCase,
+    {
+      provide: GET_USER_DETAILS_USE_CASE,
+      useClass: GetUserDetailsUseCase,
+    },
+    {
+      provide: CHANGE_USER_ACCOUNT_STATUS_USE_CASE,
+      useClass: ChangeUserAccountStatusUseCase,
+    },
+    {
+      provide: ADMIN_LOGOUT_USE_CASE,
+      useClass: AdminLogoutUseCase,
+    },
   ],
 })
 export class AdminAuthModule {}

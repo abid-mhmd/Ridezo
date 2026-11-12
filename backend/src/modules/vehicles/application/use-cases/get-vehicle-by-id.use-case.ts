@@ -7,9 +7,10 @@ import { VEHICLE_PHOTO_STORAGE } from '../ports/vehicle-photo-storage';
 import type { IVehiclePhotoStorage } from '../ports/vehicle-photo-storage';
 
 import type { VehicleEntity } from '../../domain/entities/vehicle.entity';
+import type { IGetVehicleByIdUseCase } from '../interfaces/get-vehicle-by-id.use-case.interface';
 
 @Injectable()
-export class GetVehicleByIdUseCase {
+export class GetVehicleByIdUseCase implements IGetVehicleByIdUseCase {
   constructor(
     @Inject(VEHICLE_REPOSITORY)
     private readonly vehicleRepository: IVehicleRepository,

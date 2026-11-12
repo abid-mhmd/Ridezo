@@ -11,9 +11,10 @@ import { VehicleRegistrationAlreadyExistsError } from './add-vehicle.use-case';
 
 import { VEHICLE_PHOTO_STORAGE } from '../ports/vehicle-photo-storage';
 import type { IVehiclePhotoStorage } from '../ports/vehicle-photo-storage';
+import type { IUpdateVehicleUseCase } from '../interfaces/update-vehicle.use-case.interface';
 
 @Injectable()
-export class UpdateVehicleUseCase {
+export class UpdateVehicleUseCase implements IUpdateVehicleUseCase {
   private readonly logger = new Logger(UpdateVehicleUseCase.name);
 
   constructor(

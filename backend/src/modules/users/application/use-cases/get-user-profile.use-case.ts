@@ -8,9 +8,10 @@ import type { IProfilePhotoStorage } from '../ports/profile-photo-storage';
 
 import type { UserEntity } from '../../domain/entities/user.entity';
 import { API_MESSAGES } from '../../../../common/constants/message.constants';
+import type { IGetUserProfileUseCase } from '../interfaces/get-user-profile.use-case.interface';
 
 @Injectable()
-export class GetUserProfileUseCase {
+export class GetUserProfileUseCase implements IGetUserProfileUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,

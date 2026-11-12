@@ -4,9 +4,10 @@ import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service';
 import { createHash } from 'node:crypto';
 import { REFRESH_TOKEN_STORAGE } from '../../../auth/application/ports/refresh-token-storage';
 import type { IRefreshTokenStorage } from '../../../auth/application/ports/refresh-token-storage';
+import { IAdminLogoutUseCase } from '../interfaces/admin-logout.use-case.interface';
 
 @Injectable()
-export class AdminLogoutUseCase {
+export class AdminLogoutUseCase implements IAdminLogoutUseCase {
   constructor(
     @Inject(REFRESH_TOKEN_STORAGE)
     private readonly refreshTokenStorage: IRefreshTokenStorage,

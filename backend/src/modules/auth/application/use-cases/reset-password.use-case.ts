@@ -6,6 +6,7 @@ import type { IPasswordHasher } from '../ports/passwordhasher';
 import { AccountStatus } from '../../../users/domain/enums/user.enums';
 import type { ITokenService } from '../ports/token.service';
 import { TOKEN_SERVICE } from '../ports/token.service';
+import { IResetPasswordUseCase } from '../interfaces/reset-password.use-case.interface';
 
 export class InvalidPasswordResetTokenError extends Error {
   constructor() {
@@ -15,7 +16,7 @@ export class InvalidPasswordResetTokenError extends Error {
 }
 
 @Injectable()
-export class ResetPasswordUseCase {
+export class ResetPasswordUseCase implements IResetPasswordUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,

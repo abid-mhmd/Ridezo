@@ -16,6 +16,7 @@ import { API_MESSAGES } from '../../../../common/constants/message.constants';
 import type { ITokenService } from '../ports/token.service';
 import { TOKEN_SERVICE } from '../ports/token.service';
 import { PinoLogger } from 'nestjs-pino';
+import type { ILoginUserUseCase } from '../interfaces/login-user.use-case.interface';
 
 export class InvalidCredentialsError extends Error {
   constructor() {
@@ -40,7 +41,7 @@ export interface LoginUserResult {
 }
 
 @Injectable()
-export class LoginUserUseCase {
+export class LoginUserUseCase implements ILoginUserUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,

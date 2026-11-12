@@ -12,9 +12,10 @@ import { PROFILE_PHOTO_STORAGE } from '../../../users/application/ports/profile-
 import type { IProfilePhotoStorage } from '../../../users/application/ports/profile-photo-storage';
 import { Inject } from '@nestjs/common';
 import { API_MESSAGES } from '../../../../common/constants/message.constants';
+import { IGetUserDetailsUseCase } from '../interfaces/get-user-details.use-case.interface';
 
 @Injectable()
-export class GetUserDetailsUseCase {
+export class GetUserDetailsUseCase implements IGetUserDetailsUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,

@@ -5,9 +5,10 @@ import type { ListUsersQuery } from '../../../users/domain/repositories/user.rep
 import { PROFILE_PHOTO_STORAGE } from '../../../users/application/ports/profile-photo-storage';
 import type { IProfilePhotoStorage } from '../../../users/application/ports/profile-photo-storage';
 import type { AdminUserListResult } from '../dto/admin-user.list-responce.dto';
+import { IListUsersUseCase } from '../interfaces/list-users.use-case.interface';
 
 @Injectable()
-export class ListUsersUseCase {
+export class ListUsersUseCase implements IListUsersUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,

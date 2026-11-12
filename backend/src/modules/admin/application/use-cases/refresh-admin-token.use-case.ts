@@ -15,6 +15,7 @@ import {
 } from '../../../users/domain/enums/user.enums';
 
 import { API_MESSAGES } from '../../../../common/constants/message.constants';
+import { IRefreshAdminTokenUseCase } from '../interfaces/refresh-admin-token.use-case.interface';
 
 interface RefreshTokenPayload {
   sub: string;
@@ -29,7 +30,7 @@ export interface RefreshAdminTokenResult {
 }
 
 @Injectable()
-export class RefreshAdminTokenUseCase {
+export class RefreshAdminTokenUseCase implements IRefreshAdminTokenUseCase {
   constructor(
     @Inject(REFRESH_TOKEN_STORAGE)
     private readonly refreshTokenStorage: IRefreshTokenStorage,

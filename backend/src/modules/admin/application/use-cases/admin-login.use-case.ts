@@ -1,22 +1,33 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { createHash, randomBytes } from 'node:crypto';
+
 import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
 import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository';
+
 import type { IPasswordHasher } from '../../../auth/application/ports/passwordhasher';
 import { PASSWORD_HASHER } from '../../../auth/application/ports/passwordhasher';
+
 import type { IRefreshTokenStorage } from '../../../auth/application/ports/refresh-token-storage';
 import { REFRESH_TOKEN_STORAGE } from '../../../auth/application/ports/refresh-token-storage';
+
 import type { ITokenService } from '../../../auth/application/ports/token.service';
 import { TOKEN_SERVICE } from '../../../auth/application/ports/token.service';
+
 import {
   AccountStatus,
   UserRole,
 } from '../../../users/domain/enums/user.enums';
+
 import { API_MESSAGES } from '../../../../common/constants/message.constants';
 import type { AdminLoginInput } from '../dto/admin-login.input';
 
+import {
+  IAdminLoginUseCase,
+  type AdminLoginResult,
+} from '../interfaces/admin-login.use-case.interface';
+
 @Injectable()
-export class AdminLoginUseCase {
+export class AdminLoginUseCase implements IAdminLoginUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
@@ -31,7 +42,7 @@ export class AdminLoginUseCase {
     private readonly tokenService: ITokenService,
   ) {}
 
-  async execute(input: AdminLoginInput) {
+  async execute(input: AdminLoginInput): Promise<AdminLoginResult> {
     const email = input.email.trim().toLowerCase();
 
     const user = await this.userRepository.findByEmailForAuthentication(email);
@@ -55,7 +66,6 @@ export class AdminLoginUseCase {
     }
 
     const sessionId = randomBytes(16).toString('hex');
-
     const refreshTtl = this.tokenService.getRefreshTokenTtl();
 
     const refreshToken = await this.tokenService.generateRefreshToken({
@@ -85,7 +95,13 @@ export class AdminLoginUseCase {
       refreshToken,
       expiresIn: this.tokenService.getAccessTokenTtl(),
       refreshTtl,
-      user,
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+      },
     };
   }
 }

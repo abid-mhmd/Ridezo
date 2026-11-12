@@ -5,9 +5,10 @@ import type { UpdateProfileDto } from '../dto/update-profile.dto';
 import { API_MESSAGES } from '../../../../common/constants/message.constants';
 import { PROFILE_PHOTO_STORAGE } from '../ports/profile-photo-storage';
 import type { IProfilePhotoStorage } from '../ports/profile-photo-storage';
+import type { IUpdateProfileUseCase } from '../interfaces/update-profile.use-case.interface';
 
 @Injectable()
-export class UpdateProfileUseCase {
+export class UpdateProfileUseCase implements IUpdateProfileUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
