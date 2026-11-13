@@ -53,7 +53,7 @@ export default function AdminLoginPage({
           </div>
 
           <span className="text-base font-bold tracking-tight text-white">
-            Tripzo{' '}
+            Ridezo{' '}
             <span className="text-xs font-normal text-ridezo-muted ml-1">
               Admin Portal
             </span>
@@ -83,7 +83,7 @@ export default function AdminLoginPage({
           </h1>
 
           <p className="mt-1.5 text-xs leading-5 text-ridezo-muted">
-            Sign in to manage Tripzo operations securely.
+            Sign in to manage Ridezo operations securely.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
@@ -166,7 +166,7 @@ export default function AdminLoginPage({
           <div className="mt-6 flex items-center justify-center gap-2 border-t border-white/[0.05] pt-5">
             <span className="text-ridezo-success text-[10px]">🛡️</span>
             <p className="text-center text-[11px] leading-relaxed text-gray-400">
-              Authorized Tripzo administrators only.
+              Authorized Ridezo administrators only.
             </p>
           </div>
         </div>
@@ -175,7 +175,7 @@ export default function AdminLoginPage({
       {/* Footer */}
       <footer className="border-t border-white/[0.06] px-6 py-5 sm:px-10">
         <div className="mx-auto flex max-w-[1240px] flex-col justify-between gap-4 text-xs text-gray-400 sm:flex-row sm:items-center">
-          <p>© 2026 Tripzo Mobility Technologies. All rights reserved.</p>
+          <p>© 2026 Ridezo Mobility Technologies. All rights reserved.</p>
 
           <nav className="flex flex-wrap gap-6 text-[11px]">
             <a href="/privacy" className="transition hover:text-white">

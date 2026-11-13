@@ -119,7 +119,7 @@ export default function Sidebar({
           </span>
 
           <span className="text-base font-bold tracking-tight text-white">
-            Tripzo
+            Ridezo
           </span>
         </div>
 

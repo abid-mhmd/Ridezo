@@ -6,6 +6,7 @@ import {
   CalendarDays,
   Pencil,
   Trash2,
+  FileText,
 } from 'lucide-react';
 
 import type { Vehicle } from '../types/vehicle.types';
@@ -87,12 +88,21 @@ export default function VehicleCard({
         </div>
 
         {/* Actions with Violet/Pink gradient styling matching reference */}
-        <div className="flex gap-2.5">
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => navigate(`/vehicles/${vehicle.id}/documents`)}
+            className="flex items-center justify-center gap-2 rounded-xl border border-[#30394b] px-3 py-2.5 text-xs font-semibold text-[#c7cddd] transition hover:border-[#8b78ff] hover:bg-[#8b78ff]/10"
+          >
+            <FileText size={14} />
+            Documents
+          </button>
+
           <button
             type="button"
             onClick={() => navigate(`/vehicles/${vehicle.id}/edit`)}
             disabled={!vehicle.isActive}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#8b78ff] to-[#ec4899] px-3 py-2.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-lg shadow-purple-900/20"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#8b78ff] to-[#ec4899] px-3 py-2.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Pencil size={14} />
             Manage Vehicle
@@ -104,7 +114,7 @@ export default function VehicleCard({
             disabled={!vehicle.isActive}
             aria-label="Deactivate vehicle"
             title="Deactivate vehicle"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#30394b] text-[#929bad] transition hover:border-red-400/30 hover:bg-red-400/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#30394b] text-[#929bad] transition hover:border-red-400/30 hover:bg-red-400/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Trash2 size={15} />
           </button>

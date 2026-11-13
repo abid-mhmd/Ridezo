@@ -5,7 +5,6 @@ import { addVehicle } from '../api/vehicle.api';
 import VehicleForm from '../components/VehicleForm';
 import type { VehicleFormSubmitValues } from '../components/VehicleForm';
 
-
 export default function AddVehiclePage() {
   const navigate = useNavigate();
 

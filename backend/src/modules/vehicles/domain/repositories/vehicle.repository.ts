@@ -1,4 +1,5 @@
 import type { VehicleEntity } from '../entities/vehicle.entity';
+import type { VehicleVerificationStatus } from '../enums/vehicle.enums';
 
 export const VEHICLE_REPOSITORY = Symbol('VEHICLE_REPOSITORY');
 
@@ -42,5 +43,9 @@ export interface IVehicleRepository {
   existsByRegistrationNumber(
     registrationNumber: string,
     excludeVehicleId?: string,
+  ): Promise<boolean>;
+  updateVerificationStatus(
+    vehicleId: string,
+    status: VehicleVerificationStatus,
   ): Promise<boolean>;
 }

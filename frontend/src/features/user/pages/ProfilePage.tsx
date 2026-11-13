@@ -102,7 +102,7 @@ export default function ProfilePage() {
   }
 
   const fullName =
-    `${profile.firstName} ${profile.lastName}`.trim() || 'Tripzo Traveller';
+    `${profile.firstName} ${profile.lastName}`.trim() || 'Ridezo Traveller';
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 pb-12">

@@ -8,7 +8,10 @@ import {
 } from '../schemas/vehicle.schema';
 import { uploadVehiclePhoto } from '../api/vehicle.api';
 
-export type VehicleFormSubmitValues = Omit<VehicleFormValues, 'vehiclePhoto'> & {
+export type VehicleFormSubmitValues = Omit<
+  VehicleFormValues,
+  'vehiclePhoto'
+> & {
   vehiclePhotoKey?: string;
 };
 
@@ -154,7 +157,8 @@ export default function VehicleForm({
       }
 
       // Exclude the display URL from the API payload.
-      const { vehiclePhoto: _vehiclePhoto, ...vehicleDetails } = result.data;
+      const vehicleDetails = { ...result.data };
+      delete vehicleDetails.vehiclePhoto;
 
       await onSubmit({
         ...vehicleDetails,

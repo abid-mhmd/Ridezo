@@ -9,6 +9,5 @@ export interface IVehiclePhotoStorage {
   }>;
 
   getUrl(objectKey: string): Promise<string>;
-
   delete(objectKey: string): Promise<void>;
 }

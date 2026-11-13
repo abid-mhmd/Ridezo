@@ -10,6 +10,7 @@ import type {
 import type { VehicleEntity } from '../../../domain/entities/vehicle.entity';
 import { Vehicle, type VehicleDocument } from './vehicle.schema';
 import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository';
+import type { VehicleVerificationStatus } from '../../../domain/enums/vehicle.enums';
 
 @Injectable()
 export class MongooseVehicleRepository
@@ -125,6 +126,22 @@ export class MongooseVehicleRepository
     }
     const vehicle = await this.model.exists(filter).exec();
     return vehicle !== null;
+  }
+
+  async updateVerificationStatus(
+    vehicleId: string,
+    status: VehicleVerificationStatus,
+  ): Promise<boolean> {
+    if (!Types.ObjectId.isValid(vehicleId)) {
+      return false;
+    }
+
+    const result = await this.model.updateOne(
+      { _id: new Types.ObjectId(vehicleId) },
+      { $set: { verificationStatus: status } },
+    );
+
+    return result.modifiedCount > 0;
   }
 
   private toEntity(vehicle: VehicleDocument): VehicleEntity {

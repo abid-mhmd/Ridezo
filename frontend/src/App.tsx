@@ -32,6 +32,7 @@ import {
 import VehiclesPage from './features/vehicles/pages/VehiclesPage';
 import AddVehiclePage from './features/vehicles/pages/AddVehiclePage';
 import EditVehiclePage from './features/vehicles/pages/EditVehiclePage';
+import VehicleDocumentsPage from './features/vehicles/pages/VehicleDocumentsPage';
 
 function GoogleCallbackHandler({
   onLoginSuccess,
@@ -303,6 +304,10 @@ function App() {
           <Route
             path="/vehicles/:vehicleId/edit"
             element={<EditVehiclePage />}
+          />
+          <Route
+            path="/vehicles/:vehicleId/documents"
+            element={<VehicleDocumentsPage />}
           />
         </Route>
 

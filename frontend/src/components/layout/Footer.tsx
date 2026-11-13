@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="w-full border-t border-[#252e3e] bg-[#080b12] px-6 py-6 sm:px-10">
       <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-4 text-xs text-[#929bad] sm:flex-row">
-        <p>© {new Date().getFullYear()} Tripzo. Travel together.</p>
+        <p>© {new Date().getFullYear()} Ridezo. Travel together.</p>
 
         <div className="flex flex-wrap items-center justify-center gap-6">
           <Link to="/support" className="transition hover:text-white">
