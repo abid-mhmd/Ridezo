@@ -3,4 +3,5 @@ export const RIDE_ENDPOINTS = {
   MY_RIDES: 'rides/my-rides',
   BY_ID: 'rides/:rideId',
   CANCEL: 'rides/:rideId/cancel',
+  SEARCH: 'rides/search',
 } as const;

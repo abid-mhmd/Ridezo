@@ -22,11 +22,20 @@ export interface ListRidesQuery {
   limit: number;
 }
 
+export interface SearchRidesQuery {
+  originPlaceId: string;
+  destinationPlaceId: string;
+  departureDate: Date;
+  seats: number;
+  minPrice?: number;
+  maxPrice?: number;
+  page: number;
+  limit: number;
+}
+
 export interface IRideRepository {
   create(data: CreateRideData): Promise<RideEntity>;
-
   findById(rideId: string): Promise<RideEntity | null>;
-
   findByDriverId(
     driverId: string,
     query: ListRidesQuery,
@@ -34,12 +43,17 @@ export interface IRideRepository {
     rides: RideEntity[];
     total: number;
   }>;
-
   update(
     rideId: string,
     driverId: string,
     data: UpdateRideData,
   ): Promise<RideEntity | null>;
-
   cancel(rideId: string, driverId: string): Promise<boolean>;
+  search(
+    query: SearchRidesQuery,
+    excludeDriverId?: string,
+  ): Promise<{
+    rides: RideEntity[];
+    total: number;
+  }>;
 }

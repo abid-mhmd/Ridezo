@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Types, type Model } from 'mongoose';
-
 import type {
   CreateRideData,
   IRideRepository,
   ListRidesQuery,
+  SearchRidesQuery,
   UpdateRideData,
 } from '../../../domain/repositories/ride.repository';
 import type { RideEntity } from '../../../domain/entities/ride.entity';
@@ -133,6 +133,67 @@ export class MongooseRideRepository
       .exec();
 
     return result.modifiedCount > 0;
+  }
+
+  async search(query: SearchRidesQuery): Promise<{
+    rides: RideEntity[];
+    total: number;
+  }> {
+    const startOfDay = new Date(query.departureDate);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const startOfNextDay = new Date(startOfDay);
+    startOfNextDay.setUTCDate(startOfNextDay.getUTCDate() + 1);
+
+    const now = new Date();
+
+    const filter: Record<string, unknown> = {
+      'origin.placeId': query.originPlaceId,
+      'destination.placeId': query.destinationPlaceId,
+
+      departureTime: {
+        $gte: startOfDay > now ? startOfDay : now,
+        $lt: startOfNextDay,
+      },
+
+      availableSeats: {
+        $gte: query.seats,
+      },
+
+      status: RideStatus.SCHEDULED,
+    };
+
+    if (query.minPrice !== undefined || query.maxPrice !== undefined) {
+      const priceFilter: Record<string, number> = {};
+
+      if (query.minPrice !== undefined) {
+        priceFilter.$gte = query.minPrice;
+      }
+
+      if (query.maxPrice !== undefined) {
+        priceFilter.$lte = query.maxPrice;
+      }
+
+      filter.pricePerSeat = priceFilter;
+    }
+
+    const skip = (query.page - 1) * query.limit;
+
+    const [documents, total] = await Promise.all([
+      this.model
+        .find(filter)
+        .sort({ departureTime: 1, _id: 1 })
+        .skip(skip)
+        .limit(query.limit)
+        .exec(),
+
+      this.model.countDocuments(filter).exec(),
+    ]);
+
+    return {
+      rides: documents.map((ride) => this.toEntity(ride)),
+      total,
+    };
   }
 
   private toEntity(ride: RideDocument): RideEntity {

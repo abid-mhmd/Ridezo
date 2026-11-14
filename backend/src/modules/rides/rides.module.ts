@@ -21,6 +21,8 @@ import { UPDATE_RIDE_USE_CASE } from './application/interfaces/update-ride.use-c
 import { CANCEL_RIDE_USE_CASE } from './application/interfaces/cancel-ride.use-case';
 import { RidesController } from './presentation/rides.controller';
 import { SecurityModule } from '../../infrastructure/redis/security/security.module';
+import { SearchRidesUseCase } from './application/use-cases/search-rides.use-case';
+import { SEARCH_RIDES_USE_CASE } from './application/interfaces/search-rides.use-case.interface';
 
 @Module({
   imports: [
@@ -59,6 +61,10 @@ import { SecurityModule } from '../../infrastructure/redis/security/security.mod
     {
       provide: CANCEL_RIDE_USE_CASE,
       useClass: CancelRideUseCase,
+    },
+    {
+      provide: SEARCH_RIDES_USE_CASE,
+      useClass: SearchRidesUseCase,
     },
   ],
   exports: [RIDE_REPOSITORY],

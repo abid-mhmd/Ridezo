@@ -54,8 +54,8 @@ import {
   //   DriverAccountInactiveError,
   //   DriverIdentityNotVerifiedError,
   VehicleNotFoundError,
-  VehicleInactiveError,
-  VehicleNotApprovedError,
+  //   VehicleInactiveError,
+  //   VehicleNotApprovedError,
   InvalidPassengerSeatCountError,
   InvalidDepartureTimeError as CreateInvalidDepartureTimeError,
   InvalidRideLocationsError as CreateInvalidRideLocationsError,
@@ -71,6 +71,13 @@ import {
   RideNotFoundOrNotOwnedError,
   RideCannotBeCancelledError,
 } from '../application/use-cases/cancel-ride.use-case';
+import { SearchRidesDto } from '../application/dto/search-rides.dto';
+import {
+  SEARCH_RIDES_USE_CASE,
+  ISearchRidesUseCase,
+} from '../application/interfaces/search-rides.use-case.interface';
+import { InvalidRideSearchError } from '../application/use-cases/search-rides.use-case';
+import { SearchRidesQuery } from '../domain/repositories/ride.repository';
 
 @Controller()
 @UseGuards(JwtAuthGuard)
@@ -90,9 +97,11 @@ export class RidesController {
 
     @Inject(CANCEL_RIDE_USE_CASE)
     private readonly cancelRideUseCase: ICancelRideUseCase,
+
+    @Inject(SEARCH_RIDES_USE_CASE)
+    private readonly searchRidesUseCase: ISearchRidesUseCase,
   ) {}
 
-  // Create a ride
   @Post(RIDE_ENDPOINTS.ROOT)
   async createRide(
     @Req() request: Request & { user?: AccessTokenPayload },
@@ -118,7 +127,6 @@ export class RidesController {
     }
   }
 
-  // Get driver's rides
   @Get(RIDE_ENDPOINTS.MY_RIDES)
   async getMyRides(
     @Req() request: Request & { user: AccessTokenPayload },
@@ -150,7 +158,45 @@ export class RidesController {
     };
   }
 
-  // Get ride details
+  @Get(RIDE_ENDPOINTS.SEARCH)
+  async searchRides(
+    @Req() request: Request & { user: AccessTokenPayload },
+    @Query() query: SearchRidesDto,
+  ): Promise<
+    ApiResponse<{
+      rides: RideResponseDto[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    }>
+  > {
+    try {
+      const result = await this.searchRidesUseCase.execute(
+        request.user.sub,
+        query,
+      );
+
+      return {
+        success: true,
+        message: RIDE_MESSAGES.LIST_RETRIEVED,
+        data: {
+          rides: RideMapper.toResponseList(result.rides),
+          total: result.total,
+          page: query.page,
+          limit: query.limit,
+          totalPages: Math.ceil(result.total / query.limit),
+        },
+      };
+    } catch (error) {
+      if (error instanceof InvalidRideSearchError) {
+        throw new BadRequestException(error.message);
+      }
+
+      throw error;
+    }
+  }
+
   @Get(RIDE_ENDPOINTS.BY_ID)
   async getRideDetails(
     @Param('rideId') rideId: string,
