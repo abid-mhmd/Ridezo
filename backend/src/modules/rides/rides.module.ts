@@ -19,6 +19,7 @@ import { GET_MY_RIDES_USE_CASE } from './application/interfaces/get-my-rides.use
 import { GET_RIDE_DETAILS_USE_CASE } from './application/interfaces/get-ride-details.use-case';
 import { UPDATE_RIDE_USE_CASE } from './application/interfaces/update-ride.use-case.interface';
 import { CANCEL_RIDE_USE_CASE } from './application/interfaces/cancel-ride.use-case';
+import { RidesController } from './presentation/rides.controller';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { CANCEL_RIDE_USE_CASE } from './application/interfaces/cancel-ride.use-c
     UsersModule,
     VehiclesModule,
   ],
+  controllers: [RidesController],
   providers: [
     {
       provide: RIDE_REPOSITORY,
