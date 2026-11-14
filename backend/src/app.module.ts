@@ -10,6 +10,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
 import { AdminAuthModule } from './modules/admin/admin-auth.module';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
+import { RidesModule } from './modules/rides/rides.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { VehiclesModule } from './modules/vehicles/vehicles.module';
     UsersModule,
     AuthModule,
     VehiclesModule,
+    RidesModule,
     RedisModule,
     AdminAuthModule,
   ],

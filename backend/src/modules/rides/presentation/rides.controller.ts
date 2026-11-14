@@ -51,8 +51,8 @@ import {
 } from '../application/interfaces/cancel-ride.use-case';
 import {
   DriverNotFoundError,
-  DriverAccountInactiveError,
-  DriverIdentityNotVerifiedError,
+  //   DriverAccountInactiveError,
+  //   DriverIdentityNotVerifiedError,
   VehicleNotFoundError,
   VehicleInactiveError,
   VehicleNotApprovedError,
@@ -247,14 +247,14 @@ export class RidesController {
       throw new NotFoundException(error.message);
     }
 
-    if (
-      error instanceof DriverAccountInactiveError ||
-      error instanceof DriverIdentityNotVerifiedError ||
-      error instanceof VehicleInactiveError ||
-      error instanceof VehicleNotApprovedError
-    ) {
-      throw new ForbiddenException(error.message);
-    }
+    // if (
+    //   error instanceof DriverAccountInactiveError ||
+    //   error instanceof DriverIdentityNotVerifiedError ||
+    //   error instanceof VehicleInactiveError ||
+    //   error instanceof VehicleNotApprovedError
+    // ) {
+    //   throw new ForbiddenException(error.message);
+    // }
 
     if (
       error instanceof InvalidPassengerSeatCountError ||

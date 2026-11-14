@@ -32,12 +32,12 @@ export class DriverAccountInactiveError extends Error {
   }
 }
 
-export class DriverIdentityNotVerifiedError extends Error {
-  constructor() {
-    super('Identity verification is required to create a ride.');
-    this.name = 'DriverIdentityNotVerifiedError';
-  }
-}
+// export class DriverIdentityNotVerifiedError extends Error {
+//   constructor() {
+//     super('Identity verification is required to create a ride.');
+//     this.name = 'DriverIdentityNotVerifiedError';
+//   }
+// }
 
 export class VehicleNotFoundError extends Error {
   constructor() {
@@ -106,11 +106,11 @@ export class CreateRideUseCase implements ICreateRideUseCase {
       throw new DriverAccountInactiveError();
     }
 
-    if (
-      driver.identityVerification.status !== IdentityVerificationStatus.VERIFIED
-    ) {
-      throw new DriverIdentityNotVerifiedError();
-    }
+    // if (
+    //   driver.identityVerification.status !== IdentityVerificationStatus.VERIFIED
+    // ) {
+    //   throw new DriverIdentityNotVerifiedError();
+    // }
 
     // 2. Verify vehicle ownership
     const vehicle = await this.vehicleRepository.findByIdAndOwner(

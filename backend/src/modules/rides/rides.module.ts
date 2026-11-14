@@ -20,6 +20,7 @@ import { GET_RIDE_DETAILS_USE_CASE } from './application/interfaces/get-ride-det
 import { UPDATE_RIDE_USE_CASE } from './application/interfaces/update-ride.use-case.interface';
 import { CANCEL_RIDE_USE_CASE } from './application/interfaces/cancel-ride.use-case';
 import { RidesController } from './presentation/rides.controller';
+import { SecurityModule } from '../../infrastructure/redis/security/security.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { RidesController } from './presentation/rides.controller';
       },
     ]),
     UsersModule,
+    SecurityModule,
     VehiclesModule,
   ],
   controllers: [RidesController],
