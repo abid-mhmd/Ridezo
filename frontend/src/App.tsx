@@ -21,18 +21,23 @@ import EditProfilePage from './features/user/pages/EditProfilePage';
 import type { AuthUser } from './features/auth/types/auth.types';
 import { setAccessToken, restoreSession } from './api/http';
 import { getMyProfile } from './features/user/api/profile.api';
+
 import AdminLoginPage from './features/admin/auth/pages/AdminLoginPage';
 import AdminUsersPage from './features/admin/users/pages/AdminUsersPage';
 import AdminLayout from './features/admin/components/AdminLayout';
 import AdminUserDetailsPage from './features/admin/users/pages/AdmiUserDetailsPage';
+
 import {
   refreshAdminSession,
   logoutAdmin,
 } from './features/admin/auth/api/admin-auth.api';
+
 import VehiclesPage from './features/vehicles/pages/VehiclesPage';
 import AddVehiclePage from './features/vehicles/pages/AddVehiclePage';
 import EditVehiclePage from './features/vehicles/pages/EditVehiclePage';
 import VehicleDocumentsPage from './features/vehicles/pages/VehicleDocumentsPage';
+
+import RideSearchPage from './features/rides/pages/RideSearchPage';
 
 function GoogleCallbackHandler({
   onLoginSuccess,
@@ -101,6 +106,7 @@ function App() {
 
   // Separate admin session
   const [adminAccessToken, setAdminAccessToken] = useState<string | null>(null);
+
   const [isAdminInitializing, setIsAdminInitializing] =
     useState(isInitialAdminPath);
 
@@ -128,6 +134,7 @@ function App() {
       if (window.location.pathname.startsWith('/admin')) {
         try {
           const session = await refreshAdminSession();
+
           if (isMounted) {
             setAdminAccessToken(session.accessToken);
           }
@@ -144,9 +151,11 @@ function App() {
       } else {
         try {
           const token = await restoreSession();
+
           if (!token) return;
 
           const profile = await getMyProfile();
+
           if (!isMounted) return;
 
           const authenticatedUser: AuthUser = {
@@ -162,6 +171,7 @@ function App() {
           setUser(authenticatedUser);
         } catch {
           setAccessToken(null);
+
           if (isMounted) {
             setAccessTokenState(null);
             setUser(null);
@@ -223,6 +233,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* Regular user authentication */}
+
         <Route
           path="/login"
           element={
@@ -242,11 +253,14 @@ function App() {
             <GoogleCallbackHandler onLoginSuccess={handleLoginSuccess} />
           }
         />
+
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-reset-otp" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+        {/* Admin authentication */}
 
         <Route
           path="/admin/login"
@@ -262,6 +276,7 @@ function App() {
         />
 
         {/* Admin protected routes */}
+
         <Route
           path="/admin"
           element={
@@ -275,17 +290,20 @@ function App() {
           }
         >
           <Route index element={<Navigate to="/admin/users" replace />} />
+
           <Route
             path="users"
             element={<AdminUsersPage accessToken={adminAccessToken!} />}
           />
+
           <Route
             path="users/:userId"
             element={<AdminUserDetailsPage accessToken={adminAccessToken!} />}
           />
         </Route>
 
-        {/* Regular user protected routes */}
+        {/* Regular user protected routes: Navbar + Sidebar + Footer */}
+
         <Route
           element={
             isInitializing ? (
@@ -299,19 +317,39 @@ function App() {
         >
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/edit" element={<EditProfilePage />} />
+
           <Route path="/vehicles" element={<VehiclesPage />} />
           <Route path="/vehicles/add" element={<AddVehiclePage />} />
+
           <Route
             path="/vehicles/:vehicleId/edit"
             element={<EditVehiclePage />}
           />
+
           <Route
             path="/vehicles/:vehicleId/documents"
             element={<VehicleDocumentsPage />}
           />
         </Route>
 
+        {/* Full-width protected routes: Navbar + Footer */}
+
+        <Route
+          element={
+            isInitializing ? (
+              <FullScreenLoader />
+            ) : accessToken && user ? (
+              <AppLayout onLogout={handleLogout} showSidebar={false} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        >
+          <Route path="/rides/search" element={<RideSearchPage />} />
+        </Route>
+
         {/* Fallback */}
+
         <Route
           path="*"
           element={
