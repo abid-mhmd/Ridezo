@@ -5,25 +5,32 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
 
 import {
   AccountStatus,
   UserRole,
-} from '../../../users/domain/enums/user.enums.js';
+} from '../../../users/domain/enums/user.enums';
 
 import { Types } from 'mongoose';
-import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
+import { API_MESSAGES } from '../../../../common/constants/message.constants';
+import {
+  ChangeUserAccountStatusResult,
+  IChangeUserAccountStatusUseCase,
+} from '../interfaces/change-user-account-status.use-case.interface';
 
 @Injectable()
-export class ChangeUserAccountStatusUseCase {
+export class ChangeUserAccountStatusUseCase implements IChangeUserAccountStatusUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
   ) {}
 
-  async execute(userId: string, status: AccountStatus) {
+  async execute(
+    userId: string,
+    status: AccountStatus,
+  ): Promise<ChangeUserAccountStatusResult> {
     if (!Types.ObjectId.isValid(userId)) {
       throw new BadRequestException('Invalid user ID.');
     }

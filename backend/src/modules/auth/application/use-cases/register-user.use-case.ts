@@ -1,14 +1,15 @@
-import type { UserEntity } from '../../../users/domain/entities/user.entity.js';
+import type { UserEntity } from '../../../users/domain/entities/user.entity';
 import type {
   CreateUserData,
   IUserRepository,
-} from '../../../users/domain/repositories/user.repository.js';
+} from '../../../users/domain/repositories/user.repository';
 import { Inject, Injectable } from '@nestjs/common';
-import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import { PASSWORD_HASHER } from '../ports/passwordhasher.js';
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository';
+import { PASSWORD_HASHER } from '../ports/passwordhasher';
 import { PinoLogger } from 'nestjs-pino';
-import type { RegisterUserDto } from '../dto/register-user.dto.js';
-import type { IPasswordHasher } from '../ports/passwordhasher.js';
+import type { RegisterUserDto } from '../dto/register-user.dto';
+import type { IPasswordHasher } from '../ports/passwordhasher';
+import { IRegisterUserUseCase } from '../interfaces/register-user.use-case.interface';
 
 export class EmailAlreadyRegisteredError extends Error {
   constructor() {
@@ -18,7 +19,7 @@ export class EmailAlreadyRegisteredError extends Error {
 }
 
 @Injectable()
-export class RegisterUserUseCase {
+export class RegisterUserUseCase implements IRegisterUserUseCase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,

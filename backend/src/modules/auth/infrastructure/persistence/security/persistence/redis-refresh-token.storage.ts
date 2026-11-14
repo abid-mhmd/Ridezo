@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { RedisService } from '../../../../../../infrastructure/redis/redis.service.js';
-import type { IRefreshTokenStorage } from '../../../../application/ports/refresh-token-storage.js';
+import { RedisService } from '../../../../../../infrastructure/redis/redis.service';
+import type { IRefreshTokenStorage } from '../../../../application/ports/refresh-token-storage';
 
 @Injectable()
 export class RedisRefreshTokenStorage implements IRefreshTokenStorage {

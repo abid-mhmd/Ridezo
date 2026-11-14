@@ -16,26 +16,45 @@ import {
 import { memoryStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request } from 'express';
-import { GetUserProfileUseCase } from '../application/use-cases/get-user-profile.use-case.js';
-import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard.js';
-import type { AccessTokenPayload } from '../../auth/presentation/guards/jwt-auth.guard.js';
-import { UpdateProfileUseCase } from '../application/use-cases/update-profile.use-case.js';
-import { UpdateProfileDto } from '../application/dto/update-profile.dto.js';
-import { UploadProfilePhotoUseCase } from '../application/use-cases/upload-profile-photo.use-case.js';
-import { RemoveProfilePhotoUseCase } from '../application/use-cases/remove-profile-phot.use-case.js';
-import { API_MESSAGES } from '../../../common/constants/message.constants.js';
-import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
-import { UserProfileMapper } from './mappers/user-profile.mapper.js';
-import type { UserProfileResponseDto } from './dto/user-profile-responce.dto.js';
-import type { ApiResponse } from '../../../common/interfaces/api-responce.interface.js';
+import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard';
+import type { AccessTokenPayload } from '../../auth/presentation/guards/jwt-auth.guard';
+import { UpdateProfileDto } from '../application/dto/update-profile.dto';
+import { API_MESSAGES } from '../../../common/constants/message.constants';
+import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants';
+import { UserProfileMapper } from './mappers/user-profile.mapper';
+import type { UserProfileResponseDto } from './dto/user-profile-responce.dto';
+import type { ApiResponse } from '../../../common/interfaces/api-responce.interface';
+import {
+  GET_USER_PROFILE_USE_CASE,
+  IGetUserProfileUseCase,
+} from '../application/interfaces/get-user-profile.use-case.interface';
+import { Inject } from '@nestjs/common';
+import {
+  IUpdateProfileUseCase,
+  UPDATE_PROFILE_USE_CASE,
+} from '../application/interfaces/update-profile.use-case.interface';
+import {
+  IUploadProfilePhotoUseCase,
+  UPLOAD_PROFILE_PHOTO_USE_CASE,
+} from '../application/interfaces/upload-profile-photo.use-case.interface';
+import {
+  IRemoveProfilePhotoUseCase,
+  REMOVE_PROFILE_PHOTO_USE_CASE,
+} from '../application/interfaces/remove-profile-photo.use-case.interface';
 
 @Controller()
 export class UsersController {
   constructor(
-    private readonly getUserProfileUseCase: GetUserProfileUseCase,
-    private readonly updateProfileUseCase: UpdateProfileUseCase,
-    private readonly uploadProfilePhotoUseCase: UploadProfilePhotoUseCase,
-    private readonly removeProfilePhotUseCase: RemoveProfilePhotoUseCase,
+    @Inject(GET_USER_PROFILE_USE_CASE)
+    private readonly getUserProfileUseCase: IGetUserProfileUseCase,
+    @Inject(UPDATE_PROFILE_USE_CASE)
+    private readonly updateProfileUseCase: IUpdateProfileUseCase,
+
+    @Inject(UPLOAD_PROFILE_PHOTO_USE_CASE)
+    private readonly uploadProfilePhotoUseCase: IUploadProfilePhotoUseCase,
+
+    @Inject(REMOVE_PROFILE_PHOTO_USE_CASE)
+    private readonly removeProfilePhotUseCase: IRemoveProfilePhotoUseCase,
   ) {}
 
   @Get(API_ENDPOINTS.USERS.PROFILE)

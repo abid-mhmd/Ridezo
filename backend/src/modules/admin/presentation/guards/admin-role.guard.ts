@@ -5,7 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { UserRole } from '../../../users/domain/enums/user.enums.js';
+import { UserRole } from '../../../users/domain/enums/user.enums';
 
 interface AuthenticatedRequest extends Request {
   user?: {

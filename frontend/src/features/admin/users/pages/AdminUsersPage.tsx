@@ -121,7 +121,7 @@ export default function AdminUsersPage({ accessToken }: AdminUsersPageProps) {
             Users
           </h1>
           <p className="mt-1 text-xs text-[#A7B0C0]">
-            Manage Tripzo accounts, verification status, and user activity
+            Manage Ridezo accounts, verification status, and user activity
             across Kerala commute networks.
           </p>
         </div>

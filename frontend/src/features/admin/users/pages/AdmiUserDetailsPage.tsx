@@ -502,7 +502,7 @@ export default function AdminUserDetailsPage({
                   <strong className="text-white">
                     {user.firstName} {user.lastName}
                   </strong>{' '}
-                  from using affected Tripzo features until the account is
+                  from using affected Ridezo features until the account is
                   reactivated.
                 </p>
                 <div className="mt-6 flex items-center justify-end gap-3">
@@ -539,7 +539,7 @@ export default function AdminUserDetailsPage({
                   </h3>
                 </div>
                 <p className="mt-3 text-xs leading-relaxed text-[#A7B0C0]">
-                  Restore full active Tripzo account access for{' '}
+                  Restore full active Ridezo account access for{' '}
                   <strong className="text-white">
                     {user.firstName} {user.lastName}
                   </strong>

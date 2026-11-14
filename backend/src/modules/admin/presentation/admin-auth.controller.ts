@@ -11,22 +11,37 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
-import { AdminLoginDto } from './dto/admin-login.dto.js';
-import { AdminLoginUseCase } from '../application/use-cases/admin-login.use-case.js';
-import { RefreshAdminTokenUseCase } from '../application/use-cases/refresh-admin-token.use-case.js';
-import { REFRESH_TOKEN_STORAGE } from '../../auth/application/ports/refresh-token-storage.js';
-import type { IRefreshTokenStorage } from '../../auth/application/ports/refresh-token-storage.js';
-import { API_MESSAGES } from '../../../common/constants/message.constants.js';
-import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants.js';
-import { AdminLogoutUseCase } from '../application/use-cases/admin-logout.use-case.js';
+import { AdminLoginDto } from './dto/admin-login.dto';
+import { REFRESH_TOKEN_STORAGE } from '../../auth/application/ports/refresh-token-storage';
+import type { IRefreshTokenStorage } from '../../auth/application/ports/refresh-token-storage';
+import { API_MESSAGES } from '../../../common/constants/message.constants';
+import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants';
+import {
+  ADMIN_LOGIN_USE_CASE,
+  IAdminLoginUseCase,
+} from '../application/interfaces/admin-login.use-case.interface';
+import {
+  ADMIN_LOGOUT_USE_CASE,
+  IAdminLogoutUseCase,
+} from '../application/interfaces/admin-logout.use-case.interface';
+import {
+  IRefreshAdminTokenUseCase,
+  REFRESH_ADMIN_TOKEN_USE_CASE,
+} from '../application/interfaces/refresh-admin-token.use-case.interface';
 
 @Controller()
 export class AdminAuthController {
   constructor(
-    private readonly adminLoginUseCase: AdminLoginUseCase,
-    private readonly refreshAdminTokenUseCase: RefreshAdminTokenUseCase,
+    @Inject(ADMIN_LOGIN_USE_CASE)
+    private readonly adminLoginUseCase: IAdminLoginUseCase,
+
+    @Inject(REFRESH_ADMIN_TOKEN_USE_CASE)
+    private readonly refreshAdminTokenUseCase: IRefreshAdminTokenUseCase,
+
     private readonly configService: ConfigService,
-    private readonly adminLogoutUseCase: AdminLogoutUseCase,
+
+    @Inject(ADMIN_LOGOUT_USE_CASE)
+    private readonly adminLogoutUseCase: IAdminLogoutUseCase,
 
     @Inject(REFRESH_TOKEN_STORAGE)
     private readonly refreshTokenStorage: IRefreshTokenStorage,

@@ -6,7 +6,7 @@ import {
   SeatingComfortPreference,
   PetPreference,
   ClimateControlPreference,
-} from '../enums/user.enums.js';
+} from '../enums/user.enums';
 
 export interface UserLocation {
   city?: string;
@@ -36,6 +36,7 @@ export interface UserEntity {
 
   about: string;
   profilePhoto: string;
+  profilePhotoKey: string;
 
   role: UserRole;
   accountStatus: AccountStatus;

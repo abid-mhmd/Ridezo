@@ -1,13 +1,15 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import type { ITokenService } from '../ports/token.service.js';
-import { TOKEN_SERVICE } from '../ports/token.service.js';
+import type { ITokenService } from '../ports/token.service';
+import { TOKEN_SERVICE } from '../ports/token.service';
 import { createHash, randomBytes } from 'node:crypto';
-import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage.js';
-import type { IRefreshTokenStorage } from '../ports/refresh-token-storage.js';
-import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository.js';
-import type { IUserRepository } from '../../../users/domain/repositories/user.repository.js';
-import { AccountStatus } from '../../../users/domain/enums/user.enums.js';
-import { API_MESSAGES } from '../../../../common/constants/message.constants.js';
+import { REFRESH_TOKEN_STORAGE } from '../ports/refresh-token-storage';
+import type { IRefreshTokenStorage } from '../ports/refresh-token-storage';
+import { USER_REPOSITORY } from '../../../users/domain/repositories/user.repository';
+import type { IUserRepository } from '../../../users/domain/repositories/user.repository';
+import { AccountStatus } from '../../../users/domain/enums/user.enums';
+import { API_MESSAGES } from '../../../../common/constants/message.constants';
+import type { IRefreshAccessTokenUseCase } from '../interfaces/refresh-access-token.use-case.interface';
+import type { RefreshAccessTokenResult } from '../interfaces/refresh-access-token.use-case.interface';
 
 interface RefreshTokenPayload {
   sub: string;
@@ -16,7 +18,7 @@ interface RefreshTokenPayload {
 }
 
 @Injectable()
-export class RefreshAccessTokenUseCase {
+export class RefreshAccessTokenUseCase implements IRefreshAccessTokenUseCase {
   constructor(
     @Inject(REFRESH_TOKEN_STORAGE)
     private readonly refreshTokenStorage: IRefreshTokenStorage,
@@ -28,9 +30,7 @@ export class RefreshAccessTokenUseCase {
     private readonly tokenService: ITokenService,
   ) {}
 
-  async execute(
-    refreshToken: string,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  async execute(refreshToken: string): Promise<RefreshAccessTokenResult> {
     let payload: RefreshTokenPayload;
 
     try {

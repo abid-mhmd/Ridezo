@@ -8,7 +8,7 @@ import {
   SeatingComfortPreference,
   ClimateControlPreference,
   PetPreference,
-} from '../../../domain/enums/user.enums.js';
+} from '../../../domain/enums/user.enums';
 
 export type UserDocument = HydratedDocument<User> & {
   createdAt: Date;
@@ -133,6 +133,9 @@ export class User {
 
   @Prop({ type: String, default: '' })
   profilePhoto: string;
+
+  @Prop({ type: String, default: '' })
+  profilePhotoKey: string;
 
   @Prop({
     type: String,

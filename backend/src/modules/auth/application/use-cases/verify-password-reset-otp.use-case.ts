@@ -2,10 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   PASSWORD_RESET_STORAGE,
   type IPasswordResetStorage,
-} from '../ports/password-reset-storage.js';
-import { OtpHasherService } from '../services/otp-hasher.service.js';
-import { TOKEN_SERVICE } from '../ports/token.service.js';
-import type { ITokenService } from '../ports/token.service.js';
+} from '../ports/password-reset-storage';
+import { OtpHasherService } from '../services/otp-hasher.service';
+import { TOKEN_SERVICE } from '../ports/token.service';
+import type { ITokenService } from '../ports/token.service';
+import type { IVerifyPasswordResetOtpUseCase } from '../interfaces/verify-password-reset-otp.use-case.interface';
 
 export class InvalidPasswordResetOtpError extends Error {
   constructor() {
@@ -22,7 +23,7 @@ export class TooManyPasswordResetAttemptsError extends Error {
 }
 
 @Injectable()
-export class VerifyPasswordResetOtpUseCase {
+export class VerifyPasswordResetOtpUseCase implements IVerifyPasswordResetOtpUseCase {
   constructor(
     @Inject(PASSWORD_RESET_STORAGE)
     private readonly passwordResetStorage: IPasswordResetStorage,

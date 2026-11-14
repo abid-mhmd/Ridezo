@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
-import type { IOtpStorage } from '../../../../application/ports/otp-storage.js';
-import { RedisService } from '../../../../../../infrastructure/redis/redis.service.js';
+import type { IOtpStorage } from '../../../../application/ports/otp-storage';
+import { RedisService } from '../../../../../../infrastructure/redis/redis.service';
 
 @Injectable()
 export class RedisOtpStorage implements IOtpStorage {

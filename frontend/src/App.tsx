@@ -29,6 +29,10 @@ import {
   refreshAdminSession,
   logoutAdmin,
 } from './features/admin/auth/api/admin-auth.api';
+import VehiclesPage from './features/vehicles/pages/VehiclesPage';
+import AddVehiclePage from './features/vehicles/pages/AddVehiclePage';
+import EditVehiclePage from './features/vehicles/pages/EditVehiclePage';
+import VehicleDocumentsPage from './features/vehicles/pages/VehicleDocumentsPage';
 
 function GoogleCallbackHandler({
   onLoginSuccess,
@@ -81,21 +85,30 @@ function GoogleCallbackHandler({
   return <div>Signing you in...</div>;
 }
 
+const FullScreenLoader = () => (
+  <div className="flex min-h-screen items-center justify-center bg-[#080b12] text-sm text-gray-400">
+    Restoring your session...
+  </div>
+);
+
 function App() {
+  const isInitialAdminPath = window.location.pathname.startsWith('/admin');
+
   // Regular user session
   const [accessToken, setAccessTokenState] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isInitializing, setIsInitializing] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(!isInitialAdminPath);
 
   // Separate admin session
   const [adminAccessToken, setAdminAccessToken] = useState<string | null>(null);
-  const [isAdminInitializing, setIsAdminInitializing] = useState(true);
+  const [isAdminInitializing, setIsAdminInitializing] =
+    useState(isInitialAdminPath);
 
   useEffect(() => {
     function handleSessionExpired() {
       setAccessToken(null);
-      setAccessTokenState(null);
-      setUser(null);
+      setAccessTokenState((prev) => (prev !== null ? null : prev));
+      setUser((prev) => (prev !== null ? null : prev));
     }
 
     window.addEventListener('ridezo:session-expired', handleSessionExpired);
@@ -111,74 +124,58 @@ function App() {
   useEffect(() => {
     let isMounted = true;
 
-    async function initializeSession() {
-      try {
-        const token = await restoreSession();
-
-        if (!token) {
-          return;
+    async function initializeActiveSession() {
+      if (window.location.pathname.startsWith('/admin')) {
+        try {
+          const session = await refreshAdminSession();
+          if (isMounted) {
+            setAdminAccessToken(session.accessToken);
+          }
+        } catch {
+          if (isMounted) {
+            setAdminAccessToken(null);
+          }
+        } finally {
+          if (isMounted) {
+            setIsAdminInitializing(false);
+            setIsInitializing(false);
+          }
         }
+      } else {
+        try {
+          const token = await restoreSession();
+          if (!token) return;
 
-        const profile = await getMyProfile();
+          const profile = await getMyProfile();
+          if (!isMounted) return;
 
-        if (!isMounted) {
-          return;
-        }
+          const authenticatedUser: AuthUser = {
+            id: profile.id,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            email: profile.email,
+            role: profile.role,
+          };
 
-        const authenticatedUser: AuthUser = {
-          id: profile.id,
-          firstName: profile.firstName,
-          lastName: profile.lastName,
-          email: profile.email,
-          role: profile.role,
-        };
-
-        setAccessToken(token);
-        setAccessTokenState(token);
-        setUser(authenticatedUser);
-      } catch {
-        setAccessToken(null);
-
-        if (isMounted) {
-          setAccessTokenState(null);
-          setUser(null);
-        }
-      } finally {
-        if (isMounted) {
-          setIsInitializing(false);
-        }
-      }
-    }
-
-    void initializeSession();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function initializeAdminSession() {
-      try {
-        const session = await refreshAdminSession();
-
-        if (isMounted) {
-          setAdminAccessToken(session.accessToken);
-        }
-      } catch {
-        if (isMounted) {
-          setAdminAccessToken(null);
-        }
-      } finally {
-        if (isMounted) {
-          setIsAdminInitializing(false);
+          setAccessToken(token);
+          setAccessTokenState(token);
+          setUser(authenticatedUser);
+        } catch {
+          setAccessToken(null);
+          if (isMounted) {
+            setAccessTokenState(null);
+            setUser(null);
+          }
+        } finally {
+          if (isMounted) {
+            setIsInitializing(false);
+            setIsAdminInitializing(false);
+          }
         }
       }
     }
 
-    void initializeAdminSession();
+    void initializeActiveSession();
 
     return () => {
       isMounted = false;
@@ -194,12 +191,11 @@ function App() {
     [],
   );
 
-  // Store the admin token separately from the user token.
-  function handleAdminLoginSuccess(token: string) {
+  const handleAdminLoginSuccess = useCallback((token: string) => {
     setAdminAccessToken(token);
-  }
+  }, []);
 
-  async function handleLogout() {
+  const handleLogout = useCallback(async () => {
     setAccessToken(null);
     setAccessTokenState(null);
     setUser(null);
@@ -209,10 +205,9 @@ function App() {
     } catch (error) {
       console.error('Logout request failed:', error);
     }
-  }
+  }, []);
 
-  async function handleAdminLogout() {
-    // Clear the in-memory admin session immediately.
+  const handleAdminLogout = useCallback(async () => {
     setAdminAccessToken(null);
 
     try {
@@ -220,10 +215,9 @@ function App() {
     } catch (error) {
       console.error('Admin logout request failed:', error);
     } finally {
-      // Replace the current history entry with the admin login page.
       window.location.replace('/admin/login');
     }
-  }
+  }, []);
 
   return (
     <BrowserRouter>
@@ -233,11 +227,7 @@ function App() {
           path="/login"
           element={
             isInitializing ? (
-              <div className="flex min-h-screen items-center justify-center bg-[#080b12] text-sm text-gray-400">
-                Restoring your session...
-              </div>
-            ) : adminAccessToken ? (
-              <Navigate to="/admin/users" replace />
+              <FullScreenLoader />
             ) : accessToken && user ? (
               <Navigate to="/profile" replace />
             ) : (
@@ -257,15 +247,12 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-reset-otp" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+
         <Route
           path="/admin/login"
           element={
-            isAdminInitializing || isInitializing ? (
-              <div className="flex min-h-screen items-center justify-center bg-[#080b12] text-sm text-gray-400">
-                Restoring your session...
-              </div>
-            ) : accessToken && user ? (
-              <Navigate to="/profile" replace />
+            isAdminInitializing ? (
+              <FullScreenLoader />
             ) : adminAccessToken ? (
               <Navigate to="/admin/users" replace />
             ) : (
@@ -273,11 +260,13 @@ function App() {
             )
           }
         />
+
+        {/* Admin protected routes */}
         <Route
           path="/admin"
           element={
             isAdminInitializing ? (
-              <div>Loading...</div>
+              <FullScreenLoader />
             ) : adminAccessToken ? (
               <AdminLayout onLogout={handleAdminLogout} />
             ) : (
@@ -286,22 +275,22 @@ function App() {
           }
         >
           <Route index element={<Navigate to="/admin/users" replace />} />
-
           <Route
             path="users"
             element={<AdminUsersPage accessToken={adminAccessToken!} />}
           />
-
-          {/* Admin user details */}
           <Route
             path="users/:userId"
             element={<AdminUserDetailsPage accessToken={adminAccessToken!} />}
           />
         </Route>
+
         {/* Regular user protected routes */}
         <Route
           element={
-            accessToken && user ? (
+            isInitializing ? (
+              <FullScreenLoader />
+            ) : accessToken && user ? (
               <AppLayout onLogout={handleLogout} />
             ) : (
               <Navigate to="/login" replace />
@@ -310,18 +299,29 @@ function App() {
         >
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/edit" element={<EditProfilePage />} />
+          <Route path="/vehicles" element={<VehiclesPage />} />
+          <Route path="/vehicles/add" element={<AddVehiclePage />} />
+          <Route
+            path="/vehicles/:vehicleId/edit"
+            element={<EditVehiclePage />}
+          />
+          <Route
+            path="/vehicles/:vehicleId/documents"
+            element={<VehicleDocumentsPage />}
+          />
         </Route>
+
         {/* Fallback */}
         <Route
           path="*"
           element={
-            window.location.pathname.startsWith('/admin') ? (
+            isInitializing || isAdminInitializing ? (
+              <FullScreenLoader />
+            ) : window.location.pathname.startsWith('/admin') ? (
               <Navigate
                 to={adminAccessToken ? '/admin/users' : '/admin/login'}
                 replace
               />
-            ) : adminAccessToken ? (
-              <Navigate to="/admin/users" replace />
             ) : accessToken && user ? (
               <Navigate to="/profile" replace />
             ) : (

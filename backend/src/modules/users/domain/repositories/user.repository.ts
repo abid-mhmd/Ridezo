@@ -1,4 +1,4 @@
-import type { UserEntity } from '../entities/user.entity.js';
+import type { UserEntity } from '../entities/user.entity';
 
 export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
 
@@ -35,6 +35,7 @@ export interface IUserRepository {
       lastName?: string;
       about?: string;
       profilePhoto?: string;
+      profilePhotoKey?: string;
       languages?: string[];
       preferences?: Record<string, unknown>;
       location?: {
