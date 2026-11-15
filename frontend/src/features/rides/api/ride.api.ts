@@ -39,3 +39,11 @@ export async function createRide(payload: CreateRidePayload): Promise<Ride> {
 
   return response.data;
 }
+
+export async function getRideDetails(rideId: string): Promise<Ride> {
+  const response = await apiRequest<ApiResponse<Ride>>(
+    `${RIDE_ENDPOINTS.ROOT}/${encodeURIComponent(rideId)}`,
+  );
+
+  return response.data;
+}

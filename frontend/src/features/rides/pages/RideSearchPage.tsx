@@ -624,10 +624,10 @@ export default function RideSearchPage() {
 
                     <button
                       type="button"
-                      onClick={() => alert(`Booking flow for ride ${ride.id}`)}
+                      onClick={() => navigate(`/rides/${ride.id}`)}
                       className="rounded-xl bg-gradient-to-r from-[#8b78ff] to-[#ec4899] px-3.5 py-1.5 text-[11px] font-semibold text-white transition hover:opacity-90 shadow-md cursor-pointer"
                     >
-                      Book Seat
+                      View Ride Details
                     </button>
                   </div>
                 </article>
