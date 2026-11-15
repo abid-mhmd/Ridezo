@@ -14,7 +14,7 @@ import type { CreateRideDto } from '../dto/create-ride.dto';
 import type { ICreateRideUseCase } from '../interfaces/create-ride.use-case.interface';
 import {
   AccountStatus,
-  IdentityVerificationStatus,
+  // IdentityVerificationStatus,
 } from '../../../users/domain/enums/user.enums';
 import { VehicleVerificationStatus } from '../../../vehicles/domain/enums/vehicle.enums';
 

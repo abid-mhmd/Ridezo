@@ -77,7 +77,6 @@ export default function Navbar({
   return (
     <header className="sticky top-0 z-40 border-b border-[#252e3e] bg-[#080b12]/95 backdrop-blur-xl">
       <div className="flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-
         {/* Mobile menu toggle */}
         <button
           type="button"
@@ -114,7 +113,6 @@ export default function Navbar({
 
         {/* Right-side actions */}
         <div className="flex w-full items-center justify-end gap-2.5 xl:w-auto">
-
           <button
             type="button"
             className="hidden items-center gap-2 rounded-xl border border-[#252e3e] bg-[#111722] px-3.5 py-1.5 text-xs text-[#c7cddd] transition hover:border-[#8b78ff]/50 hover:text-white sm:inline-flex"

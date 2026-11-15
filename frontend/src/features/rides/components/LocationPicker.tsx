@@ -77,14 +77,16 @@ export default function LocationPicker({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [isLocationSelected, setIsLocationSelected] = useState(false);
 
   useEffect(() => {
+    if (isLocationSelected) {
+      return;
+    }
+
     const query = search.trim();
 
     if (query.length < 3) {
-      setSuggestions([]);
-      setIsLoading(false);
-      setError('');
       return;
     }
 
@@ -132,9 +134,10 @@ export default function LocationPicker({
       window.clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [search]);
+  }, [search, isLocationSelected]);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setIsLocationSelected(false);
     setSearch(event.target.value);
     setIsOpen(true);
     onSelect(null);
@@ -142,6 +145,8 @@ export default function LocationPicker({
 
   const handleSelect = (feature: PhotonFeature) => {
     const location = mapPhotonLocation(feature);
+
+    setIsLocationSelected(true);
 
     setSearch(
       location.address
@@ -158,6 +163,7 @@ export default function LocationPicker({
 
   const handleClear = () => {
     setSearch('');
+    setIsLocationSelected(false);
     setSuggestions([]);
     setIsOpen(false);
     setError('');

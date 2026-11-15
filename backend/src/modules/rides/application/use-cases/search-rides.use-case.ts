@@ -29,7 +29,11 @@ export class SearchRidesUseCase implements ISearchRidesUseCase {
     rides: RideEntity[];
     total: number;
   }> {
-    if (dto.originPlaceId === dto.destinationPlaceId) {
+    const isSameLocation =
+      dto.originLongitude === dto.destinationLongitude &&
+      dto.originLatitude === dto.destinationLatitude;
+
+    if (isSameLocation) {
       throw new InvalidRideSearchError(
         'Origin and destination must be different.',
       );
@@ -61,8 +65,10 @@ export class SearchRidesUseCase implements ISearchRidesUseCase {
     }
 
     const query: SearchRidesQuery = {
-      originPlaceId: dto.originPlaceId,
-      destinationPlaceId: dto.destinationPlaceId,
+      originLongitude: dto.originLongitude,
+      originLatitude: dto.originLatitude,
+      destinationLongitude: dto.destinationLongitude,
+      destinationLatitude: dto.destinationLatitude,
       departureDate,
       seats: dto.seats,
       minPrice: dto.minPrice,

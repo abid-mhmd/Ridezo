@@ -186,3 +186,4 @@ export const RideSchema = SchemaFactory.createForClass(Ride);
 RideSchema.index({ driverId: 1, departureTime: -1 });
 RideSchema.index({ status: 1, departureTime: 1 });
 RideSchema.index({ 'origin.coordinates': '2dsphere' });
+RideSchema.index({ 'destination.coordinates': '2dsphere' });

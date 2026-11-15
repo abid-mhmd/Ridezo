@@ -13,6 +13,11 @@ import { Ride, type RideDocument } from './ride.schema';
 import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository';
 import { RideStatus } from '../../../domain/enums/ride.enums';
 
+const EARTH_RADIUS_KM = 6378.1;
+const RIDE_SEARCH_RADIUS_KM = 10;
+
+const SEARCH_RADIUS_IN_RADIANS = RIDE_SEARCH_RADIUS_KM / EARTH_RADIUS_KM;
+
 @Injectable()
 export class MongooseRideRepository
   extends BaseMongooseRepository<Ride>
@@ -148,21 +153,42 @@ export class MongooseRideRepository
     const now = new Date();
 
     const filter: Record<string, unknown> = {
-      'origin.placeId': query.originPlaceId,
-      'destination.placeId': query.destinationPlaceId,
+      // Origin must be within 10 km
+      'origin.coordinates': {
+        $geoWithin: {
+          $centerSphere: [
+            [query.originLongitude, query.originLatitude],
+            SEARCH_RADIUS_IN_RADIANS,
+          ],
+        },
+      },
 
+      // Destination must also be within 10 km
+      'destination.coordinates': {
+        $geoWithin: {
+          $centerSphere: [
+            [query.destinationLongitude, query.destinationLatitude],
+            SEARCH_RADIUS_IN_RADIANS,
+          ],
+        },
+      },
+
+      // Departure date
       departureTime: {
         $gte: startOfDay > now ? startOfDay : now,
         $lt: startOfNextDay,
       },
 
+      // Available seats
       availableSeats: {
         $gte: query.seats,
       },
 
+      // Only scheduled rides
       status: RideStatus.SCHEDULED,
     };
 
+    // Optional price filtering
     if (query.minPrice !== undefined || query.maxPrice !== undefined) {
       const priceFilter: Record<string, number> = {};
 

@@ -37,8 +37,10 @@ export interface Ride {
 }
 
 export interface SearchRidesParams {
-  originPlaceId: string;
-  destinationPlaceId: string;
+  originLongitude: number;
+  originLatitude: number;
+  destinationLongitude: number;
+  destinationLatitude: number;
   departureDate: string;
   seats: number;
   minPrice?: number;

@@ -12,7 +12,7 @@ import {
   UnauthorizedException,
   NotFoundException,
   BadRequestException,
-  ForbiddenException,
+  // ForbiddenException,
   ConflictException,
   HttpCode,
   HttpStatus,
@@ -77,7 +77,6 @@ import {
   ISearchRidesUseCase,
 } from '../application/interfaces/search-rides.use-case.interface';
 import { InvalidRideSearchError } from '../application/use-cases/search-rides.use-case';
-import { SearchRidesQuery } from '../domain/repositories/ride.repository';
 
 @Controller()
 @UseGuards(JwtAuthGuard)

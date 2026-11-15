@@ -66,7 +66,15 @@ export default function RideSearchPage() {
       return;
     }
 
-    if (origin.placeId === destination.placeId) {
+    const [originLongitude, originLatitude] = origin.coordinates.coordinates;
+
+    const [destinationLongitude, destinationLatitude] =
+      destination.coordinates.coordinates;
+
+    if (
+      originLongitude === destinationLongitude &&
+      originLatitude === destinationLatitude
+    ) {
       setError('Pickup and destination cannot be the same.');
       return;
     }
@@ -82,8 +90,10 @@ export default function RideSearchPage() {
       setResults(null);
 
       const response = await searchRides({
-        originPlaceId: origin.placeId,
-        destinationPlaceId: destination.placeId,
+        originLongitude,
+        originLatitude,
+        destinationLongitude,
+        destinationLatitude,
         departureDate,
         seats,
         minPrice: minPrice ? Number(minPrice) : undefined,
@@ -525,6 +535,108 @@ export default function RideSearchPage() {
         </div>
       </div>
 
+      {/* Search Results Section */}
+      {results && (
+        <section className="space-y-4 pt-2">
+          <div className="flex items-center justify-between border-b border-[#252e3e] pb-2.5">
+            <div>
+              <h2 className="text-sm font-semibold text-white">
+                Available Rides
+              </h2>
+
+              <p className="mt-0.5 text-[11px] text-[#929bad]">
+                {results.total} verified journey
+                {results.total !== 1 ? 's' : ''} found matching your criteria
+              </p>
+            </div>
+          </div>
+
+          {results.rides.length === 0 ? (
+            <div className="rounded-2xl border border-[#252e3e] bg-[#111722] p-10 text-center shadow-xl">
+              <Search size={28} className="mx-auto text-[#657086]" />
+
+              <h3 className="mt-3 text-xs font-semibold text-white">
+                No rides found for this date
+              </h3>
+
+              <p className="mt-1 text-[11px] text-[#929bad] max-w-sm mx-auto">
+                Try changing your travel date or loosening price filters to view
+                alternate corridor departures.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              {results.rides.map((ride: Ride) => (
+                <article
+                  key={ride.id}
+                  className="rounded-2xl border border-[#252e3e] bg-[#111722] p-4 sm:p-5 transition hover:border-[#8b78ff]/50 shadow-xl"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-full bg-[#36e0c0]/10 border border-[#36e0c0]/20 px-2.5 py-0.5 text-[10px] font-semibold text-[#36e0c0]">
+                      {ride.availableSeats} seats available
+                    </span>
+
+                    <span className="flex items-center gap-0.5 text-xs font-bold text-white">
+                      <IndianRupee size={13} />
+                      {ride.pricePerSeat}
+                      <span className="text-[10px] font-normal text-[#929bad]">
+                        / seat
+                      </span>
+                    </span>
+                  </div>
+
+                  <div className="my-4 flex items-center gap-3 rounded-xl border border-[#252e3e] bg-[#080b12] p-3.5">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-semibold text-white">
+                        {ride.origin.name}
+                      </p>
+
+                      <p className="mt-0.5 truncate text-[10px] text-[#929bad]">
+                        {ride.origin.address}
+                      </p>
+                    </div>
+
+                    <ArrowRight size={16} className="shrink-0 text-[#8b78ff]" />
+
+                    <div className="min-w-0 flex-1 text-right">
+                      <p className="truncate text-xs font-semibold text-white">
+                        {ride.destination.name}
+                      </p>
+
+                      <p className="mt-0.5 truncate text-[10px] text-[#929bad]">
+                        {ride.destination.address}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#252e3e] pt-3 text-[11px] text-[#929bad]">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1">
+                        <Clock size={13} className="text-[#8b78ff]" />
+                        {formatDepartureTime(ride.departureTime)}
+                      </span>
+
+                      <span className="flex items-center gap-1">
+                        <Users size={13} className="text-[#8b78ff]" />
+                        {ride.availableSeats} seats left
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => alert(`Booking flow for ride ${ride.id}`)}
+                      className="rounded-xl bg-gradient-to-r from-[#8b78ff] to-[#ec4899] px-3.5 py-1.5 text-[11px] font-semibold text-white transition hover:opacity-90 shadow-md cursor-pointer"
+                    >
+                      Book Seat
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
       {/* 4. AI Mobility Copilot Prompt Bar */}
       <div className="rounded-2xl border border-[#8b78ff]/30 bg-gradient-to-r from-[#111722] via-[#161b27] to-[#111722] p-5 shadow-xl space-y-3">
         <div className="flex items-center gap-2">
@@ -581,99 +693,6 @@ export default function RideSearchPage() {
           </span>
         </div>
       </div>
-
-      {/* 5. Search Results Section (if searched) */}
-      {results && (
-        <section className="space-y-4 pt-2">
-          <div className="flex items-center justify-between border-b border-[#252e3e] pb-2.5">
-            <div>
-              <h2 className="text-sm font-semibold text-white">
-                Available Rides
-              </h2>
-              <p className="mt-0.5 text-[11px] text-[#929bad]">
-                {results.total} verified journey{results.total !== 1 ? 's' : ''}{' '}
-                found matching your criteria
-              </p>
-            </div>
-          </div>
-
-          {results.rides.length === 0 ? (
-            <div className="rounded-2xl border border-[#252e3e] bg-[#111722] p-10 text-center shadow-xl">
-              <Search size={28} className="mx-auto text-[#657086]" />
-              <h3 className="mt-3 text-xs font-semibold text-white">
-                No rides found for this date
-              </h3>
-              <p className="mt-1 text-[11px] text-[#929bad] max-w-sm mx-auto">
-                Try changing your travel date or loosening price filters to view
-                alternate corridor departures.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              {results.rides.map((ride: Ride) => (
-                <article
-                  key={ride.id}
-                  className="rounded-2xl border border-[#252e3e] bg-[#111722] p-4 sm:p-5 transition hover:border-[#8b78ff]/50 shadow-xl"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-full bg-[#36e0c0]/10 border border-[#36e0c0]/20 px-2.5 py-0.5 text-[10px] font-semibold text-[#36e0c0]">
-                      {ride.availableSeats} seats available
-                    </span>
-                    <span className="flex items-center gap-0.5 text-xs font-bold text-white">
-                      <IndianRupee size={13} />
-                      {ride.pricePerSeat}
-                      <span className="text-[10px] font-normal text-[#929bad]">
-                        / seat
-                      </span>
-                    </span>
-                  </div>
-
-                  <div className="my-4 flex items-center gap-3 rounded-xl border border-[#252e3e] bg-[#080b12] p-3.5">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-semibold text-white">
-                        {ride.origin.name}
-                      </p>
-                      <p className="mt-0.5 truncate text-[10px] text-[#929bad]">
-                        {ride.origin.address}
-                      </p>
-                    </div>
-                    <ArrowRight size={16} className="shrink-0 text-[#8b78ff]" />
-                    <div className="min-w-0 flex-1 text-right">
-                      <p className="truncate text-xs font-semibold text-white">
-                        {ride.destination.name}
-                      </p>
-                      <p className="mt-0.5 truncate text-[10px] text-[#929bad]">
-                        {ride.destination.address}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#252e3e] pt-3 text-[11px] text-[#929bad]">
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1">
-                        <Clock size={13} className="text-[#8b78ff]" />
-                        {formatDepartureTime(ride.departureTime)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users size={13} className="text-[#8b78ff]" />
-                        {ride.availableSeats} seats left
-                      </span>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => alert(`Booking flow for ride ${ride.id}`)}
-                      className="rounded-xl bg-gradient-to-r from-[#8b78ff] to-[#ec4899] px-3.5 py-1.5 text-[11px] font-semibold text-white transition hover:opacity-90 shadow-md cursor-pointer"
-                    >
-                      Book Seat
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
     </div>
   );
 }

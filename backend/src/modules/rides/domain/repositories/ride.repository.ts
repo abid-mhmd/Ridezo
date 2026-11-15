@@ -23,8 +23,10 @@ export interface ListRidesQuery {
 }
 
 export interface SearchRidesQuery {
-  originPlaceId: string;
-  destinationPlaceId: string;
+  originLongitude: number;
+  originLatitude: number;
+  destinationLongitude: number;
+  destinationLatitude: number;
   departureDate: Date;
   seats: number;
   minPrice?: number;
