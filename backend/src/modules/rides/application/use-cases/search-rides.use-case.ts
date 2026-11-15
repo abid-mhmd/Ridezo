@@ -77,6 +77,6 @@ export class SearchRidesUseCase implements ISearchRidesUseCase {
       limit: dto.limit,
     };
 
-    return this.rideRepository.search(query);
+    return this.rideRepository.search(query,driverId);
   }
 }

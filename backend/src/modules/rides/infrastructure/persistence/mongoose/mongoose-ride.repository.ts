@@ -140,7 +140,10 @@ export class MongooseRideRepository
     return result.modifiedCount > 0;
   }
 
-  async search(query: SearchRidesQuery): Promise<{
+  async search(
+    query: SearchRidesQuery,
+    excludeDriverId?: string,
+  ): Promise<{
     rides: RideEntity[];
     total: number;
   }> {
@@ -187,6 +190,12 @@ export class MongooseRideRepository
       // Only scheduled rides
       status: RideStatus.SCHEDULED,
     };
+
+    if (excludeDriverId && Types.ObjectId.isValid(excludeDriverId)) {
+      filter.driverId = {
+        $ne: new Types.ObjectId(excludeDriverId),
+      };
+    }
 
     // Optional price filtering
     if (query.minPrice !== undefined || query.maxPrice !== undefined) {
