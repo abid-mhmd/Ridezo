@@ -34,7 +34,7 @@ const navigationGroups = [
     items: [
       { label: 'Home', to: '/dashboard', icon: Home },
       { label: 'Find a Ride', to: '/rides/search', icon: Search },
-      { label: 'Offer a Ride', to: '/rides/offer', icon: CirclePlus },
+      { label: 'Offer a Ride', to: '/rides/create', icon: CirclePlus },
       { label: 'My Rides', to: '/my-rides', icon: Map },
       { label: 'Recurring Rides', to: '/recurring-rides', icon: RefreshCw },
       { label: 'Messages', to: '/messages', icon: MessageSquare },

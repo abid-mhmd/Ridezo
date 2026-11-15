@@ -36,8 +36,8 @@ import VehiclesPage from './features/vehicles/pages/VehiclesPage';
 import AddVehiclePage from './features/vehicles/pages/AddVehiclePage';
 import EditVehiclePage from './features/vehicles/pages/EditVehiclePage';
 import VehicleDocumentsPage from './features/vehicles/pages/VehicleDocumentsPage';
-
 import RideSearchPage from './features/rides/pages/RideSearchPage';
+import CreateRidePage from './features/rides/pages/CreateRidePage';
 
 function GoogleCallbackHandler({
   onLoginSuccess,
@@ -346,6 +346,7 @@ function App() {
           }
         >
           <Route path="/rides/search" element={<RideSearchPage />} />
+          <Route path="/rides/create" element={<CreateRidePage />} />
         </Route>
 
         {/* Fallback */}

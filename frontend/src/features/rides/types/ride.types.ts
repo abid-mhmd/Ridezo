@@ -56,3 +56,15 @@ export interface SearchRidesResult {
   limit: number;
   totalPages: number;
 }
+
+export interface CreateRidePayload {
+  vehicleId: string;
+  origin: RideLocation;
+  destination: RideLocation;
+  stops: RideLocation[];
+  departureTime: string;
+  totalSeats: number;
+  pricePerSeat: number;
+  preferences: RidePreferences;
+  pickupInstructions?: string;
+}

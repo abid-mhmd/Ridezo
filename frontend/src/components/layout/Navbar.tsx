@@ -15,7 +15,7 @@ import {
 const navigationItems = [
   { label: 'Home', to: '/dashboard' },
   { label: 'Find a Ride', to: '/rides/search' },
-  { label: 'Offer a Ride', to: '/rides/offer' },
+  { label: 'Offer a Ride', to: '/rides/create' },
   { label: 'My Rides', to: '/my-rides' },
   { label: 'Recurring Rides', to: '/recurring-rides' },
 ];
