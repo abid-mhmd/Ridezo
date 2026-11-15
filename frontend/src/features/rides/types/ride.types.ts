@@ -68,3 +68,12 @@ export interface CreateRidePayload {
   preferences: RidePreferences;
   pickupInstructions?: string;
 }
+
+
+export interface MyRidesResult {
+  rides: Ride[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

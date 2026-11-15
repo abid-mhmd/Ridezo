@@ -6,11 +6,14 @@ import type {
   SearchRidesResult,
   Ride,
   CreateRidePayload,
+  MyRidesResult,
 } from '../types/ride.types';
 
 const RIDE_ENDPOINTS = {
   ROOT: '/rides',
   SEARCH: '/rides/search',
+  MY_RIDES: '/rides/my-rides',
+  CANCEL: (rideId: string) => `/rides/${encodeURIComponent(rideId)}/cancel`,
 } as const;
 
 export async function searchRides(
@@ -46,4 +49,23 @@ export async function getRideDetails(rideId: string): Promise<Ride> {
   );
 
   return response.data;
+}
+
+export async function getMyRides(page = 1, limit = 10): Promise<MyRidesResult> {
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+
+  const response = await apiRequest<ApiResponse<MyRidesResult>>(
+    `${RIDE_ENDPOINTS.MY_RIDES}?${queryParams.toString()}`,
+  );
+
+  return response.data;
+}
+
+export async function cancelRide(rideId: string): Promise<void> {
+  await apiRequest<ApiResponse<undefined>>(RIDE_ENDPOINTS.CANCEL(rideId), {
+    method: 'PATCH',
+  });
 }
