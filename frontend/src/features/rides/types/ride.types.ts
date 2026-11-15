@@ -69,11 +69,20 @@ export interface CreateRidePayload {
   pickupInstructions?: string;
 }
 
-
 export interface MyRidesResult {
   rides: Ride[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface UpdateRidePayload {
+  origin?: RideLocation;
+  destination?: RideLocation;
+  stops?: RideLocation[];
+  departureTime?: string;
+  pricePerSeat?: number;
+  preferences?: RidePreferences;
+  pickupInstructions?: string;
 }

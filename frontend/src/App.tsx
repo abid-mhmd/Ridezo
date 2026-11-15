@@ -40,6 +40,7 @@ import RideSearchPage from './features/rides/pages/RideSearchPage';
 import CreateRidePage from './features/rides/pages/CreateRidePage';
 import RideDetailsPage from './features/rides/pages/RideDetailsPage';
 import MyRidesPage from './features/rides/pages/MyRidesPage';
+import EditRidePage from './features/rides/pages/EditRidePage';
 
 function GoogleCallbackHandler({
   onLoginSuccess,
@@ -351,6 +352,7 @@ function App() {
           <Route path="/rides/create" element={<CreateRidePage />} />
           <Route path="/rides/:rideId" element={<RideDetailsPage />} />
           <Route path="/my-rides" element={<MyRidesPage />} />
+          <Route path="/rides/:rideId/edit" element={<EditRidePage />} />
         </Route>
 
         {/* Fallback */}

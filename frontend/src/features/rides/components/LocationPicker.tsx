@@ -35,6 +35,7 @@ interface PhotonResponse {
 interface LocationPickerProps {
   label: string;
   placeholder?: string;
+  value?: RideLocation | null;
   onSelect: (location: RideLocation | null) => void;
 }
 
@@ -70,6 +71,7 @@ function mapPhotonLocation(feature: PhotonFeature): RideLocation {
 export default function LocationPicker({
   label,
   placeholder = 'Search for a location...',
+  value = null,
   onSelect,
 }: LocationPickerProps) {
   const [search, setSearch] = useState('');
@@ -78,6 +80,16 @@ export default function LocationPicker({
   const [error, setError] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isLocationSelected, setIsLocationSelected] = useState(false);
+
+  useEffect(() => {
+    if (value) {
+      setSearch(value.address ? `${value.name}, ${value.address}` : value.name);
+      setIsLocationSelected(true);
+    } else {
+      setSearch('');
+      setIsLocationSelected(false);
+    }
+  }, [value]);
 
   useEffect(() => {
     if (isLocationSelected) {

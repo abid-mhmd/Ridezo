@@ -292,6 +292,16 @@ function RideCard({ ride, onCancel, isCancelling }: RideCardProps) {
                 <ArrowRight size={14} />
               </button>
 
+              {ride.status === 'scheduled' && (
+                <button
+                  type="button"
+                  onClick={() => navigate(`/rides/${ride.id}/edit`)}
+                  className="flex w-full items-center justify-center rounded-lg border border-[#8b78ff]/30 bg-[#8b78ff]/10 px-3 py-2.5 text-xs font-semibold text-[#b6a8ff] transition hover:bg-[#8b78ff]/20"
+                >
+                  Edit Ride
+                </button>
+              )}
+
               {canCancel && (
                 <button
                   type="button"

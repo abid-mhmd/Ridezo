@@ -7,6 +7,7 @@ import type {
   Ride,
   CreateRidePayload,
   MyRidesResult,
+  UpdateRidePayload,
 } from '../types/ride.types';
 
 const RIDE_ENDPOINTS = {
@@ -68,4 +69,20 @@ export async function cancelRide(rideId: string): Promise<void> {
   await apiRequest<ApiResponse<undefined>>(RIDE_ENDPOINTS.CANCEL(rideId), {
     method: 'PATCH',
   });
+}
+
+
+export async function updateRide(
+  rideId: string,
+  payload: UpdateRidePayload,
+): Promise<Ride> {
+  const response = await apiRequest<ApiResponse<Ride>>(
+    `${RIDE_ENDPOINTS.ROOT}/${encodeURIComponent(rideId)}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    },
+  );
+
+  return response.data;
 }
