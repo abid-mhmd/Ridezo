@@ -11,6 +11,7 @@ import { RedisModule } from './infrastructure/redis/redis.module';
 import { AdminAuthModule } from './modules/admin/admin-auth.module';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { RidesModule } from './modules/rides/rides.module';
+import { BookingsModule } from './modules/bookings/bookings.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { RidesModule } from './modules/rides/rides.module';
     VehiclesModule,
     RidesModule,
     RedisModule,
+    BookingsModule,
     AdminAuthModule,
   ],
   controllers: [AppController],
