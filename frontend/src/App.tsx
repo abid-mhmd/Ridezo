@@ -32,6 +32,7 @@ import {
   logoutAdmin,
 } from './features/admin/auth/api/admin-auth.api';
 
+import HomePage from './features/rides/pages/HomePage';
 import VehiclesPage from './features/vehicles/pages/VehiclesPage';
 import AddVehiclePage from './features/vehicles/pages/AddVehiclePage';
 import EditVehiclePage from './features/vehicles/pages/EditVehiclePage';
@@ -73,7 +74,7 @@ function GoogleCallbackHandler({
         };
 
         onLoginSuccess(token, authenticatedUser);
-        navigate('/profile', { replace: true });
+        navigate('/home', { replace: true });
       } catch {
         if (isMounted) {
           navigate('/login?error=google-login-failed', {
@@ -243,7 +244,7 @@ function App() {
             isInitializing ? (
               <FullScreenLoader />
             ) : accessToken && user ? (
-              <Navigate to="/profile" replace />
+              <Navigate to="/home" replace />
             ) : (
               <LoginPage onLoginSuccess={handleLoginSuccess} />
             )
@@ -312,7 +313,7 @@ function App() {
             isInitializing ? (
               <FullScreenLoader />
             ) : accessToken && user ? (
-              <AppLayout onLogout={handleLogout} />
+              <AppLayout user={user} onLogout={handleLogout} />
             ) : (
               <Navigate to="/login" replace />
             )
@@ -342,12 +343,13 @@ function App() {
             isInitializing ? (
               <FullScreenLoader />
             ) : accessToken && user ? (
-              <AppLayout onLogout={handleLogout} showSidebar={false} />
+              <AppLayout user={user} onLogout={handleLogout} showSidebar={false} />
             ) : (
               <Navigate to="/login" replace />
             )
           }
         >
+          <Route path="/home" element={<HomePage />} />
           <Route path="/rides/search" element={<RideSearchPage />} />
           <Route path="/rides/create" element={<CreateRidePage />} />
           <Route path="/rides/:rideId" element={<RideDetailsPage />} />
@@ -368,7 +370,7 @@ function App() {
                 replace
               />
             ) : accessToken && user ? (
-              <Navigate to="/profile" replace />
+              <Navigate to="/home" replace />
             ) : (
               <Navigate to="/login" replace />
             )

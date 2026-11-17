@@ -99,6 +99,9 @@ export default function LocationPicker({
     const query = search.trim();
 
     if (query.length < 3) {
+      setSuggestions([]);
+      setIsLoading(false);
+      setError('');
       return;
     }
 
@@ -128,8 +131,8 @@ export default function LocationPicker({
 
         setSuggestions(data.features);
         setIsOpen(true);
-      } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') {
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
           return;
         }
 
@@ -184,8 +187,8 @@ export default function LocationPicker({
   };
 
   return (
-    <div className="relative space-y-1">
-      <label className="block text-[11px] font-medium text-[#c7cddd]">
+    <div className="relative space-y-1 font-sans">
+      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#929bad]">
         {label}
       </label>
 
@@ -202,7 +205,8 @@ export default function LocationPicker({
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
           autoComplete="off"
-          className="w-full rounded-xl border border-[#252e3e] bg-[#080b12] py-2.5 pl-9 pr-9 text-xs text-white outline-none placeholder:text-gray-600 focus:border-[#8b78ff]"
+          // Reduced text opacity once typed: text-white/70 with focus:text-white transition
+          className="w-full rounded-xl border border-[#252e3e] bg-[#080b12] py-2.5 pl-9 pr-9 text-xs text-white/70 outline-none placeholder:text-gray-600 focus:border-[#8b78ff] focus:text-white transition"
         />
 
         {isLoading ? (
@@ -214,7 +218,7 @@ export default function LocationPicker({
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#929bad] hover:text-white"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#929bad] hover:text-white cursor-pointer"
             aria-label="Clear location"
           >
             <X size={15} />
@@ -239,7 +243,7 @@ export default function LocationPicker({
                 key={location.placeId}
                 type="button"
                 onClick={() => handleSelect(feature)}
-                className="flex w-full items-start gap-2.5 border-b border-[#252e3e] px-3.5 py-2.5 text-left transition last:border-0 hover:bg-[#1b2230]"
+                className="flex w-full items-start gap-2.5 border-b border-[#252e3e] px-3.5 py-2.5 text-left transition last:border-0 hover:bg-[#1b2230] cursor-pointer"
               >
                 <MapPin size={15} className="mt-0.5 shrink-0 text-[#8b78ff]" />
 
