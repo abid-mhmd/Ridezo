@@ -12,6 +12,44 @@ import type { RideEntity } from '../../../domain/entities/ride.entity';
 import { Ride, type RideDocument } from './ride.schema';
 import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository';
 import { RideStatus } from '../../../domain/enums/ride.enums';
+import { User } from '../../../../users/infrastructure/persistence/mongoose/user.schema';
+import { Vehicle } from '../../../../vehicles/infrastructure/persistence/mongoose/vehicle.schema';
+
+type PopulatedDriver = {
+  _id: Types.ObjectId;
+  firstName: string;
+  lastName: string;
+  profilePhoto: string;
+  profilePhotoKey: string;
+
+  rating: number;
+  reviewCount: number;
+  completedRideCount: number;
+  identityVerification: {
+    status: string;
+  };
+  languages: string[];
+};
+
+type PopulatedVehicle = {
+  _id: Types.ObjectId;
+  brand: string;
+  model: string;
+  year: number;
+  color: string;
+  vehiclePhoto: string;
+  vehiclePhotoKey: string;
+
+  verificationStatus: string;
+};
+
+type RideWithPopulatedReferences = Omit<
+  RideDocument,
+  'driverId' | 'vehicleId'
+> & {
+  driverId: Types.ObjectId | PopulatedDriver;
+  vehicleId: Types.ObjectId | PopulatedVehicle;
+};
 
 const EARTH_RADIUS_KM = 6378.1;
 const RIDE_SEARCH_RADIUS_KM = 10;
@@ -217,11 +255,22 @@ export class MongooseRideRepository
     const [documents, total] = await Promise.all([
       this.model
         .find(filter)
+        .populate({
+          path: 'driverId',
+          model: User.name,
+          select:
+            'firstName lastName profilePhoto profilePhotoKey  rating reviewCount completedRideCount identityVerification languages',
+        })
+        .populate({
+          path: 'vehicleId',
+          model: Vehicle.name,
+          select:
+            'brand model year color vehiclePhoto vehiclePhotoKey  verificationStatus',
+        })
         .sort({ departureTime: 1, _id: 1 })
         .skip(skip)
         .limit(query.limit)
         .exec(),
-
       this.model.countDocuments(filter).exec(),
     ]);
 
@@ -232,10 +281,47 @@ export class MongooseRideRepository
   }
 
   private toEntity(ride: RideDocument): RideEntity {
+    const driver = ride.populated('driverId')
+      ? (ride.driverId as any)
+      : undefined;
+
+    const vehicle = ride.populated('vehicleId')
+      ? (ride.vehicleId as any)
+      : undefined;
+
     return {
       id: ride._id.toString(),
-      driverId: ride.driverId.toString(),
-      vehicleId: ride.vehicleId.toString(),
+      driverId: driver ? driver._id.toString() : ride.driverId.toString(),
+      vehicleId: vehicle ? vehicle._id.toString() : ride.vehicleId.toString(),
+
+      ...(driver && {
+        driver: {
+          id: driver._id.toString(),
+          firstName: driver.firstName,
+          lastName: driver.lastName,
+          profilePhoto: driver.profilePhoto,
+          profilePhotoKey: driver.profilePhotoKey,
+          rating: driver.rating,
+          reviewCount: driver.reviewCount,
+          completedRideCount: driver.completedRideCount,
+          identityVerificationStatus: driver.identityVerification.status,
+          languages: driver.languages,
+        },
+      }),
+
+      ...(vehicle && {
+        vehicle: {
+          id: vehicle._id.toString(),
+          brand: vehicle.brand,
+          model: vehicle.model,
+          year: vehicle.year,
+          color: vehicle.color,
+          vehiclePhoto: vehicle.vehiclePhoto,
+          vehiclePhotoKey: vehicle.vehiclePhotoKey,
+          verificationStatus: vehicle.verificationStatus,
+        },
+      }),
+
       origin: ride.origin,
       destination: ride.destination,
       stops: ride.stops,

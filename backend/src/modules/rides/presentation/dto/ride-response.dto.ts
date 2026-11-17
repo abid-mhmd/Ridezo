@@ -7,10 +7,34 @@ import type {
   ClimateControlPreference,
 } from '../../../users/domain/enums/user.enums';
 
+export class RideDriverSummaryDto {
+  id: string;
+  firstName: string;
+  lastName: string;
+  profilePhoto: string;
+  rating: number;
+  reviewCount: number;
+  completedRideCount: number;
+  identityVerificationStatus: string;
+  languages: string[];
+}
+
+export class RideVehicleSummaryDto {
+  id: string;
+  brand: string;
+  model: string;
+  year: number;
+  color: string;
+  vehiclePhoto: string;
+  verificationStatus: string;
+}
+
 export class RideResponseDto {
   id: string;
   driverId: string;
   vehicleId: string;
+  driver?: RideDriverSummaryDto;
+  vehicle?: RideVehicleSummaryDto;
   origin: {
     placeId: string;
     name: string;

@@ -18,10 +18,34 @@ export interface RidePreferences {
   climateControl?: 'ac-preferred' | 'non-ac-preferred' | 'no-preference';
 }
 
+export interface RideDriverSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  profilePhoto: string;
+  rating: number;
+  reviewCount: number;
+  completedRideCount: number;
+  identityVerificationStatus: string;
+  languages: string[];
+}
+
+export interface RideVehicleSummary {
+  id: string;
+  brand: string;
+  model: string;
+  year: number;
+  color: string;
+  vehiclePhoto: string;
+  verificationStatus: string;
+}
+
 export interface Ride {
   id: string;
   driverId: string;
   vehicleId: string;
+  driver?: RideDriverSummary;
+  vehicle?: RideVehicleSummary;
   origin: RideLocation;
   destination: RideLocation;
   stops: RideLocation[];

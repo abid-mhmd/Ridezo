@@ -7,6 +7,10 @@ import type {
 import type { RideEntity } from '../../domain/entities/ride.entity';
 import type { SearchRidesDto } from '../dto/search-rides.dto';
 import type { ISearchRidesUseCase } from '../interfaces/search-rides.use-case.interface';
+import { PROFILE_PHOTO_STORAGE } from '../../../users/application/ports/profile-photo-storage';
+import type { IProfilePhotoStorage } from '../../../users/application/ports/profile-photo-storage';
+import { VEHICLE_PHOTO_STORAGE } from '../../../vehicles/application/ports/vehicle-photo-storage';
+import type { IVehiclePhotoStorage } from '../../../vehicles/application/ports/vehicle-photo-storage';
 
 export class InvalidRideSearchError extends Error {
   constructor(message: string) {
@@ -20,6 +24,11 @@ export class SearchRidesUseCase implements ISearchRidesUseCase {
   constructor(
     @Inject(RIDE_REPOSITORY)
     private readonly rideRepository: IRideRepository,
+    @Inject(PROFILE_PHOTO_STORAGE)
+    private readonly profilePhotoStorage: IProfilePhotoStorage,
+
+    @Inject(VEHICLE_PHOTO_STORAGE)
+    private readonly vehiclePhotoStorage: IVehiclePhotoStorage,
   ) {}
 
   async execute(
@@ -77,6 +86,29 @@ export class SearchRidesUseCase implements ISearchRidesUseCase {
       limit: dto.limit,
     };
 
-    return this.rideRepository.search(query, driverId);
+    const result = await this.rideRepository.search(query, driverId);
+
+    const rides = await Promise.all(
+      result.rides.map(async (ride) => {
+        if (ride.driver?.profilePhotoKey) {
+          ride.driver.profilePhoto = await this.profilePhotoStorage.getUrl(
+            ride.driver.profilePhotoKey,
+          );
+        }
+
+        if (ride.vehicle?.vehiclePhotoKey) {
+          ride.vehicle.vehiclePhoto = await this.vehiclePhotoStorage.getUrl(
+            ride.vehicle.vehiclePhotoKey,
+          );
+        }
+
+        return ride;
+      }),
+    );
+
+    return {
+      rides,
+      total: result.total,
+    };
   }
 }

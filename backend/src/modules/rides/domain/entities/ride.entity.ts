@@ -30,6 +30,8 @@ export interface RideEntity {
   id: string;
   driverId: string;
   vehicleId: string;
+  driver?: RideDriverSummary;
+  vehicle?: RideVehicleSummary;
   origin: RideLocation;
   destination: RideLocation;
   stops: RideLocation[];
@@ -42,4 +44,29 @@ export interface RideEntity {
   status: RideStatus;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface RideDriverSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  profilePhoto: string;
+  profilePhotoKey: string;
+
+  rating: number;
+  reviewCount: number;
+  completedRideCount: number;
+  identityVerificationStatus: string;
+  languages: string[];
+}
+
+export interface RideVehicleSummary {
+  id: string;
+  brand: string;
+  model: string;
+  year: number;
+  color: string;
+  vehiclePhoto: string;
+  vehiclePhotoKey: string;
+  verificationStatus: string;
 }

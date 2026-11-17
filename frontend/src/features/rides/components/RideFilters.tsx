@@ -119,25 +119,24 @@ export default function RideFilters({
           <span>₹600</span>
         </div>
       </div>
-
       {/* 3. Seats Needed */}
-      <div className="space-y-2.5 pt-2 border-t border-[#252e3e]">
+      <div className="space-y-2 pt-2 border-t border-[#252e3e]">
         <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#929bad]">
           SEATS NEEDED
         </h4>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-1.5">
           {(['1', '2', '3'] as const).map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => setSelectedSeatTab(s)}
-              className={`rounded-xl border py-1.5 text-center text-xs font-semibold transition cursor-pointer ${
+              className={`rounded-lg border py-1 text-center text-[11px] font-medium transition cursor-pointer ${
                 selectedSeatTab === s
-                  ? 'border-[#8b78ff] bg-[#8b78ff]/20 text-white'
+                  ? 'border-[#8b78ff] bg-[#8b78ff]/20 text-white shadow-sm'
                   : 'border-[#252e3e] bg-[#080b12] text-[#929bad] hover:text-white'
               }`}
             >
-              {s === '3' ? '3+ Seats' : `${s}+ Seat`}
+              {s === '3' ? '3+ Seats' : `${s} Seat`}
             </button>
           ))}
         </div>

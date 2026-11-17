@@ -7,6 +7,30 @@ export class RideMapper {
       id: ride.id,
       driverId: ride.driverId,
       vehicleId: ride.vehicleId,
+      ...(ride.driver && {
+        driver: {
+          id: ride.driver.id,
+          firstName: ride.driver.firstName,
+          lastName: ride.driver.lastName,
+          profilePhoto: ride.driver.profilePhoto,
+          rating: ride.driver.rating,
+          reviewCount: ride.driver.reviewCount,
+          completedRideCount: ride.driver.completedRideCount,
+          identityVerificationStatus: ride.driver.identityVerificationStatus,
+          languages: ride.driver.languages,
+        },
+      }),
+      ...(ride.vehicle && {
+        vehicle: {
+          id: ride.vehicle.id,
+          brand: ride.vehicle.brand,
+          model: ride.vehicle.model,
+          year: ride.vehicle.year,
+          color: ride.vehicle.color,
+          vehiclePhoto: ride.vehicle.vehiclePhoto,
+          verificationStatus: ride.vehicle.verificationStatus,
+        },
+      }),
       origin: {
         placeId: ride.origin.placeId,
         name: ride.origin.name,

@@ -256,13 +256,6 @@ export default function HomePage() {
         id="ride-search"
         className="scroll-mt-24 rounded-2xl border border-[#252e3e] bg-[#111722] p-5 shadow-xl sm:p-7"
       >
-        <div className="mb-4 flex items-center gap-2">
-          <Search size={18} className="text-[#8b78ff]" />
-          <h2 className="text-base font-bold text-white">
-            Find your next ride
-          </h2>
-        </div>
-
         <RideSearchForm onSearch={handleSearch} />
       </section>
 

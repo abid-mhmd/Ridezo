@@ -42,19 +42,16 @@ export default function RideSearchPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Search again with updated form values.
   const handleSearch = (values: RideSearchFormValues) => {
     setSearchValues(values);
     setCurrentPage(1);
   };
 
-  // Apply price filters.
   const handleApplyFilters = (filters: PriceFilters) => {
     setPriceFilters(filters);
     setCurrentPage(1);
   };
 
-  // Fetch rides whenever search criteria, filters or page changes.
   useEffect(() => {
     if (!searchValues) return;
 
@@ -110,7 +107,6 @@ export default function RideSearchPage() {
     };
   }, [searchValues, priceFilters, currentPage]);
 
-  // Sort the current result page.
   const sortedRides = useMemo(() => {
     const result = [...rides];
 
@@ -154,8 +150,10 @@ export default function RideSearchPage() {
     );
   }
 
+  const showFilters = isLoading || rides.length > 0;
+
   return (
-    <div className="mx-auto max-w-7xl space-y-5 pb-12 font-sans text-gray-100">
+    <div className="mx-auto max-w-7xl space-y-4 pb-8 font-sans text-gray-100">
       {/* Page Heading */}
       <div>
         <button
@@ -195,18 +193,26 @@ export default function RideSearchPage() {
         />
       </section>
 
-      {/* Filters Left - Ride Results Right */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[230px_minmax(0,1fr)]">
-        {/* Compact Price Filters - Left Side */}
-        <aside className="w-full lg:sticky lg:top-5 lg:self-start">
-          <RideFilters
-            initialMinPrice={priceFilters.minPrice}
-            initialMaxPrice={priceFilters.maxPrice}
-            onApply={handleApplyFilters}
-          />
-        </aside>
+      {/* Results Section */}
+      <div
+        className={
+          showFilters
+            ? 'grid grid-cols-1 gap-5 lg:grid-cols-[230px_minmax(0,1fr)]'
+            : 'w-full'
+        }
+      >
+        {/* Price Filters */}
+        {showFilters && (
+          <aside className="w-full lg:sticky lg:top-5 lg:self-start">
+            <RideFilters
+              initialMinPrice={priceFilters.minPrice}
+              initialMaxPrice={priceFilters.maxPrice}
+              onApply={handleApplyFilters}
+            />
+          </aside>
+        )}
 
-        {/* Ride Results - Right Side */}
+        {/* Ride Results */}
         <section className="min-w-0 space-y-4">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <div>
@@ -221,45 +227,50 @@ export default function RideSearchPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
-              <label htmlFor="rideSort" className="text-[11px] text-[#929bad]">
-                Sort by
-              </label>
+            {!isLoading && !error && rides.length > 0 && (
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="rideSort"
+                  className="text-[11px] text-[#929bad]"
+                >
+                  Sort by
+                </label>
 
-              <select
-                id="rideSort"
-                value={sortBy}
-                onChange={(event) =>
-                  setSortBy(event.target.value as RideSortOption)
-                }
-                className="rounded-lg border border-[#252e3e] bg-[#111722] px-3 py-2 text-xs text-white outline-none focus:border-[#8b78ff]"
-              >
-                <option value="departure">Departure time</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-              </select>
-            </div>
+                <select
+                  id="rideSort"
+                  value={sortBy}
+                  onChange={(event) =>
+                    setSortBy(event.target.value as RideSortOption)
+                  }
+                  className="rounded-lg border border-[#252e3e] bg-[#111722] px-3 py-2 text-xs text-white outline-none focus:border-[#8b78ff]"
+                >
+                  <option value="departure">Departure time</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                </select>
+              </div>
+            )}
           </div>
 
           {isLoading && <LoadingState message="Searching available rides..." />}
 
           {!isLoading && error && (
-            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-xs text-red-300">
+            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-6 text-center text-xs text-red-300">
               {error}
             </div>
           )}
 
           {!isLoading && !error && rides.length === 0 && (
-            <div className="rounded-2xl border border-[#252e3e] bg-[#111722] p-8 text-center">
-              <MapPin size={28} className="mx-auto text-[#929bad]" />
+            <div className="rounded-2xl border border-[#252e3e] bg-[#111722] p-10 text-center">
+              <MapPin size={32} className="mx-auto text-[#929bad]" />
 
               <h3 className="mt-3 text-sm font-semibold text-white">
                 No rides found
               </h3>
 
-              <p className="mt-1 text-xs text-[#929bad]">
-                Try changing your locations, travel date, seat count or price
-                filters.
+              <p className="mx-auto mt-1 max-w-md text-xs text-[#929bad]">
+                We couldn't find any rides for this journey. Try changing your
+                locations, travel date or seat count.
               </p>
             </div>
           )}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { Search, ArrowLeftRight, Navigation } from 'lucide-react';
+import { Search, ArrowLeftRight } from 'lucide-react';
 
 import LocationPicker from './LocationPicker';
 import type { RideLocation } from '../types/ride.types';
@@ -46,10 +46,10 @@ export default function RideSearchForm({
     setDestination(temp);
   };
 
-  const handleUseMyLocation = () => {
-    // Simulated geolocation or quick-set default
-    alert('Geolocation requested: Setting origin to current location.');
-  };
+//   const handleUseMyLocation = () => {
+//     // Simulated geolocation or quick-set default
+//     alert('Geolocation requested: Setting origin to current location.');
+//   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -92,14 +92,14 @@ export default function RideSearchForm({
             Find your next ride
           </h3>
         </div>
-
+{/* 
         <button
           type="button"
           onClick={handleUseMyLocation}
           className="inline-flex items-center gap-1.5 rounded-lg border border-[#252e3e] bg-[#080b12] px-3 py-1.5 text-[11px] font-medium text-[#36e0c0] transition hover:bg-[#1b2230] cursor-pointer"
         >
           <Navigation size={12} /> Use my location
-        </button>
+        </button> */}
       </div>
 
       {/* Inputs Row with Swap Button */}
