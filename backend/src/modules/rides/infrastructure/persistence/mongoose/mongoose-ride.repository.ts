@@ -83,7 +83,21 @@ export class MongooseRideRepository
       return null;
     }
 
-    const ride = await this.findDocumentById(rideId);
+    const ride = await this.model
+      .findById(rideId)
+      .populate({
+        path: 'driverId',
+        model: User.name,
+        select:
+          'firstName lastName profilePhoto profilePhotoKey rating reviewCount completedRideCount identityVerification languages',
+      })
+      .populate({
+        path: 'vehicleId',
+        model: Vehicle.name,
+        select:
+          'brand model year color vehiclePhoto vehiclePhotoKey verificationStatus',
+      })
+      .exec();
 
     return ride ? this.toEntity(ride) : null;
   }
@@ -304,7 +318,7 @@ export class MongooseRideRepository
           rating: driver.rating,
           reviewCount: driver.reviewCount,
           completedRideCount: driver.completedRideCount,
-          identityVerificationStatus: driver.identityVerification.status,
+          identityVerificationStatus: driver.identityVerification?.status ?? '',
           languages: driver.languages,
         },
       }),
