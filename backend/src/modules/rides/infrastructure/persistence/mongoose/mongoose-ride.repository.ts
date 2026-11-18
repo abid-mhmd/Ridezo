@@ -343,7 +343,12 @@ export class MongooseRideRepository
       totalSeats: ride.totalSeats,
       availableSeats: ride.availableSeats,
       pricePerSeat: ride.pricePerSeat,
-      preferences: ride.preferences,
+      preferences: {
+        smoking: ride.preferences?.smoking,
+        pets: ride.preferences?.pets,
+        seatingComfort: ride.preferences?.seatingComfort,
+        climateControl: ride.preferences?.climateControl,
+      },
       pickupInstructions: ride.pickupInstructions,
       status: ride.status,
       createdAt: ride.createdAt,
