@@ -37,6 +37,7 @@ type PopulatedVehicle = {
   model: string;
   year: number;
   color: string;
+  registrationNumber: string;
   vehiclePhoto: string;
   vehiclePhotoKey: string;
 
@@ -89,13 +90,13 @@ export class MongooseRideRepository
         path: 'driverId',
         model: User.name,
         select:
-          'firstName lastName profilePhoto profilePhotoKey rating reviewCount completedRideCount identityVerification languages',
+          'firstName lastName profilePhoto  profilePhotoKey rating reviewCount completedRideCount identityVerification languages',
       })
       .populate({
         path: 'vehicleId',
         model: Vehicle.name,
         select:
-          'brand model year color vehiclePhoto vehiclePhotoKey verificationStatus',
+          'brand model year color vehiclePhoto registrationNumber  vehiclePhotoKey verificationStatus',
       })
       .exec();
 
@@ -279,7 +280,7 @@ export class MongooseRideRepository
           path: 'vehicleId',
           model: Vehicle.name,
           select:
-            'brand model year color vehiclePhoto vehiclePhotoKey  verificationStatus',
+            'brand model year color vehiclePhoto registrationNumber  vehiclePhotoKey  verificationStatus',
         })
         .sort({ departureTime: 1, _id: 1 })
         .skip(skip)
@@ -330,6 +331,7 @@ export class MongooseRideRepository
           model: vehicle.model,
           year: vehicle.year,
           color: vehicle.color,
+          registrationNumber: vehicle.registrationNumber,
           vehiclePhoto: vehicle.vehiclePhoto,
           vehiclePhotoKey: vehicle.vehiclePhotoKey,
           verificationStatus: vehicle.verificationStatus,

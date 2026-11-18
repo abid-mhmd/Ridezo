@@ -49,6 +49,13 @@ export class DuplicateBookingError extends Error {
   }
 }
 
+export class RideDetailsUnavailableError extends Error {
+  constructor() {
+    super('Ride driver or vehicle information is unavailable.');
+    this.name = 'RideDetailsUnavailableError';
+  }
+}
+
 @Injectable()
 export class CreateBookingUseCase implements ICreateBookingUseCase {
   constructor(
@@ -96,6 +103,10 @@ export class CreateBookingUseCase implements ICreateBookingUseCase {
 
     const totalPrice = ride.pricePerSeat * dto.seatsRequested;
 
+    if (!ride.driver || !ride.vehicle) {
+      throw new RideDetailsUnavailableError();
+    }
+
     const bookingData: CreateBookingData = {
       rideId: ride.id,
       passengerId,
@@ -105,6 +116,28 @@ export class CreateBookingUseCase implements ICreateBookingUseCase {
       totalPrice,
       message: dto.message,
       status: BookingStatus.PENDING,
+
+      driverSnapshot: {
+        firstName: ride.driver.firstName,
+        lastName: ride.driver.lastName,
+        profilePhoto: ride.driver.profilePhoto,
+      },
+
+      vehicleSnapshot: {
+        brand: ride.vehicle.brand,
+        model: ride.vehicle.model,
+        year: ride.vehicle.year,
+        color: ride.vehicle.color,
+        registrationNumber: ride.vehicle.registrationNumber,
+        vehiclePhoto: ride.vehicle.vehiclePhoto,
+      },
+      rideSnapshot: {
+        origin: ride.origin,
+        destination: ride.destination,
+        stops: ride.stops,
+        departureTime: ride.departureTime,
+        pickupInstructions: ride.pickupInstructions,
+      },
     };
 
     return this.bookingRepository.create(bookingData);

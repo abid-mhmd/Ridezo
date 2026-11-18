@@ -66,6 +66,7 @@ export interface RideVehicleSummary {
   model: string;
   year: number;
   color: string;
+  registrationNumber: string;
   vehiclePhoto: string;
   vehiclePhotoKey: string;
   verificationStatus: string;

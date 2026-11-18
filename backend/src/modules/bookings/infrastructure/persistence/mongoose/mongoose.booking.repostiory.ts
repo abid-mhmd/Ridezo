@@ -173,6 +173,11 @@ export class MongooseBookingRepository
       seatsRequested: booking.seatsRequested,
       pricePerSeat: booking.pricePerSeat,
       totalPrice: booking.totalPrice,
+
+      driverSnapshot: booking.driverSnapshot,
+      vehicleSnapshot: booking.vehicleSnapshot,
+      rideSnapshot: booking.rideSnapshot,
+
       message: booking.message,
       rejectionReason: booking.rejectionReason,
       status: booking.status,
