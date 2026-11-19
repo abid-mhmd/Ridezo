@@ -23,6 +23,7 @@ export const API_MESSAGES = {
     USER_RETRIEVED_SUCCESS: 'Users retrieved successfully.',
     USER_ACCOUNT_STATUS: 'User account status updated successfully.',
     INVALID_USER_ID: 'Invalid user ID.',
+    BOOKINGS_RETRIEVED_SUCCESS: 'Bookings retrieved successfully.',
   },
 
   USERS: {

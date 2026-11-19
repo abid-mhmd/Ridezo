@@ -164,6 +164,27 @@ export class MongooseBookingRepository
     return booking ? this.toEntity(booking) : null;
   }
 
+  async findAll(
+    query: ListBookingsQuery,
+  ): Promise<{ bookings: BookingEntity[]; total: number }> {
+    const skip = (query.page - 1) * query.limit;
+
+    const [documents, total] = await Promise.all([
+      this.model
+        .find()
+        .sort({ createdAt: -1, _id: -1 })
+        .skip(skip)
+        .limit(query.limit)
+        .exec(),
+
+      this.model.countDocuments().exec(),
+    ]);
+
+    return {
+      bookings: documents.map((booking) => this.toEntity(booking)),
+      total,
+    };
+  }
   private toEntity(booking: BookingDocument): BookingEntity {
     return {
       id: booking._id.toString(),

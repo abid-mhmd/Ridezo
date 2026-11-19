@@ -21,6 +21,7 @@ export interface ListUsersQuery {
 
 export interface IUserRepository {
   findById(id: string): Promise<UserEntity | null>;
+  findByIds(ids: string[]): Promise<UserEntity[]>;
   findByEmail(email: string): Promise<UserEntity | null>;
   existsByEmail(email: string): Promise<boolean>;
   create(user: CreateUserData): Promise<UserEntity>;

@@ -32,5 +32,6 @@ export const API_ENDPOINTS = {
     USERS: '/admin/users',
     USER_BY_ID: '/:userId',
     UPDATE_USER_STATUS: '/:userId/status',
+    BOOKINGS: '/admin/bookings',
   },
 } as const;
