@@ -42,6 +42,7 @@ import CreateRidePage from './features/rides/pages/CreateRidePage';
 import RideDetailsPage from './features/rides/pages/RideDetailsPage';
 import MyRidesPage from './features/rides/pages/MyRidesPage';
 import EditRidePage from './features/rides/pages/EditRidePage';
+import BookingSuccessPage from './features/bookings/pages/BookingSuccessPage';
 
 function GoogleCallbackHandler({
   onLoginSuccess,
@@ -343,7 +344,11 @@ function App() {
             isInitializing ? (
               <FullScreenLoader />
             ) : accessToken && user ? (
-              <AppLayout user={user} onLogout={handleLogout} showSidebar={false} />
+              <AppLayout
+                user={user}
+                onLogout={handleLogout}
+                showSidebar={false}
+              />
             ) : (
               <Navigate to="/login" replace />
             )
@@ -355,6 +360,7 @@ function App() {
           <Route path="/rides/:rideId" element={<RideDetailsPage />} />
           <Route path="/my-rides" element={<MyRidesPage />} />
           <Route path="/rides/:rideId/edit" element={<EditRidePage />} />
+          <Route path="/booking-success" element={<BookingSuccessPage />} />
         </Route>
 
         {/* Fallback */}

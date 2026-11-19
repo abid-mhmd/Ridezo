@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus,
-  LoaderCircle,
-  Search,
   MapPin,
   RefreshCw,
   CircleAlert,
@@ -14,19 +12,20 @@ import {
 } from 'lucide-react';
 
 import { getMyRides, cancelRide } from '../api/ride.api';
+import {
+  getMyBookings,
+  getDriverBookingRequests,
+} from '../../bookings/api/booking.api';
+
 import type { Ride, RideStatus } from '../types/ride.types';
+import type { Booking } from '../../bookings/types/booking-types';
 
-const TIME_FILTERS = [
-  { label: 'Upcoming', value: 'scheduled' },
-  { label: 'Past', value: 'completed' },
-  { label: 'All', value: 'all' },
-];
+import MyBookingCard from '../../bookings/components/MyBookingCard';
+import RideRequestsPanel from '../components/RideRequestPanel';
 
-const ROLE_FILTERS = [
-  { label: 'All Roles', value: 'all' },
-  { label: 'Riding', value: 'riding' },
-  { label: 'Driving', value: 'driving' },
-];
+import LoadingState from '../../../components/LoadingState';
+import EmptyState from '../../../components/EmptyState';
+import Pagination from '../../../components/layout/Pagination';
 
 function formatDepartureTime(value: string): string {
   const date = new Date(value);
@@ -48,14 +47,19 @@ function getStatusStyle(status: RideStatus): string {
   switch (status) {
     case 'scheduled':
       return 'border-[#36e0c0]/20 bg-[#36e0c0]/10 text-[#36e0c0]';
+
     case 'full':
       return 'border-amber-500/20 bg-amber-500/10 text-amber-400';
+
     case 'started':
       return 'border-blue-500/20 bg-blue-500/10 text-blue-400';
+
     case 'completed':
       return 'border-purple-500/20 bg-purple-500/10 text-purple-400';
+
     case 'cancelled':
       return 'border-red-500/20 bg-red-500/10 text-red-400';
+
     default:
       return 'border-gray-500/20 bg-gray-500/10 text-gray-400';
   }
@@ -68,11 +72,18 @@ function getStatusLabel(status: RideStatus): string {
 interface RideCardProps {
   ride: Ride;
   onCancel: (rideId: string) => void;
+  onManageRequests: (rideId: string) => void;
   isCancelling: boolean;
-  userRoleFilter: string;
+  pendingRequestCount: number;
 }
 
-function RideCard({ ride, onCancel, isCancelling }: RideCardProps) {
+function RideCard({
+  ride,
+  onCancel,
+  onManageRequests,
+  isCancelling,
+  pendingRequestCount,
+}: RideCardProps) {
   const navigate = useNavigate();
 
   const canCancel = ride.status === 'scheduled' || ride.status === 'full';
@@ -140,7 +151,7 @@ function RideCard({ ride, onCancel, isCancelling }: RideCardProps) {
               </div>
             </div>
 
-            {/* Booking Request Information */}
+            {/* Real Booking Request Information */}
             {ride.status === 'scheduled' && (
               <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 space-y-1 text-xs">
                 <div className="flex items-center justify-between">
@@ -150,13 +161,14 @@ function RideCard({ ride, onCancel, isCancelling }: RideCardProps) {
                   </span>
 
                   <span className="text-[10px] text-[#929bad]">
-                    Request details unavailable
+                    {pendingRequestCount} Pending
                   </span>
                 </div>
 
                 <p className="text-[10px] text-[#c7cddd]">
-                  Booking request information will appear here when connected to
-                  the booking requests API.
+                  {pendingRequestCount > 0
+                    ? `You have ${pendingRequestCount} pending booking request(s) for this ride.`
+                    : 'No pending booking requests for this ride.'}
                 </p>
               </div>
             )}
@@ -235,7 +247,7 @@ function RideCard({ ride, onCancel, isCancelling }: RideCardProps) {
             {ride.status === 'scheduled' && (
               <button
                 type="button"
-                onClick={() => navigate(`/rides/${ride.id}`)}
+                onClick={() => onManageRequests(ride.id)}
                 className="rounded-xl bg-gradient-to-r from-[#8b78ff] to-[#ec4899] px-3.5 py-2 text-xs font-semibold text-white transition hover:opacity-90 cursor-pointer shadow-md"
               >
                 Manage Requests
@@ -281,12 +293,13 @@ export default function MyRidesPage() {
   const navigate = useNavigate();
 
   const [rides, setRides] = useState<Ride[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
+  const [myBookings, setMyBookings] = useState<Booking[]>([]);
+  const [receivedRequests, setReceivedRequests] = useState<Booking[]>([]);
 
-  const [timeFilter, setTimeFilter] = useState<string>('scheduled');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const [selectedRideId, setSelectedRideId] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -302,17 +315,27 @@ export default function MyRidesPage() {
   useEffect(() => {
     let isMounted = true;
 
-    async function fetchMyRides() {
+    async function fetchMyActivities() {
       try {
         setIsLoading(true);
         setError('');
 
-        const response = await getMyRides(page, limit);
+        const [rideResponse, bookingResponse, requestResponse] =
+          await Promise.all([
+            getMyRides(page, limit),
+            getMyBookings(page, limit),
+            getDriverBookingRequests(page, limit),
+          ]);
 
         if (!isMounted) return;
 
-        setRides(response.rides);
-        setTotalPages(response.totalPages);
+        setRides(rideResponse.rides);
+        setMyBookings(bookingResponse.bookings);
+        setReceivedRequests(requestResponse.bookings);
+
+        setTotalPages(
+          Math.max(rideResponse.totalPages, bookingResponse.totalPages),
+        );
       } catch (err) {
         if (isMounted) {
           setError(
@@ -326,31 +349,12 @@ export default function MyRidesPage() {
       }
     }
 
-    void fetchMyRides();
+    void fetchMyActivities();
 
     return () => {
       isMounted = false;
     };
   }, [page, refreshKey]);
-
-  const filteredRides = useMemo(() => {
-    const searchValue = searchTerm.trim().toLowerCase();
-
-    return rides.filter((ride) => {
-      const matchesTime = timeFilter === 'all' || ride.status === timeFilter;
-
-      // The current API returns rides offered by the logged-in user.
-      // Passenger bookings are not included in this response.
-      const matchesRole = roleFilter === 'all' || roleFilter === 'driving';
-
-      const matchesSearch =
-        !searchValue ||
-        ride.origin.name.toLowerCase().includes(searchValue) ||
-        ride.destination.name.toLowerCase().includes(searchValue);
-
-      return matchesTime && matchesRole && matchesSearch;
-    });
-  }, [rides, timeFilter, roleFilter, searchTerm]);
 
   async function handleCancelRide(rideId: string) {
     const confirmed = window.confirm(
@@ -376,6 +380,23 @@ export default function MyRidesPage() {
       setCancellingRideId(null);
     }
   }
+
+  function handleManageRequests(rideId: string) {
+    setSelectedRideId((current) => (current === rideId ? null : rideId));
+  }
+
+  const pendingRequestCounts = receivedRequests.reduce<Record<string, number>>(
+    (counts, booking) => {
+      if (booking.status === 'pending') {
+        counts[booking.rideId] = (counts[booking.rideId] || 0) + 1;
+      }
+
+      return counts;
+    },
+    {},
+  );
+
+  const hasActivities = rides.length > 0 || myBookings.length > 0;
 
   return (
     <div className="mx-auto min-h-[70vh] max-w-7xl space-y-6 pb-16 font-sans text-gray-100">
@@ -458,68 +479,8 @@ export default function MyRidesPage() {
         </div>
       )}
 
-      {/* Double Filter Row */}
-      <section className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2 border-b border-[#252e3e] pb-4">
-        <div className="flex flex-wrap items-center gap-2">
-          {TIME_FILTERS.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              onClick={() => setTimeFilter(tab.value)}
-              className={`rounded-xl border px-3.5 py-1.5 text-xs font-medium transition cursor-pointer ${
-                timeFilter === tab.value
-                  ? 'border-[#8b78ff] bg-[#8b78ff] text-white shadow-md'
-                  : 'border-[#252e3e] bg-[#111722] text-[#929bad] hover:border-[#8b78ff]/40 hover:text-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-
-          <span className="h-5 w-px bg-[#252e3e] mx-1" />
-
-          {ROLE_FILTERS.map((role) => (
-            <button
-              key={role.value}
-              type="button"
-              onClick={() => setRoleFilter(role.value)}
-              className={`rounded-xl border px-3.5 py-1.5 text-xs font-medium transition cursor-pointer ${
-                roleFilter === role.value
-                  ? 'border-[#36e0c0] bg-[#36e0c0]/20 text-[#36e0c0]'
-                  : 'border-[#252e3e] bg-[#111722] text-[#929bad] hover:border-[#36e0c0]/40 hover:text-white'
-              }`}
-            >
-              {role.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="relative w-full lg:max-w-xs">
-          <Search
-            size={15}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#657086]"
-          />
-
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder="Filter by city or route..."
-            className="w-full rounded-xl border border-[#252e3e] bg-[#111722] py-2.5 pl-10 pr-4 text-xs text-white outline-none placeholder:text-[#657086] transition focus:border-[#8b78ff]"
-          />
-        </div>
-      </section>
-
       {/* Loading */}
-      {isLoading && (
-        <div className="flex min-h-64 items-center justify-center text-xs text-[#929bad]">
-          <LoaderCircle
-            size={18}
-            className="mr-2 animate-spin text-[#8b78ff]"
-          />
-          Loading your journey records...
-        </div>
-      )}
+      {isLoading && <LoadingState message="Loading your journey records..." />}
 
       {/* Error */}
       {!isLoading && error && (
@@ -540,77 +501,63 @@ export default function MyRidesPage() {
       )}
 
       {/* Ride List */}
-      {!isLoading && !error && filteredRides.length > 0 && (
+      {!isLoading && !error && hasActivities && (
         <section className="space-y-4">
-          {filteredRides.map((ride) => (
-            <RideCard
-              key={ride.id}
-              ride={ride}
-              onCancel={handleCancelRide}
-              isCancelling={cancellingRideId === ride.id}
-              userRoleFilter={roleFilter}
-            />
+          {/* Driving Cards */}
+          {rides.map((ride) => (
+            <div key={ride.id} className="space-y-4">
+              <RideCard
+                ride={ride}
+                onCancel={handleCancelRide}
+                onManageRequests={handleManageRequests}
+                isCancelling={cancellingRideId === ride.id}
+                pendingRequestCount={pendingRequestCounts[ride.id] || 0}
+              />
+
+              {/* Received Requests */}
+              {selectedRideId === ride.id && (
+                <RideRequestsPanel
+                  rideId={ride.id}
+                  bookings={receivedRequests}
+                  onClose={() => setSelectedRideId(null)}
+                />
+              )}
+            </div>
+          ))}
+
+          {/* Riding Cards */}
+          {myBookings.map((booking) => (
+            <MyBookingCard key={booking.id} booking={booking} />
           ))}
         </section>
       )}
 
       {/* Empty State */}
-      {!isLoading && !error && filteredRides.length === 0 && (
-        <div className="rounded-2xl border border-[#252e3e] bg-[#111722] p-12 text-center shadow-xl space-y-3">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#8b78ff]/10 text-[#a18cff]">
-            <MapPin size={24} />
-          </div>
-
-          <h2 className="text-sm font-bold text-white">
-            {rides.length === 0
-              ? 'No journeys recorded yet'
-              : 'No matching rides found'}
-          </h2>
-
-          <p className="mx-auto max-w-sm text-xs leading-relaxed text-[#929bad]">
-            {rides.length === 0
-              ? "You haven't offered or booked any rides yet. Create your first journey or search available corridors."
-              : 'No rides match your current tab or search filter.'}
-          </p>
-
-          {rides.length === 0 && (
+      {!isLoading && !error && !hasActivities && (
+        <EmptyState
+          title="No journeys recorded yet"
+          description="You haven't offered or booked any rides yet. Create your first journey or search available corridors."
+          icon={<MapPin size={24} />}
+          action={
             <button
               type="button"
               onClick={() => navigate('/rides/create')}
-              className="mt-2 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#8b78ff] to-[#ec4899] px-5 py-2.5 text-xs font-semibold text-white cursor-pointer shadow-lg"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#8b78ff] to-[#ec4899] px-5 py-2.5 text-xs font-semibold text-white cursor-pointer shadow-lg"
             >
               <Plus size={15} />
               Offer a Ride
             </button>
-          )}
-        </div>
+          }
+        />
       )}
 
-      {/* Pagination - Existing Previous/Next Implementation */}
-      {!isLoading && !error && totalPages > 1 && (
-        <div className="flex items-center justify-center gap-3 border-t border-[#252e3e] pt-6 text-xs">
-          <button
-            type="button"
-            disabled={page === 1}
-            onClick={() => setPage((current) => current - 1)}
-            className="rounded-xl border border-[#252e3e] bg-[#111722] px-4 py-2 font-medium text-white transition hover:bg-[#161b27] disabled:opacity-40 cursor-pointer"
-          >
-            Previous
-          </button>
-
-          <span className="text-[#929bad]">
-            Page {page} of {totalPages}
-          </span>
-
-          <button
-            type="button"
-            disabled={page >= totalPages}
-            onClick={() => setPage((current) => current + 1)}
-            className="rounded-xl border border-[#252e3e] bg-[#111722] px-4 py-2 font-medium text-white transition hover:bg-[#161b27] disabled:opacity-40 cursor-pointer"
-          >
-            Next
-          </button>
-        </div>
+      {/* Pagination */}
+      {!isLoading && !error && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       )}
     </div>
   );

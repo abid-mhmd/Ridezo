@@ -10,6 +10,7 @@ import type {
 const BOOKING_ENDPOINTS = {
   ROOT: '/bookings',
   MY_BOOKINGS: '/bookings/my-bookings',
+  DRIVER_REQUESTS: '/bookings/requests',
 } as const;
 
 export async function createBooking(
@@ -37,6 +38,21 @@ export async function getMyBookings(
 
   const response = await apiRequest<ApiResponse<MyBookingsResult>>(
     `${BOOKING_ENDPOINTS.MY_BOOKINGS}?${queryParams.toString()}`,
+  );
+
+  return response.data;
+}
+export async function getDriverBookingRequests(
+  page = 1,
+  limit = 10,
+): Promise<MyBookingsResult> {
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+
+  const response = await apiRequest<ApiResponse<MyBookingsResult>>(
+    `${BOOKING_ENDPOINTS.DRIVER_REQUESTS}?${queryParams.toString()}`,
   );
 
   return response.data;

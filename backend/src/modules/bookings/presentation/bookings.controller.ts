@@ -35,9 +35,9 @@ import {
 } from '../application/use-cases/create-booking.use-case';
 import { GetMyBookingsQueryDto } from '../application/dto/get-my-bookings-query.dto';
 import {
-  GET_MY_BOOKINGS_USE_CASE,
-  IGetMyBookingsUseCase,
-} from '../application/interfaces/get-my-bookings.use-case.interface';
+  GET_BOOKINGS_FOR_USER_USE_CASE,
+  IGetBookingsForUserUseCase,
+} from '../application/interfaces/get-my-bookings-for-user.use-case.interface';
 
 @Controller()
 @UseGuards(JwtAuthGuard)
@@ -46,8 +46,8 @@ export class BookingsController {
     @Inject(CREATE_BOOKING_USE_CASE)
     private readonly createBookingUseCase: ICreateBookingUseCase,
 
-    @Inject(GET_MY_BOOKINGS_USE_CASE)
-    private readonly getMyBookingsUseCase: IGetMyBookingsUseCase,
+    @Inject(GET_BOOKINGS_FOR_USER_USE_CASE)
+    private readonly getBookingsForUserUseCase: IGetBookingsForUserUseCase,
   ) {}
 
   @Post(BOOKING_ENDPOINTS.ROOT)
@@ -91,10 +91,49 @@ export class BookingsController {
       totalPages: number;
     }>
   > {
-    const result = await this.getMyBookingsUseCase.execute(request.user.sub, {
-      page: query.page,
-      limit: query.limit,
-    });
+    const result = await this.getBookingsForUserUseCase.execute(
+      request.user.sub,
+      {
+        page: query.page,
+        limit: query.limit,
+      },
+      'passenger',
+    );
+
+    return {
+      success: true,
+      message: BOOKING_MESSAGES.LIST_RETRIEVED,
+      data: {
+        bookings: BookingMapper.toResponseList(result.bookings),
+        total: result.total,
+        page: query.page,
+        limit: query.limit,
+        totalPages: Math.ceil(result.total / query.limit),
+      },
+    };
+  }
+
+  @Get(BOOKING_ENDPOINTS.BOOKING_REQUESTS)
+  async getDriverBookingRequests(
+    @Req() request: Request & { user: AccessTokenPayload },
+    @Query() query: GetMyBookingsQueryDto,
+  ): Promise<
+    ApiResponse<{
+      bookings: BookingResponseDto[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    }>
+  > {
+    const result = await this.getBookingsForUserUseCase.execute(
+      request.user.sub,
+      {
+        page: query.page,
+        limit: query.limit,
+      },
+      'driver',
+    );
 
     return {
       success: true,

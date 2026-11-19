@@ -12,8 +12,8 @@ import { CREATE_BOOKING_USE_CASE } from './application/interfaces/create-booking
 import { CreateBookingUseCase } from './application/use-cases/create-booking.use-case';
 import { RidesModule } from '../rides/rides.module';
 import { BookingsController } from './presentation/bookings.controller';
-import { GET_MY_BOOKINGS_USE_CASE } from './application/interfaces/get-my-bookings.use-case.interface';
-import { GetMyBookingsUseCase } from './application/use-cases/get-my-bookings.use-case';
+import { GET_BOOKINGS_FOR_USER_USE_CASE } from './application/interfaces/get-my-bookings-for-user.use-case.interface';
+import { GetBookingsForUserUseCase } from './application/use-cases/get-bookings-for-user.use-case';
 
 @Module({
   imports: [
@@ -38,8 +38,8 @@ import { GetMyBookingsUseCase } from './application/use-cases/get-my-bookings.us
       useClass: CreateBookingUseCase,
     },
     {
-      provide: GET_MY_BOOKINGS_USE_CASE,
-      useClass: GetMyBookingsUseCase,
+      provide: GET_BOOKINGS_FOR_USER_USE_CASE,
+      useClass: GetBookingsForUserUseCase,
     },
   ],
   exports: [BOOKING_REPOSITORY],
