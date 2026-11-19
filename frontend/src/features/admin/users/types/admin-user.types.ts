@@ -11,6 +11,7 @@ export interface AdminUserListItem {
   accountStatus: AccountStatus;
   emailVerified: boolean;
   phoneVerified: boolean;
+  idVerified: boolean;
   createdAt: string;
 }
 

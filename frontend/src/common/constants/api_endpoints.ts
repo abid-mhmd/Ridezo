@@ -34,5 +34,6 @@ export const API_ENDPOINTS = {
       `/admin/users/${encodeURIComponent(userId)}`,
     UPDATE_USER_STATUS: (userId: string) =>
       `/admin/users/${encodeURIComponent(userId)}/status`,
+    BOOKINGS: '/admin/bookings',
   },
 } as const;
