@@ -50,5 +50,5 @@ export class AddVehicleDto {
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  vehiclePhotoKey?: string;
+  vehiclePhoto?: string;
 }

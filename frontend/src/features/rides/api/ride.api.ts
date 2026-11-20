@@ -71,7 +71,6 @@ export async function cancelRide(rideId: string): Promise<void> {
   });
 }
 
-
 export async function updateRide(
   rideId: string,
   payload: UpdateRidePayload,

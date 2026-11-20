@@ -1,12 +1,7 @@
 import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 
-import {
-  FiUsers,
-  FiCalendar,
-  FiLogOut,
-  FiX,
-} from 'react-icons/fi';
+import { FiUsers, FiCalendar, FiLogOut, FiX } from 'react-icons/fi';
 
 interface AdminSidebarProps {
   isMobileOpen: boolean;
@@ -159,9 +154,7 @@ export default function AdminSidebar({
                 Administrator
               </p>
 
-              <p className="text-[10px] text-[#707B8F]">
-                Admin account
-              </p>
+              <p className="text-[10px] text-[#707B8F]">Admin account</p>
             </div>
           </div>
 

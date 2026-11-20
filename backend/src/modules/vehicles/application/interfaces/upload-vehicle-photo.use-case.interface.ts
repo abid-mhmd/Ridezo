@@ -5,7 +5,6 @@ export interface UploadVehiclePhotoInput {
 
 export interface UploadVehiclePhotoResult {
   vehiclePhoto: string;
-  vehiclePhotoKey: string;
 }
 
 export interface IUploadVehiclePhotoUseCase {

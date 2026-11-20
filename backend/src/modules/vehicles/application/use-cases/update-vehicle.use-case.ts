@@ -71,15 +71,15 @@ export class UpdateVehicleUseCase implements IUpdateVehicleUseCase {
     }
 
     // Generate a presigned URL for the updated vehicle photo.
-    if (vehicle.vehiclePhotoKey) {
+    if (vehicle.vehiclePhoto) {
       vehicle.vehiclePhoto = await this.vehiclePhotoStorage.getUrl(
-        vehicle.vehiclePhotoKey,
+        vehicle.vehiclePhoto,
       );
     }
 
     // Delete the previous photo only when a different key was saved.
-    const previousPhotoKey = existingVehicle.vehiclePhotoKey;
-    const currentPhotoKey = vehicle.vehiclePhotoKey;
+    const previousPhotoKey = existingVehicle.vehiclePhoto;
+    const currentPhotoKey = vehicle.vehiclePhoto;
 
     if (
       previousPhotoKey &&

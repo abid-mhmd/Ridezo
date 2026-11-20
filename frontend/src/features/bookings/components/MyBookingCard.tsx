@@ -1,10 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import {
-  CalendarDays,
-  CarFront,
-  ShieldCheck,
-  UserRound,
-} from 'lucide-react';
+import { CalendarDays, CarFront, ShieldCheck, UserRound } from 'lucide-react';
 
 import type { Booking, BookingStatus } from '../types/booking-types';
 

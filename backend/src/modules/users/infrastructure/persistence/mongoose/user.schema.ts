@@ -134,9 +134,6 @@ export class User {
   @Prop({ type: String, default: '' })
   profilePhoto: string;
 
-  @Prop({ type: String, default: '' })
-  profilePhotoKey: string;
-
   @Prop({
     type: String,
     enum: UserRole,

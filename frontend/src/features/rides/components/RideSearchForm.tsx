@@ -46,10 +46,10 @@ export default function RideSearchForm({
     setDestination(temp);
   };
 
-//   const handleUseMyLocation = () => {
-//     // Simulated geolocation or quick-set default
-//     alert('Geolocation requested: Setting origin to current location.');
-//   };
+  //   const handleUseMyLocation = () => {
+  //     // Simulated geolocation or quick-set default
+  //     alert('Geolocation requested: Setting origin to current location.');
+  //   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -92,7 +92,7 @@ export default function RideSearchForm({
             Find your next ride
           </h3>
         </div>
-{/* 
+        {/* 
         <button
           type="button"
           onClick={handleUseMyLocation}

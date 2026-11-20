@@ -1,9 +1,5 @@
 export type BookingStatus =
-  | 'pending'
-  | 'accepted'
-  | 'rejected'
-  | 'cancelled'
-  | 'completed';
+  'pending' | 'accepted' | 'rejected' | 'cancelled' | 'completed';
 
 export interface BookingLocationSnapshot {
   placeId: string;

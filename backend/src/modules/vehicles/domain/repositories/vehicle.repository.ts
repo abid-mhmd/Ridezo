@@ -20,7 +20,6 @@ export type UpdateVehicleData = Partial<
     | 'seatCapacity'
     | 'fuelType'
     | 'vehiclePhoto'
-    | 'vehiclePhotoKey'
   >
 >;
 

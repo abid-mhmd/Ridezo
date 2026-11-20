@@ -27,9 +27,9 @@ export class UpdateProfileUseCase implements IUpdateProfileUseCase {
     if (!updatedUser) {
       throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
-    if (updatedUser.profilePhotoKey) {
+    if (updatedUser.profilePhoto) {
       updatedUser.profilePhoto = await this.profilePhotoStorage.getUrl(
-        updatedUser.profilePhotoKey,
+        updatedUser.profilePhoto,
       );
     }
     return updatedUser;

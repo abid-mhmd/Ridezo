@@ -23,9 +23,14 @@ import { LIST_ADMIN_BOOKINGS_USE_CASE } from './application/interfaces/list-admi
 import { ListAdminBookingsUseCase } from './application/use-cases/list-admin-booking.use-case';
 import { VehiclesModule } from '../vehicles/vehicles.module';
 
-
 @Module({
-  imports: [AuthModule, UsersModule, BookingsModule,VehiclesModule, SecurityModule],
+  imports: [
+    AuthModule,
+    UsersModule,
+    BookingsModule,
+    VehiclesModule,
+    SecurityModule,
+  ],
   controllers: [
     AdminAuthController,
     AdminUsersController,

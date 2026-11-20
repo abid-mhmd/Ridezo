@@ -228,7 +228,7 @@ export class VehicleController {
       }),
     )
     file: Express.Multer.File,
-  ): Promise<ApiResponse<{ vehiclePhoto: string; vehiclePhotoKey: string }>> {
+  ): Promise<ApiResponse<{ vehiclePhoto: string }>> {
     const result = await this.uploadVehiclePhotoUseCase.execute(file);
 
     return {

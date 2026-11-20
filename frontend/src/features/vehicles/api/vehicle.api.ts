@@ -43,7 +43,7 @@ export async function addVehicle(payload: AddVehiclePayload): Promise<Vehicle> {
 
 export interface VehiclePhotoUploadResponse {
   vehiclePhoto: string;
-  vehiclePhotoKey: string;
+  vehiclePhoto: string;
 }
 
 export async function uploadVehiclePhoto(

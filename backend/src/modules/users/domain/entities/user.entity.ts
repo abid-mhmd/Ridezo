@@ -33,23 +33,16 @@ export interface UserEntity {
   email: string;
   phone?: string;
   passwordHash?: string;
-
   about: string;
   profilePhoto: string;
-  profilePhotoKey: string;
-
   role: UserRole;
   accountStatus: AccountStatus;
-
   emailVerified: boolean;
   phoneVerified: boolean;
-
   identityVerification: IdentityVerification;
   location?: UserLocation;
-
   languages: string[];
   preferences?: UserPreferences;
-
   completedRideCount: number;
   rating: number;
   reviewCount: number;

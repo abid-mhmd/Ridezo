@@ -35,15 +35,15 @@ export class GetRideDetailsUseCase implements IGetRideDetailsUseCase {
       throw new RideNotFoundError();
     }
 
-    if (ride.driver?.profilePhotoKey) {
+    if (ride.driver?.profilePhoto) {
       ride.driver.profilePhoto = await this.profilePhotoStorage.getUrl(
-        ride.driver.profilePhotoKey,
+        ride.driver.profilePhoto,
       );
     }
 
-    if (ride.vehicle?.vehiclePhotoKey) {
+    if (ride.vehicle?.vehiclePhoto) {
       ride.vehicle.vehiclePhoto = await this.vehiclePhotoStorage.getUrl(
-        ride.vehicle.vehiclePhotoKey,
+        ride.vehicle.vehiclePhoto,
       );
     }
 

@@ -29,9 +29,9 @@ export class GetVehicleByIdUseCase implements IGetVehicleByIdUseCase {
       throw new NotFoundException('Vehicle not found.');
     }
 
-    if (vehicle.vehiclePhotoKey) {
+    if (vehicle.vehiclePhoto) {
       vehicle.vehiclePhoto = await this.vehiclePhotoStorage.getUrl(
-        vehicle.vehiclePhotoKey,
+        vehicle.vehiclePhoto,
       );
     }
 

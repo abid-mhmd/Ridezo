@@ -36,7 +36,6 @@ export interface IUserRepository {
       lastName?: string;
       about?: string;
       profilePhoto?: string;
-      profilePhotoKey?: string;
       languages?: string[];
       preferences?: Record<string, unknown>;
       location?: {

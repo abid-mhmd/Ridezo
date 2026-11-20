@@ -39,9 +39,9 @@ export class GetUserDetailsUseCase implements IGetUserDetailsUseCase {
       throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
-    if (user.profilePhotoKey) {
+    if (user.profilePhoto) {
       user.profilePhoto = await this.profilePhotoStorage.getUrl(
-        user.profilePhotoKey,
+        user.profilePhoto,
       );
     }
 

@@ -22,9 +22,9 @@ export class GetMyVehiclesUseCase implements IGetMyVehiclesUseCase {
 
     return Promise.all(
       vehicles.map(async (vehicle) => {
-        if (vehicle.vehiclePhotoKey) {
+        if (vehicle.vehiclePhoto) {
           vehicle.vehiclePhoto = await this.vehiclePhotoStorage.getUrl(
-            vehicle.vehiclePhotoKey,
+            vehicle.vehiclePhoto,
           );
         }
 

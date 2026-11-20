@@ -20,8 +20,6 @@ type PopulatedDriver = {
   firstName: string;
   lastName: string;
   profilePhoto: string;
-  profilePhotoKey: string;
-
   rating: number;
   reviewCount: number;
   completedRideCount: number;
@@ -39,8 +37,6 @@ type PopulatedVehicle = {
   color: string;
   registrationNumber: string;
   vehiclePhoto: string;
-  vehiclePhotoKey: string;
-
   verificationStatus: string;
 };
 
@@ -90,13 +86,13 @@ export class MongooseRideRepository
         path: 'driverId',
         model: User.name,
         select:
-          'firstName lastName profilePhoto  profilePhotoKey rating reviewCount completedRideCount identityVerification languages',
+          'firstName lastName profilePhoto  rating reviewCount completedRideCount identityVerification languages',
       })
       .populate({
         path: 'vehicleId',
         model: Vehicle.name,
         select:
-          'brand model year color vehiclePhoto registrationNumber  vehiclePhotoKey verificationStatus',
+          'brand model year color vehiclePhoto registrationNumber  verificationStatus',
       })
       .exec();
 
@@ -274,13 +270,13 @@ export class MongooseRideRepository
           path: 'driverId',
           model: User.name,
           select:
-            'firstName lastName profilePhoto profilePhotoKey  rating reviewCount completedRideCount identityVerification languages',
+            'firstName lastName profilePhoto profilePhoto  rating reviewCount completedRideCount identityVerification languages',
         })
         .populate({
           path: 'vehicleId',
           model: Vehicle.name,
           select:
-            'brand model year color vehiclePhoto registrationNumber  vehiclePhotoKey  verificationStatus',
+            'brand model year color vehiclePhoto registrationNumber  vehiclePhoto  verificationStatus',
         })
         .sort({ departureTime: 1, _id: 1 })
         .skip(skip)
@@ -315,7 +311,6 @@ export class MongooseRideRepository
           firstName: driver.firstName,
           lastName: driver.lastName,
           profilePhoto: driver.profilePhoto,
-          profilePhotoKey: driver.profilePhotoKey,
           rating: driver.rating,
           reviewCount: driver.reviewCount,
           completedRideCount: driver.completedRideCount,
@@ -333,7 +328,6 @@ export class MongooseRideRepository
           color: vehicle.color,
           registrationNumber: vehicle.registrationNumber,
           vehiclePhoto: vehicle.vehiclePhoto,
-          vehiclePhotoKey: vehicle.vehiclePhotoKey,
           verificationStatus: vehicle.verificationStatus,
         },
       }),
