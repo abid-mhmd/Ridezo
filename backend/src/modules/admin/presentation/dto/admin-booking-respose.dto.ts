@@ -1,7 +1,6 @@
 import { BookingStatus } from '../../../bookings/domain/enums/booking.enums';
 import type {
   BookingLocationSnapshot,
-  BookingDriverSnapshot,
   BookingVehicleSnapshot,
 } from '../../../bookings/domain/entities/booking.entity';
 
@@ -10,6 +9,16 @@ export class AdminBookingPassengerDto {
   firstName: string;
   lastName?: string;
   email: string;
+  phone?: string;
+  profilePhoto: string;
+}
+
+export class AdminBookingDriverDto {
+  id: string;
+  firstName: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
   profilePhoto: string;
 }
 
@@ -17,7 +26,7 @@ export class AdminBookingResponseDto {
   id: string;
   rideId: string;
   passenger: AdminBookingPassengerDto | null;
-  driver: BookingDriverSnapshot;
+  driver: AdminBookingDriverDto;
   vehicle: BookingVehicleSnapshot;
   ride: {
     origin: BookingLocationSnapshot;

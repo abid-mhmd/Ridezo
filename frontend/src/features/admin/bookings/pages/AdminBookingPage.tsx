@@ -13,14 +13,16 @@ import AdminSummaryCard from '../../components/common/AdminSummaryCard';
 import AdminSearchBar from '../../components/common/AdminSearchBar';
 import AdminTableContainer from '../../components/common/AdminTableContainer';
 import StatusBadge from '../../components/StatusBadge';
-
 import Pagination from '../../../../components/layout/Pagination';
 import UserAvatar from '../../../../components/UserAvatar';
 import EmptyState from '../../../../components/EmptyState';
 import LoadingState from '../../../../components/LoadingState';
-
+import AdminBookingDetailDrawer from '../components/AdminBookingDetailDrawer';
 import { getAdminBookings } from '../api/admin-bookings.api';
-import type { AdminBookingListResponse } from '../types/admin-booking.types';
+import type {
+  AdminBookingListItem,
+  AdminBookingListResponse,
+} from '../types/admin-booking.types';
 
 interface AdminBookingsPageProps {
   accessToken: string;
@@ -58,11 +60,11 @@ export default function AdminBookingsPage({
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-
   const [result, setResult] = useState<AdminBookingListResponse | null>(null);
-
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedBooking, setSelectedBooking] =
+    useState<AdminBookingListItem | null>(null);
 
   const navigate = useNavigate();
 
@@ -389,7 +391,7 @@ export default function AdminBookingsPage({
                   <td className="whitespace-nowrap px-4 py-3.5 text-right lg:px-6">
                     <button
                       type="button"
-                      onClick={() => navigate(`/admin/bookings/${booking.id}`)}
+                      onClick={() => setSelectedBooking(booking)}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-[#263044] bg-[#080B12] px-3 py-1.5 text-xs font-medium text-[#C37DF5] transition hover:bg-[#C37DF5]/10"
                     >
                       <FiEye size={13} />
@@ -402,6 +404,14 @@ export default function AdminBookingsPage({
           </tbody>
         </table>
       </AdminTableContainer>
+      <AdminBookingDetailDrawer
+        booking={selectedBooking}
+        onClose={() => setSelectedBooking(null)}
+        onViewUser={(userId) => {
+          setSelectedBooking(null);
+          navigate(`/admin/users/${userId}`);
+        }}
+      />
     </div>
   );
 }

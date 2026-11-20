@@ -9,7 +9,12 @@ export class AdminBookingMapper {
       id: booking.id,
       rideId: booking.rideId,
       passenger,
-      driver: booking.driverSnapshot,
+      driver: {
+        id: booking.driverId,
+        firstName: booking.driverSnapshot?.firstName ?? '',
+        lastName: booking.driverSnapshot?.lastName ?? '',
+        profilePhoto: booking.driverSnapshot?.profilePhoto ?? '',
+      },
       vehicle: booking.vehicleSnapshot,
       ride: {
         origin: booking.rideSnapshot.origin,
@@ -19,9 +24,7 @@ export class AdminBookingMapper {
       seatsRequested: booking.seatsRequested,
       pricePerSeat: booking.pricePerSeat,
       totalPrice: booking.totalPrice,
-
       status: booking.status,
-
       createdAt: booking.createdAt,
       updatedAt: booking.updatedAt,
     };

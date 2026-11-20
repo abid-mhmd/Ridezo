@@ -1,21 +1,21 @@
 export type BookingStatus =
-  | 'pending'
-  | 'accepted'
-  | 'rejected'
-  | 'cancelled'
-  | 'completed';
+  'pending' | 'accepted' | 'rejected' | 'cancelled' | 'completed';
 
 export interface AdminBookingPassenger {
   id: string;
   firstName: string;
   lastName?: string;
   email: string;
+  phone?: string;
   profilePhoto: string;
 }
 
 export interface AdminBookingDriver {
+  id: string;
   firstName: string;
-  lastName: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
   profilePhoto: string;
 }
 

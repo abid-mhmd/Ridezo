@@ -20,11 +20,12 @@ import { CHANGE_USER_ACCOUNT_STATUS_USE_CASE } from './application/interfaces/ch
 import { BookingsModule } from '../bookings/bookings.module';
 import { AdminBookingsController } from './presentation/admin-bookings.controller';
 import { LIST_ADMIN_BOOKINGS_USE_CASE } from './application/interfaces/list-admin-booking.use-case.interface';
-import { IListAdminBookingsUseCase } from './application/interfaces/list-admin-booking.use-case.interface';
 import { ListAdminBookingsUseCase } from './application/use-cases/list-admin-booking.use-case';
+import { VehiclesModule } from '../vehicles/vehicles.module';
+
 
 @Module({
-  imports: [AuthModule, UsersModule, BookingsModule, SecurityModule],
+  imports: [AuthModule, UsersModule, BookingsModule,VehiclesModule, SecurityModule],
   controllers: [
     AdminAuthController,
     AdminUsersController,
