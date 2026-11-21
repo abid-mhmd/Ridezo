@@ -168,16 +168,46 @@ export class MongooseBookingRepository
     query: ListBookingsQuery,
   ): Promise<{ bookings: BookingEntity[]; total: number }> {
     const skip = (query.page - 1) * query.limit;
+    const filter: Record<string, unknown> = {};
+
+    if (query.search?.trim()) {
+      const escapedSearch = query.search
+        .trim()
+        .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      const searchRegex = new RegExp(escapedSearch, 'i');
+
+      const orConditions: Record<string, unknown>[] = [
+        { 'driverSnapshot.firstName': searchRegex },
+        { 'driverSnapshot.lastName': searchRegex },
+        { 'rideSnapshot.origin.name': searchRegex },
+        { 'rideSnapshot.destination.name': searchRegex },
+        { 'vehicleSnapshot.brand': searchRegex },
+        { 'vehicleSnapshot.model': searchRegex },
+        { 'vehicleSnapshot.registrationNumber': searchRegex },
+        { status: searchRegex },
+      ];
+
+      const validPassengerIds = (query.passengerIds ?? [])
+        .filter((id) => Types.ObjectId.isValid(id))
+        .map((id) => new Types.ObjectId(id));
+
+      if (validPassengerIds.length > 0) {
+        orConditions.push({ passengerId: { $in: validPassengerIds } });
+      }
+
+      filter.$or = orConditions;
+    }
 
     const [documents, total] = await Promise.all([
       this.model
-        .find()
+        .find(filter)
         .sort({ createdAt: -1, _id: -1 })
         .skip(skip)
         .limit(query.limit)
         .exec(),
 
-      this.model.countDocuments().exec(),
+      this.model.countDocuments(filter).exec(),
     ]);
 
     return {
@@ -185,6 +215,7 @@ export class MongooseBookingRepository
       total,
     };
   }
+
   private toEntity(booking: BookingDocument): BookingEntity {
     return {
       id: booking._id.toString(),

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   FiCalendar,
   FiCheckCircle,
@@ -79,6 +79,7 @@ export default function AdminBookingsPage({
         const response = await getAdminBookings(accessToken, {
           page,
           limit: PAGE_SIZE,
+          search: search || undefined,
         });
 
         if (isActive) {
@@ -104,29 +105,10 @@ export default function AdminBookingsPage({
     return () => {
       isActive = false;
     };
-  }, [accessToken, page]);
+  }, [accessToken, page,search]);
 
   const bookings = result?.bookings ?? [];
   const pagination = result?.pagination;
-
-  const filteredBookings = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return bookings;
-
-    return bookings.filter((booking) => {
-      const passengerName = booking.passenger
-        ? `${booking.passenger.firstName} ${booking.passenger.lastName ?? ''} ${booking.passenger.email}`
-        : '';
-      const driverName = `${booking.driver.firstName} ${booking.driver.lastName}`;
-      const route = `${booking.ride.origin.name} ${booking.ride.destination.name}`;
-      const vehicle = `${booking.vehicle.brand} ${booking.vehicle.model} ${booking.vehicle.registrationNumber}`;
-      const status = booking.status;
-
-      return `${passengerName} ${driverName} ${route} ${vehicle} ${status}`
-        .toLowerCase()
-        .includes(query);
-    });
-  }, [bookings, search]);
 
   const totalBookings = pagination?.total ?? 0;
   const totalPages = pagination?.totalPages ?? 1;
@@ -229,7 +211,7 @@ export default function AdminBookingsPage({
               {isLoading
                 ? 'Loading results...'
                 : search
-                  ? `Showing ${filteredBookings.length} matching on page ${page} (${totalBookings} total)`
+                  ? `Showing ${bookings.length} matching on page ${page} (${totalBookings} total)`
                   : totalBookings === 0
                     ? 'No bookings to display'
                     : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(
@@ -280,7 +262,7 @@ export default function AdminBookingsPage({
                   <LoadingState />
                 </td>
               </tr>
-            ) : !error && filteredBookings.length === 0 ? (
+            ) : !error && bookings.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-10">
                   <EmptyState
@@ -295,7 +277,7 @@ export default function AdminBookingsPage({
                 </td>
               </tr>
             ) : (
-              filteredBookings.map((booking) => (
+              bookings.map((booking) => (
                 <tr
                   key={booking.id}
                   className="transition hover:bg-white/[0.01]"

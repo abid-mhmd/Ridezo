@@ -47,7 +47,24 @@ export class ListAdminBookingsUseCase implements IListAdminBookingsUseCase {
   async execute(
     query: AdminBookingListQueryDto,
   ): Promise<ListAdminBookingsResult> {
-    const { bookings, total } = await this.bookingRepository.findAll(query);
+    const trimmedSearch = query.search?.trim();
+    let matchingPassengerIds: string[] = [];
+
+    if (trimmedSearch) {
+      const matchedUsers = await this.userRepository.listUsers({
+        page: 1,
+        limit: 100,
+        search: trimmedSearch,
+      });
+      matchingPassengerIds = matchedUsers.users.map((user) => user.id);
+    }
+
+    const { bookings, total } = await this.bookingRepository.findAll({
+      page: query.page,
+      limit: query.limit,
+      search: trimmedSearch,
+      passengerIds: matchingPassengerIds,
+    });
 
     const userIds = [
       ...new Set(
@@ -64,10 +81,13 @@ export class ListAdminBookingsUseCase implements IListAdminBookingsUseCase {
     const [users, driverVehiclesEntries] = await Promise.all([
       this.userRepository.findByIds(userIds),
       Promise.all(
-        driverIds.map(async (driverId) => [
-          driverId,
-          await this.vehicleRepository.findByOwnerId(driverId),
-        ] as const),
+        driverIds.map(
+          async (driverId) =>
+            [
+              driverId,
+              await this.vehicleRepository.findByOwnerId(driverId),
+            ] as const,
+        ),
       ),
     ]);
 
@@ -79,7 +99,8 @@ export class ListAdminBookingsUseCase implements IListAdminBookingsUseCase {
         const passenger = userMap.get(booking.passengerId);
         const driver = userMap.get(booking.driverId);
 
-        const driverPhotoKey = driver?.profilePhoto || booking.driverSnapshot?.profilePhoto || '';
+        const driverPhotoKey =
+          driver?.profilePhoto || booking.driverSnapshot?.profilePhoto || '';
         const driverPhoto =
           driverPhotoKey && !driverPhotoKey.startsWith('http')
             ? await this.profilePhotoStorage.getUrl(driverPhotoKey)
@@ -107,17 +128,22 @@ export class ListAdminBookingsUseCase implements IListAdminBookingsUseCase {
         const updatedBooking = {
           ...booking,
           driverSnapshot: {
-            firstName: booking.driverSnapshot?.firstName || driver?.firstName || '',
-            lastName: booking.driverSnapshot?.lastName || driver?.lastName || '',
+            firstName:
+              booking.driverSnapshot?.firstName || driver?.firstName || '',
+            lastName:
+              booking.driverSnapshot?.lastName || driver?.lastName || '',
             email: driver?.email ?? '',
             phone: driver?.phone ?? '',
             profilePhoto: driverPhoto,
           },
           vehicleSnapshot: {
-            brand: booking.vehicleSnapshot?.brand || matchedVehicle?.brand || '',
-            model: booking.vehicleSnapshot?.model || matchedVehicle?.model || '',
+            brand:
+              booking.vehicleSnapshot?.brand || matchedVehicle?.brand || '',
+            model:
+              booking.vehicleSnapshot?.model || matchedVehicle?.model || '',
             year: booking.vehicleSnapshot?.year || matchedVehicle?.year || 0,
-            color: booking.vehicleSnapshot?.color || matchedVehicle?.color || '',
+            color:
+              booking.vehicleSnapshot?.color || matchedVehicle?.color || '',
             registrationNumber:
               booking.vehicleSnapshot?.registrationNumber ||
               matchedVehicle?.registrationNumber ||

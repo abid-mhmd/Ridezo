@@ -18,6 +18,10 @@ export async function getAdminBookings(
     limit: String(params.limit),
   });
 
+  if (params.search?.trim()) {
+    searchParams.set('search', params.search.trim());
+  }
+
   const response = await fetch(
     `${API_BASE_URL}${API_ENDPOINTS.ADMIN.BOOKINGS}?${searchParams.toString()}`,
     {

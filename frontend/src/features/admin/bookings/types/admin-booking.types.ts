@@ -70,4 +70,5 @@ export interface AdminBookingListResponse {
 export interface AdminBookingListParams {
   page: number;
   limit: number;
+  search?:string;
 }

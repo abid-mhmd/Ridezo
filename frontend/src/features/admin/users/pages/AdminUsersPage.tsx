@@ -6,6 +6,7 @@ import AdminSummaryCard from '../../components/common/AdminSummaryCard';
 import AdminSearchBar from '../../components/common/AdminSearchBar';
 import AdminTableContainer from '../../components/common/AdminTableContainer';
 import StatusBadge from '../../components/StatusBadge';
+import Pagination from '../../../../components/layout/Pagination';
 import UserAvatar from '../../../../components/UserAvatar';
 import { getAdminUsers } from '../api/admin-users.api';
 import type { AdminUserListResponse } from '../types/admin-user.types';
@@ -202,31 +203,11 @@ export default function AdminUsersPage({ accessToken }: AdminUsersPageProps) {
                     )} of ${totalUsers} users`}
             </p>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled={isLoading || page <= 1}
-                onClick={() => setPage((current) => Math.max(1, current - 1))}
-                className="inline-flex items-center gap-1 rounded-lg border border-[#263044] bg-[#080B12] px-3 py-1.5 text-xs font-medium text-[#A7B0C0] transition hover:text-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Previous
-              </button>
-
-              <span className="min-w-16 text-center text-xs text-[#A7B0C0]">
-                {page} / {totalPages}
-              </span>
-
-              <button
-                type="button"
-                disabled={isLoading || page >= totalPages}
-                onClick={() =>
-                  setPage((current) => Math.min(totalPages, current + 1))
-                }
-                className="inline-flex items-center gap-1 rounded-lg border border-[#263044] bg-[#080B12] px-3 py-1.5 text-xs font-medium text-[#A7B0C0] transition hover:text-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Next
-              </button>
-            </div>
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
           </div>
         }
       >

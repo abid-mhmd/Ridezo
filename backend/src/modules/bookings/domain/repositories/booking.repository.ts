@@ -11,6 +11,8 @@ export type CreateBookingData = Omit<
 export interface ListBookingsQuery {
   page: number;
   limit: number;
+  search?: string;
+  passengerIds?: string[];
 }
 
 export interface UpdateBookingStatusData {
