@@ -22,7 +22,7 @@ export class GetMyVehiclesUseCase implements IGetMyVehiclesUseCase {
 
     return Promise.all(
       vehicles.map(async (vehicle) => {
-        if (vehicle.vehiclePhoto) {
+        if (vehicle.vehiclePhoto && !vehicle.vehiclePhoto.startsWith('http')) {
           vehicle.vehiclePhoto = await this.vehiclePhotoStorage.getUrl(
             vehicle.vehiclePhoto,
           );
