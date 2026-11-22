@@ -28,7 +28,7 @@ export class RemoveProfilePhotoUseCase implements IRemoveProfilePhotoUseCase {
       throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
-    if (!user.profilePhoto && !user.profilePhoto) {
+    if (!user.profilePhoto) {
       return {
         message: 'No profile photo to remove.',
       };

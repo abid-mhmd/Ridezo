@@ -27,7 +27,7 @@ export class AdminBookingsController {
     const result = await this.listAdminBookingsUseCase.execute({
       page: query.page,
       limit: query.limit,
-      search:query.search,
+      search: query.search,
     });
 
     return {

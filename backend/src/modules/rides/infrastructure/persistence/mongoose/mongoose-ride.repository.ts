@@ -15,39 +15,6 @@ import { RideStatus } from '../../../domain/enums/ride.enums';
 import { User } from '../../../../users/infrastructure/persistence/mongoose/user.schema';
 import { Vehicle } from '../../../../vehicles/infrastructure/persistence/mongoose/vehicle.schema';
 
-type PopulatedDriver = {
-  _id: Types.ObjectId;
-  firstName: string;
-  lastName: string;
-  profilePhoto: string;
-  rating: number;
-  reviewCount: number;
-  completedRideCount: number;
-  identityVerification: {
-    status: string;
-  };
-  languages: string[];
-};
-
-type PopulatedVehicle = {
-  _id: Types.ObjectId;
-  brand: string;
-  model: string;
-  year: number;
-  color: string;
-  registrationNumber: string;
-  vehiclePhoto: string;
-  verificationStatus: string;
-};
-
-type RideWithPopulatedReferences = Omit<
-  RideDocument,
-  'driverId' | 'vehicleId'
-> & {
-  driverId: Types.ObjectId | PopulatedDriver;
-  vehicleId: Types.ObjectId | PopulatedVehicle;
-};
-
 const EARTH_RADIUS_KM = 6378.1;
 const RIDE_SEARCH_RADIUS_KM = 10;
 

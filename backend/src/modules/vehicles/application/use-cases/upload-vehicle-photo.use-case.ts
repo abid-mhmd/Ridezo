@@ -46,7 +46,7 @@ export class UploadVehiclePhotoUseCase implements IUploadVehiclePhotoUseCase {
       );
 
       return {
-        vehiclePhoto: result.objectKey,
+        vehiclePhoto,
       };
     } catch {
       throw new InternalServerErrorException(

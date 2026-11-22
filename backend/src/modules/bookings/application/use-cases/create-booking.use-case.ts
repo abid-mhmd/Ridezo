@@ -129,7 +129,7 @@ export class CreateBookingUseCase implements ICreateBookingUseCase {
         year: ride.vehicle.year,
         color: ride.vehicle.color,
         registrationNumber: ride.vehicle.registrationNumber,
-        vehiclePhoto: ride.vehicle.vehiclePhoto ?? "",
+        vehiclePhoto: ride.vehicle.vehiclePhoto ?? '',
       },
       rideSnapshot: {
         origin: ride.origin,

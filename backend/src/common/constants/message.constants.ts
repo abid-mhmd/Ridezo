@@ -24,6 +24,8 @@ export const API_MESSAGES = {
     USER_ACCOUNT_STATUS: 'User account status updated successfully.',
     INVALID_USER_ID: 'Invalid user ID.',
     BOOKINGS_RETRIEVED_SUCCESS: 'Bookings retrieved successfully.',
+    VEHICLES_RETRIEVED_SUCCESS: 'Vehicles retrieved successfully.',
+    VEHICLE_RETRIEVED_SUCCESS: 'Vehicle details retrieved successfully.',
   },
 
   USERS: {

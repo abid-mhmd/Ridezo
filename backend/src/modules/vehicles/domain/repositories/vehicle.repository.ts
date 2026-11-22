@@ -23,15 +23,24 @@ export type UpdateVehicleData = Partial<
   >
 >;
 
+export interface ListVehicleQuery {
+  page: number;
+  limit: number;
+  search?: string;
+  status?: VehicleVerificationStatus;
+}
+
 export interface IVehicleRepository {
   create(data: CreateVehicleData): Promise<VehicleEntity>;
-
+  findById(vehicleId: string): Promise<VehicleEntity | null>;
   findByIdAndOwner(
     vehicleId: string,
     ownerId: string,
   ): Promise<VehicleEntity | null>;
   findByOwnerId(ownerId: string): Promise<VehicleEntity[]>;
-
+  findAll(
+    query: ListVehicleQuery,
+  ): Promise<{ vehicles: VehicleEntity[]; total: number }>;
   update(
     vehicleId: string,
     ownerId: string,
