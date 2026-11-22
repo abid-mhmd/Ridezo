@@ -36,6 +36,6 @@ export const API_ENDPOINTS = {
     VEHICLES: '/admin/vehicles',
     VEHICLE_BY_ID: '/:vehicleId',
     REVIEW_VEHICLE_DOCUMENT: ':vehicleId/documents/:documentId/review',
-    UPDATE_VEHICLE_STATUS: ':vehicleId/status',
+    UPDATE_VEHICLE_STATUS: '/:vehicleId/status',
   },
 } as const;
