@@ -26,6 +26,10 @@ export const API_MESSAGES = {
     BOOKINGS_RETRIEVED_SUCCESS: 'Bookings retrieved successfully.',
     VEHICLES_RETRIEVED_SUCCESS: 'Vehicles retrieved successfully.',
     VEHICLE_RETRIEVED_SUCCESS: 'Vehicle details retrieved successfully.',
+    VEHICLE_DOCUMENT_REVIEWED_SUCCESS:
+      'Vehicle document reviewed successfully.',
+    VEHICLE_STATUS_UPDATED_SUCCESS:
+      'Vehicle verification status updated successfully.',
   },
 
   USERS: {

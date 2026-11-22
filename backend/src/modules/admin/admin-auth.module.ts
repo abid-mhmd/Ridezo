@@ -27,6 +27,10 @@ import { ListAdminVehiclesUseCase } from './application/use-cases/list-admin-veh
 import { GET_ADMIN_VEHICLE_DETAILS_USE_CASE } from './application/interfaces/get-admin-vehicle-details.use-case.interface';
 import { GetAdminVehicleDetailsUseCase } from './application/use-cases/get-admin-vehicle-details.use-case';
 import { AdminVehiclesController } from './presentation/admin-vehicles.controller';
+import { REVIEW_ADMIN_VEHICLE_DOCUMENT_USE_CASE } from './application/interfaces/review-admin-vehicle-document.use-case.interface';
+import { ReviewAdminVehicleDocumentUseCase } from './application/use-cases/review-admin-vehicle-document.use-case';
+import { UPDATE_ADMIN_VEHICLE_STATUS_USE_CASE } from './application/interfaces/update.admin-vehicle.status.use-case.interface';
+import { UpdateAdminVehicleStatusUseCase } from './application/use-cases/update-admin-vehicle-status.use-case';
 
 @Module({
   imports: [
@@ -73,13 +77,21 @@ import { AdminVehiclesController } from './presentation/admin-vehicles.controlle
       useClass: ListAdminBookingsUseCase,
     },
     {
-      provide:LIST_ADMIN_VEHICLES_USE_CASE,
-      useClass:ListAdminVehiclesUseCase
+      provide: LIST_ADMIN_VEHICLES_USE_CASE,
+      useClass: ListAdminVehiclesUseCase,
     },
     {
-      provide:GET_ADMIN_VEHICLE_DETAILS_USE_CASE,
-      useClass:GetAdminVehicleDetailsUseCase
-    }
+      provide: GET_ADMIN_VEHICLE_DETAILS_USE_CASE,
+      useClass: GetAdminVehicleDetailsUseCase,
+    },
+    {
+      provide: REVIEW_ADMIN_VEHICLE_DOCUMENT_USE_CASE,
+      useClass: ReviewAdminVehicleDocumentUseCase,
+    },
+    {
+      provide: UPDATE_ADMIN_VEHICLE_STATUS_USE_CASE,
+      useClass: UpdateAdminVehicleStatusUseCase,
+    },
   ],
 })
 export class AdminAuthModule {}
