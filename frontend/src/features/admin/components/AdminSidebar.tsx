@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 
-import { FiUsers, FiCalendar, FiLogOut, FiX } from 'react-icons/fi';
+import { FiUsers, FiCalendar, FiTruck, FiLogOut, FiX } from 'react-icons/fi';
 
 interface AdminSidebarProps {
   isMobileOpen: boolean;
@@ -19,6 +19,11 @@ const navigationItems = [
     label: 'Bookings',
     path: '/admin/bookings',
     icon: <FiCalendar size={17} className="shrink-0" />,
+  },
+  {
+    label: 'Vehicles',
+    path: '/admin/vehicles',
+    icon: <FiTruck size={17} className="shrink-0" />,
   },
 ];
 

@@ -44,6 +44,7 @@ import MyRidesPage from './features/rides/pages/MyRidesPage';
 import EditRidePage from './features/rides/pages/EditRidePage';
 import BookingSuccessPage from './features/bookings/pages/BookingSuccessPage';
 import AdminBookingsPage from './features/admin/bookings/pages/AdminBookingPage';
+import AdminVehiclesPage from './features/admin/vehicles/pages/AdminVehiclesPage';
 
 function GoogleCallbackHandler({
   onLoginSuccess,
@@ -309,6 +310,10 @@ function App() {
           <Route
             path="bookings"
             element={<AdminBookingsPage accessToken={adminAccessToken!} />}
+          />
+          <Route
+            path="vehicles"
+            element={<AdminVehiclesPage accessToken={adminAccessToken!} />}
           />
         </Route>
 

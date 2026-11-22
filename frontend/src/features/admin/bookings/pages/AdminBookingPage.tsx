@@ -105,7 +105,7 @@ export default function AdminBookingsPage({
     return () => {
       isActive = false;
     };
-  }, [accessToken, page,search]);
+  }, [accessToken, page, search]);
 
   const bookings = result?.bookings ?? [];
   const pagination = result?.pagination;
