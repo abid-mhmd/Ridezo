@@ -13,6 +13,14 @@ import {
 import { RideStatus } from '../../../rides/domain/enums/ride.enums';
 import type { CreateBookingDto } from '../dto/create-booking.dto';
 import type { ICreateBookingUseCase } from '../interfaces/create-booking.use-case.inteface';
+import {
+  PROFILE_PHOTO_STORAGE,
+  type IProfilePhotoStorage,
+} from '../../../users/application/ports/profile-photo-storage';
+import {
+  VEHICLE_PHOTO_STORAGE,
+  type IVehiclePhotoStorage,
+} from '../../../vehicles/application/ports/vehicle-photo-storage';
 
 export class RideNotFoundError extends Error {
   constructor() {
@@ -64,6 +72,12 @@ export class CreateBookingUseCase implements ICreateBookingUseCase {
 
     @Inject(RIDE_REPOSITORY)
     private readonly rideRepository: IRideRepository,
+
+    @Inject(PROFILE_PHOTO_STORAGE)
+    private readonly profilePhotoStorage: IProfilePhotoStorage,
+
+    @Inject(VEHICLE_PHOTO_STORAGE)
+    private readonly vehiclePhotoStorage: IVehiclePhotoStorage,
   ) {}
 
   async execute(
@@ -140,6 +154,29 @@ export class CreateBookingUseCase implements ICreateBookingUseCase {
       },
     };
 
-    return this.bookingRepository.create(bookingData);
+    const booking = await this.bookingRepository.create(bookingData);
+
+    const [driverPhoto, vehiclePhoto] = await Promise.all([
+      booking.driverSnapshot?.profilePhoto &&
+      !booking.driverSnapshot.profilePhoto.startsWith('http')
+        ? this.profilePhotoStorage.getUrl(booking.driverSnapshot.profilePhoto)
+        : Promise.resolve(booking.driverSnapshot?.profilePhoto ?? ''),
+      booking.vehicleSnapshot?.vehiclePhoto &&
+      !booking.vehicleSnapshot.vehiclePhoto.startsWith('http')
+        ? this.vehiclePhotoStorage.getUrl(booking.vehicleSnapshot.vehiclePhoto)
+        : Promise.resolve(booking.vehicleSnapshot?.vehiclePhoto ?? ''),
+    ]);
+
+    return {
+      ...booking,
+      driverSnapshot: {
+        ...booking.driverSnapshot,
+        profilePhoto: driverPhoto,
+      },
+      vehicleSnapshot: {
+        ...booking.vehicleSnapshot,
+        vehiclePhoto,
+      },
+    };
   }
 }

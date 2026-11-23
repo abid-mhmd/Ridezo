@@ -14,6 +14,7 @@ import { RidesModule } from '../rides/rides.module';
 import { BookingsController } from './presentation/bookings.controller';
 import { GET_BOOKINGS_FOR_USER_USE_CASE } from './application/interfaces/get-my-bookings-for-user.use-case.interface';
 import { GetBookingsForUserUseCase } from './application/use-cases/get-bookings-for-user.use-case';
+import { VehiclesModule } from '../vehicles/vehicles.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { GetBookingsForUserUseCase } from './application/use-cases/get-bookings-
     ]),
     RidesModule,
     UsersModule,
+    VehiclesModule,
     SecurityModule,
   ],
   controllers: [BookingsController],
