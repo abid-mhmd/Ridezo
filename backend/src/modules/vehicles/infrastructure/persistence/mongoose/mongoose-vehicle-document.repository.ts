@@ -4,6 +4,7 @@ import { Types, type Model } from 'mongoose';
 import type {
   CreateVehicleDocumentData,
   IVehicleDocumentRepository,
+  ReplaceVehicleDocumentData,
 } from '../../../domain/repositories/vehicle-document.repository';
 import type { VehicleDocumentEntity } from '../../../domain/entities/vehicle-document.entity';
 import {
@@ -12,7 +13,7 @@ import {
 } from './vehicle-document.schema';
 import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository';
 import type { VehicleDocumentType } from '../../../domain/enums/vehicle-document.enums';
-import type { DocumentVerificationStatus } from '../../../domain/enums/vehicle-document.enums';
+import { DocumentVerificationStatus } from '../../../domain/enums/vehicle-document.enums';
 
 @Injectable()
 export class MongooseVehicleDocumentRepository
@@ -35,6 +36,33 @@ export class MongooseVehicleDocumentRepository
     });
 
     return this.toEntity(document);
+  }
+
+  async replaceDocument(
+    documentId: string,
+    data: ReplaceVehicleDocumentData,
+  ): Promise<VehicleDocumentEntity | null> {
+    if (!Types.ObjectId.isValid(documentId)) {
+      return null;
+    }
+
+    const document = await this.model
+      .findByIdAndUpdate(
+        documentId,
+        {
+          $set: {
+            ...data,
+            verificationStatus: DocumentVerificationStatus.PENDING,
+            rejectionReason: null,
+            reviewedAt: null,
+            reviewedBy: null,
+          },
+        },
+        { new: true, runValidators: true },
+      )
+      .exec();
+
+    return document ? this.toEntity(document as VehicleDocumentDocument) : null;
   }
 
   async findByVehicleId(vehicleId: string): Promise<VehicleDocumentEntity[]> {

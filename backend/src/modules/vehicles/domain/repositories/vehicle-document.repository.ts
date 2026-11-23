@@ -16,9 +16,17 @@ export type CreateVehicleDocumentData = Pick<
   | 'fileSize'
   | 'expiryDate'
 >;
+export type ReplaceVehicleDocumentData = Pick<
+  VehicleDocumentEntity,
+  'documentKey' | 'originalFileName' | 'mimeType' | 'fileSize' | 'expiryDate'
+>;
 
 export interface IVehicleDocumentRepository {
   create(data: CreateVehicleDocumentData): Promise<VehicleDocumentEntity>;
+  replaceDocument(
+    documentId: string,
+    data: ReplaceVehicleDocumentData,
+  ): Promise<VehicleDocumentEntity | null>;
   findByVehicleId(vehicleId: string): Promise<VehicleDocumentEntity[]>;
   findById(documentId: string): Promise<VehicleDocumentEntity | null>;
   findLatestByVehicleAndType(

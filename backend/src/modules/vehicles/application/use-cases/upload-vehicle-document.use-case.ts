@@ -69,6 +69,12 @@ export class UploadVehicleDocumentUseCase implements IUploadVehicleDocumentUseCa
       throw new NotFoundException(VEHICLE_MESSAGES.NOT_FOUND);
     }
 
+    const existingDocument =
+      await this.vehicleDocumentRepository.findLatestByVehicleAndType(
+        vehicleId,
+        dto.documentType,
+      );
+
     let objectKey: string | undefined;
 
     try {
@@ -79,20 +85,48 @@ export class UploadVehicleDocumentUseCase implements IUploadVehicleDocumentUseCa
 
       objectKey = uploadResult.objectKey;
 
-      const document = await this.vehicleDocumentRepository.create({
-        vehicleId,
-        documentType: dto.documentType,
-        documentKey: objectKey,
-        originalFileName: file.originalname,
-        mimeType: file.mimetype,
-        fileSize: file.size,
-        expiryDate: null,
-      });
+      const document = existingDocument
+        ? await this.vehicleDocumentRepository.replaceDocument(
+            existingDocument.id,
+            {
+              documentKey: objectKey,
+              originalFileName: file.originalname,
+              mimeType: file.mimetype,
+              fileSize: file.size,
+              expiryDate: null,
+            },
+          )
+        : await this.vehicleDocumentRepository.create({
+            vehicleId,
+            documentType: dto.documentType,
+            documentKey: objectKey,
+            originalFileName: file.originalname,
+            mimeType: file.mimetype,
+            fileSize: file.size,
+            expiryDate: null,
+          });
+
+      if (!document) {
+        throw new InternalServerErrorException(
+          VEHICLE_MESSAGES.DOCUMENT_UPLOAD_FAILED,
+        );
+      }
+
+      if (existingDocument?.documentKey) {
+        try {
+          await this.vehicleDocumentStorage.delete(
+            existingDocument.documentKey,
+          );
+        } catch {
+          // Best-effort cleanup of old S3 file
+        }
+      }
 
       await this.vehicleRepository.updateVerificationStatus(
         vehicleId,
         VehicleVerificationStatus.PENDING,
       );
+
       return {
         id: document.id,
         vehicleId: document.vehicleId,
