@@ -31,6 +31,12 @@ import { REVIEW_ADMIN_VEHICLE_DOCUMENT_USE_CASE } from './application/interfaces
 import { ReviewAdminVehicleDocumentUseCase } from './application/use-cases/review-admin-vehicle-document.use-case';
 import { UPDATE_ADMIN_VEHICLE_STATUS_USE_CASE } from './application/interfaces/update.admin-vehicle.status.use-case.interface';
 import { UpdateAdminVehicleStatusUseCase } from './application/use-cases/update-admin-vehicle-status.use-case';
+import { LIST_ADMIN_RIDES_USE_CASE } from './application/interfaces/list-admin-rides.use-case.interface';
+import { ListAdminRidesUseCase } from './application/use-cases/list-admin-rides.use-case';
+import { GET_ADMIN_RIDE_DETAILS_USE_CASE } from './application/interfaces/get-admin-ride-details.use-case.interface';
+import { GetAdminRideDetailsUseCase } from './application/use-cases/get-admin-ride-details.use-case';
+import { CANCEL_ADMIN_RIDE_USE_CASE } from './application/interfaces/cancel-admin-ride.use-case.interface';
+import { CancelAdminRideUseCase } from './application/use-cases/cancel-admin-ride.use-case';
 
 @Module({
   imports: [
@@ -71,6 +77,18 @@ import { UpdateAdminVehicleStatusUseCase } from './application/use-cases/update-
     {
       provide: ADMIN_LOGOUT_USE_CASE,
       useClass: AdminLogoutUseCase,
+    },
+    {
+      provide: LIST_ADMIN_RIDES_USE_CASE,
+      useClass: ListAdminRidesUseCase,
+    },
+    {
+      provide: GET_ADMIN_RIDE_DETAILS_USE_CASE,
+      useClass: GetAdminRideDetailsUseCase,
+    },
+    {
+      provide: CANCEL_ADMIN_RIDE_USE_CASE,
+      useClass: CancelAdminRideUseCase,
     },
     {
       provide: LIST_ADMIN_BOOKINGS_USE_CASE,
