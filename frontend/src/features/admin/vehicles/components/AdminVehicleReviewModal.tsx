@@ -37,7 +37,7 @@ interface AdminVehicleReviewModalProps {
 }
 
 // Match your backend DocumentVerificationStatus enum value ('verified' or 'approved')
-const APPROVED_DOCUMENT_STATUS = 'verified' as const;
+const APPROVED_DOCUMENT_STATUS = 'approved' as const;
 
 function formatDate(value: string | null): string {
   if (!value) return 'Not specified';
