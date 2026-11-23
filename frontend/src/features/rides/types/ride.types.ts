@@ -70,6 +70,8 @@ export interface SearchRidesParams {
   seats: number;
   minPrice?: number;
   maxPrice?: number;
+  departureWindows?: ('morning' | 'afternoon' | 'evening')[];
+  sortBy?: 'departure' | 'price-low' | 'price-high';
   page?: number;
   limit?: number;
 }

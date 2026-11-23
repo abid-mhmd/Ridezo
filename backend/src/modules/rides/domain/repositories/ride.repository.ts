@@ -42,6 +42,20 @@ export interface SearchRidesQuery {
   page: number;
   limit: number;
 }
+export interface SearchRidesQuery {
+  originLongitude: number;
+  originLatitude: number;
+  destinationLongitude: number;
+  destinationLatitude: number;
+  departureDate: Date;
+  seats: number;
+  minPrice?: number;
+  maxPrice?: number;
+  departureWindows?: ('morning' | 'afternoon' | 'evening')[];
+  sortBy?: 'departure' | 'price-low' | 'price-high';
+  page: number;
+  limit: number;
+}
 
 export interface IRideRepository {
   create(data: CreateRideData): Promise<RideEntity>;

@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsInt,
+  IsIn,
   IsNumber,
   IsOptional,
   IsString,
@@ -48,6 +49,14 @@ export class SearchRidesDto {
   @IsInt()
   @Min(1)
   seats: number;
+
+  @IsOptional()
+  @IsString()
+  departureWindows?: string; // e.g. "morning,afternoon"
+
+  @IsOptional()
+  @IsIn(['departure', 'price-low', 'price-high'])
+  sortBy?: 'departure' | 'price-low' | 'price-high';
 
   // Optional price filters
   @IsOptional()

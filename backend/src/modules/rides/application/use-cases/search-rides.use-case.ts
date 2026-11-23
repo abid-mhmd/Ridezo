@@ -72,6 +72,13 @@ export class SearchRidesUseCase implements ISearchRidesUseCase {
         'Minimum price cannot exceed maximum price.',
       );
     }
+    const validWindows = ['morning', 'afternoon', 'evening'] as const;
+    const departureWindows = dto.departureWindows
+      ?.split(',')
+      .map((w) => w.trim().toLowerCase())
+      .filter((w): w is 'morning' | 'afternoon' | 'evening' =>
+        (validWindows as readonly string[]).includes(w),
+      );
 
     const query: SearchRidesQuery = {
       originLongitude: dto.originLongitude,
@@ -82,6 +89,8 @@ export class SearchRidesUseCase implements ISearchRidesUseCase {
       seats: dto.seats,
       minPrice: dto.minPrice,
       maxPrice: dto.maxPrice,
+     departureWindows: departureWindows?.length ? departureWindows : undefined,
+      sortBy: dto.sortBy,
       page: dto.page,
       limit: dto.limit,
     };

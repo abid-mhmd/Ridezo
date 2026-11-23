@@ -3,7 +3,12 @@ import {
   VEHICLE_REPOSITORY,
   type IVehicleRepository,
 } from '../../../vehicles/domain/repositories/vehicle.repository';
-import type { VehicleVerificationStatus } from '../../../vehicles/domain/enums/vehicle.enums';
+import {
+  VEHICLE_DOCUMENT_REPOSITORY,
+  type IVehicleDocumentRepository,
+} from '../../../vehicles/domain/repositories/vehicle-document.repository';
+import { VehicleVerificationStatus } from '../../../vehicles/domain/enums/vehicle.enums';
+import { DocumentVerificationStatus } from '../../../vehicles/domain/enums/vehicle-document.enums';
 import type {
   IUpdateAdminVehicleStatusUseCase,
   UpdateAdminVehicleStatusResult,
@@ -14,6 +19,9 @@ export class UpdateAdminVehicleStatusUseCase implements IUpdateAdminVehicleStatu
   constructor(
     @Inject(VEHICLE_REPOSITORY)
     private readonly vehicleRepository: IVehicleRepository,
+
+    @Inject(VEHICLE_DOCUMENT_REPOSITORY)
+    private readonly vehicleDocumentRepository: IVehicleDocumentRepository,
   ) {}
 
   async execute(
@@ -24,6 +32,21 @@ export class UpdateAdminVehicleStatusUseCase implements IUpdateAdminVehicleStatu
 
     if (!vehicle) {
       throw new NotFoundException('Vehicle not found.');
+    }
+
+    if (status === VehicleVerificationStatus.APPROVED) {
+      const documents =
+        await this.vehicleDocumentRepository.findByVehicleId(vehicleId);
+
+      await Promise.all(
+        documents.map((doc) =>
+          this.vehicleDocumentRepository.updateVerificationResult(
+            doc.id,
+            DocumentVerificationStatus.APPROVED,
+            null,
+          ),
+        ),
+      );
     }
 
     await this.vehicleRepository.updateVerificationStatus(vehicleId, status);

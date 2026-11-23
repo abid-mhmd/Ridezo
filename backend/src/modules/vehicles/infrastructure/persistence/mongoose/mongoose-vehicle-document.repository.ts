@@ -109,6 +109,7 @@ export class MongooseVehicleDocumentRepository
 
     const updateData: Record<string, unknown> = {
       verificationStatus: status,
+      reviewedAt: new Date(),
     };
 
     if (rejectionReason !== undefined) {

@@ -235,16 +235,14 @@ export class MongooseRideRepository
     rides: RideEntity[];
     total: number;
   }> {
-    const startOfDay = new Date(query.departureDate);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-
-    const startOfNextDay = new Date(startOfDay);
-    startOfNextDay.setUTCDate(startOfNextDay.getUTCDate() + 1);
-
     const now = new Date();
+    const dateStr = new Date(query.departureDate).toISOString().slice(0, 10);
+
+    // Full day in IST (00:00:00 to 23:59:59.999 IST)
+    const startOfDayIST = new Date(`${dateStr}T00:00:00.000+05:30`);
+    const endOfDayIST = new Date(`${dateStr}T23:59:59.999+05:30`);
 
     const filter: Record<string, unknown> = {
-      // Origin must be within 10 km
       'origin.coordinates': {
         $geoWithin: {
           $centerSphere: [
@@ -254,7 +252,6 @@ export class MongooseRideRepository
         },
       },
 
-      // Destination must also be within 10 km
       'destination.coordinates': {
         $geoWithin: {
           $centerSphere: [
@@ -264,20 +261,47 @@ export class MongooseRideRepository
         },
       },
 
-      // Departure date
+      // Base departure date filter (IST)
       departureTime: {
-        $gte: startOfDay > now ? startOfDay : now,
-        $lt: startOfNextDay,
+        $gte: startOfDayIST > now ? startOfDayIST : now,
+        $lte: endOfDayIST,
       },
 
-      // Available seats
       availableSeats: {
         $gte: query.seats,
       },
 
-      // Only scheduled rides
       status: RideStatus.SCHEDULED,
     };
+
+    // Multi-select departure windows (IST: UTC+5:30)
+    if (query.departureWindows && query.departureWindows.length > 0) {
+      const windowConditions = query.departureWindows.map((win) => {
+        let winStart = startOfDayIST;
+        let winEnd = endOfDayIST;
+
+        if (win === 'morning') {
+          winStart = new Date(`${dateStr}T00:00:00.000+05:30`);
+          winEnd = new Date(`${dateStr}T12:00:00.000+05:30`);
+        } else if (win === 'afternoon') {
+          winStart = new Date(`${dateStr}T12:00:00.000+05:30`);
+          winEnd = new Date(`${dateStr}T18:00:00.000+05:30`);
+        } else if (win === 'evening') {
+          winStart = new Date(`${dateStr}T18:00:00.000+05:30`);
+          winEnd = new Date(`${dateStr}T23:59:59.999+05:30`);
+        }
+
+        return {
+          departureTime: {
+            $gte: winStart > now ? winStart : now,
+            $lt: winEnd,
+          },
+        };
+      });
+
+      delete filter.departureTime;
+      filter.$or = windowConditions;
+    }
 
     if (excludeDriverId && Types.ObjectId.isValid(excludeDriverId)) {
       filter.driverId = {
@@ -302,6 +326,13 @@ export class MongooseRideRepository
 
     const skip = (query.page - 1) * query.limit;
 
+    const sortQuery: Record<string, 1 | -1> =
+      query.sortBy === 'price-low'
+        ? { pricePerSeat: 1, departureTime: 1 }
+        : query.sortBy === 'price-high'
+          ? { pricePerSeat: -1, departureTime: 1 }
+          : { departureTime: 1, _id: 1 };
+
     const [documents, total] = await Promise.all([
       this.model
         .find(filter)
@@ -309,15 +340,15 @@ export class MongooseRideRepository
           path: 'driverId',
           model: User.name,
           select:
-            'firstName lastName profilePhoto profilePhoto  rating reviewCount completedRideCount identityVerification languages',
+            'firstName lastName profilePhoto rating reviewCount completedRideCount identityVerification languages',
         })
         .populate({
           path: 'vehicleId',
           model: Vehicle.name,
           select:
-            'brand model year color vehiclePhoto registrationNumber  vehiclePhoto  verificationStatus',
+            'brand model year color vehiclePhoto registrationNumber verificationStatus',
         })
-        .sort({ departureTime: 1, _id: 1 })
+        .sort(sortQuery)
         .skip(skip)
         .limit(query.limit)
         .exec(),
