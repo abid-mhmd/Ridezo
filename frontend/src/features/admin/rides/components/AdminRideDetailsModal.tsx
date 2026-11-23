@@ -216,7 +216,7 @@ export default function AdminRideDetailsModal({
         </div>
 
         {/* Body */}
-        <div className="flex-1 space-y-5 overflow-y-auto p-6">
+        <div className="dark-scrollbar flex-1 space-y-5 overflow-y-auto p-6">
           {isLoading && !details ? (
             <div className="py-16 text-center">
               <LoadingState />
