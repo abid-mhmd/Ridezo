@@ -1,4 +1,5 @@
 import type { RideEntity } from '../entities/ride.entity';
+import type { RideStatus } from '../enums/ride.enums';
 
 export const RIDE_REPOSITORY = Symbol('RIDE_REPOSITORY');
 
@@ -20,6 +21,13 @@ export type UpdateRideData = Partial<
 export interface ListRidesQuery {
   page: number;
   limit: number;
+}
+
+export interface AdminListRidesQuery {
+  page: number;
+  limit: number;
+  search?: string;
+  status?: RideStatus;
 }
 
 export interface SearchRidesQuery {
@@ -45,12 +53,16 @@ export interface IRideRepository {
     rides: RideEntity[];
     total: number;
   }>;
+  findAll(
+    query: AdminListRidesQuery,
+  ): Promise<{ rides: RideEntity[]; total: number }>;
   update(
     rideId: string,
     driverId: string,
     data: UpdateRideData,
   ): Promise<RideEntity | null>;
   cancel(rideId: string, driverId: string): Promise<boolean>;
+  cancelByAdmin(rideId: string): Promise<boolean>;
   search(
     query: SearchRidesQuery,
     excludeDriverId?: string,

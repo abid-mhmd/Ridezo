@@ -11,6 +11,7 @@ import type {
 import type { RideEntity } from '../../../domain/entities/ride.entity';
 import { Ride, type RideDocument } from './ride.schema';
 import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository';
+import type { AdminListRidesQuery } from '../../../domain/repositories/ride.repository';
 import { RideStatus } from '../../../domain/enums/ride.enums';
 import { User } from '../../../../users/infrastructure/persistence/mongoose/user.schema';
 import { Vehicle } from '../../../../vehicles/infrastructure/persistence/mongoose/vehicle.schema';
@@ -102,6 +103,49 @@ export class MongooseRideRepository
     };
   }
 
+  async findAll(
+    query: AdminListRidesQuery,
+  ): Promise<{ rides: RideEntity[]; total: number }> {
+    const filter: Record<string, unknown> = {};
+
+    if (query.status) {
+      filter.status = query.status;
+    }
+
+    if (query.search?.trim()) {
+      const escaped = query.search
+        .trim()
+        .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escaped, 'i');
+
+      filter.$or = [
+        { 'origin.name': regex },
+        { 'origin.address': regex },
+        { 'destination.name': regex },
+        { 'destination.address': regex },
+      ];
+    }
+
+    const skip = (query.page - 1) * query.limit;
+
+    const [rides, total] = await Promise.all([
+      this.model
+        .find(filter)
+        .populate('driverId')
+        .populate('vehicleId')
+        .sort({ departureTime: -1 })
+        .skip(skip)
+        .limit(query.limit)
+        .exec(),
+      this.model.countDocuments(filter).exec(),
+    ]);
+
+    return {
+      rides: rides.map((ride) => this.toEntity(ride)),
+      total,
+    };
+  }
+
   async update(
     rideId: string,
     driverId: string,
@@ -150,6 +194,24 @@ export class MongooseRideRepository
             status: RideStatus.CANCELLED,
           },
         },
+      )
+      .exec();
+
+    return result.modifiedCount > 0;
+  }
+
+  async cancelByAdmin(rideId: string): Promise<boolean> {
+    if (!Types.ObjectId.isValid(rideId)) {
+      return false;
+    }
+
+    const result = await this.model
+      .updateOne(
+        {
+          _id: new Types.ObjectId(rideId),
+          status: { $nin: [RideStatus.COMPLETED, RideStatus.CANCELLED] },
+        },
+        { $set: { status: RideStatus.CANCELLED } },
       )
       .exec();
 
