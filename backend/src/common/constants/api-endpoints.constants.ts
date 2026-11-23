@@ -32,7 +32,7 @@ export const API_ENDPOINTS = {
     USERS: '/admin/users',
     USER_BY_ID: '/:userId',
     UPDATE_USER_STATUS: '/:userId/status',
-    RIDES: 'admin/rides',
+    RIDES: '/admin/rides',
     RIDE_BY_ID: ':rideId',
     CANCEL_RIDE: ':rideId/cancel',
     BOOKINGS: '/admin/bookings',

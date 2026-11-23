@@ -131,8 +131,18 @@ export class MongooseRideRepository
     const [rides, total] = await Promise.all([
       this.model
         .find(filter)
-        .populate('driverId')
-        .populate('vehicleId')
+        .populate({
+          path: 'driverId',
+          model: User.name,
+          select:
+            'firstName lastName profilePhoto rating reviewCount completedRideCount identityVerification languages',
+        })
+        .populate({
+          path: 'vehicleId',
+          model: Vehicle.name,
+          select:
+            'brand model year color vehiclePhoto registrationNumber verificationStatus',
+        })
         .sort({ departureTime: -1 })
         .skip(skip)
         .limit(query.limit)
@@ -331,8 +341,12 @@ export class MongooseRideRepository
 
     return {
       id: ride._id.toString(),
-      driverId: driver ? driver._id.toString() : ride.driverId.toString(),
-      vehicleId: vehicle ? vehicle._id.toString() : ride.vehicleId.toString(),
+      driverId: driver
+        ? driver._id.toString()
+        : (ride.driverId?.toString() ?? ''),
+      vehicleId: vehicle
+        ? vehicle._id.toString()
+        : (ride.vehicleId?.toString() ?? ''),
 
       ...(driver && {
         driver: {

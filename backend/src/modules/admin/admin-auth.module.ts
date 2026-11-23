@@ -37,11 +37,14 @@ import { GET_ADMIN_RIDE_DETAILS_USE_CASE } from './application/interfaces/get-ad
 import { GetAdminRideDetailsUseCase } from './application/use-cases/get-admin-ride-details.use-case';
 import { CANCEL_ADMIN_RIDE_USE_CASE } from './application/interfaces/cancel-admin-ride.use-case.interface';
 import { CancelAdminRideUseCase } from './application/use-cases/cancel-admin-ride.use-case';
+import { RidesModule } from '../rides/rides.module';
+import { AdminRidesController } from './presentation/admin-rides.controller';
 
 @Module({
   imports: [
     AuthModule,
     UsersModule,
+    RidesModule,
     BookingsModule,
     VehiclesModule,
     SecurityModule,
@@ -49,6 +52,7 @@ import { CancelAdminRideUseCase } from './application/use-cases/cancel-admin-rid
   controllers: [
     AdminAuthController,
     AdminUsersController,
+    AdminRidesController,
     AdminBookingsController,
     AdminVehiclesController,
   ],
