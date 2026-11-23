@@ -43,6 +43,7 @@ import RideDetailsPage from './features/rides/pages/RideDetailsPage';
 import MyRidesPage from './features/rides/pages/MyRidesPage';
 import EditRidePage from './features/rides/pages/EditRidePage';
 import BookingSuccessPage from './features/bookings/pages/BookingSuccessPage';
+import AdminRidesPage from './features/admin/rides/pages/AdminRidesPage';
 import AdminBookingsPage from './features/admin/bookings/pages/AdminBookingPage';
 import AdminVehiclesPage from './features/admin/vehicles/pages/AdminVehiclesPage';
 
@@ -314,6 +315,10 @@ function App() {
           <Route
             path="vehicles"
             element={<AdminVehiclesPage accessToken={adminAccessToken!} />}
+          />
+          <Route
+            path="rides"
+            element={<AdminRidesPage accessToken={adminAccessToken!} />}
           />
         </Route>
 

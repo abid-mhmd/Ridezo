@@ -34,6 +34,9 @@ export const API_ENDPOINTS = {
       `/admin/users/${encodeURIComponent(userId)}`,
     UPDATE_USER_STATUS: (userId: string) =>
       `/admin/users/${encodeURIComponent(userId)}/status`,
+    RIDES: '/admin/rides',
+    RIDE_BY_ID: (rideId: string) => `/admin/rides/${rideId}`,
+    CANCEL_RIDE: (rideId: string) => `/admin/rides/${rideId}/cancel`,
     BOOKINGS: '/admin/bookings',
     VEHICLES: '/admin/vehicles',
     VEHICLE_BY_ID: (vehicleId: string) => `/admin/vehicles/${vehicleId}`,
