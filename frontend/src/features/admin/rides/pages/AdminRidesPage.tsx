@@ -17,7 +17,7 @@ import Pagination from '../../../../components/layout/Pagination';
 import UserAvatar from '../../../../components/UserAvatar';
 import EmptyState from '../../../../components/EmptyState';
 import LoadingState from '../../../../components/LoadingState';
-import AdminRideDetailsModal from '../components/adminRideDetailsModal';
+import AdminRideDetailsModal from '../components/AdminRideDetailsModal';
 import { getAdminRides } from '../api/admin-rides.api';
 import type {
   AdminRideListResponse,
