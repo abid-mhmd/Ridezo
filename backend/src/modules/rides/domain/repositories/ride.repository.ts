@@ -84,4 +84,6 @@ export interface IRideRepository {
     rides: RideEntity[];
     total: number;
   }>;
+  reserveSeats(rideId: string, seats: number): Promise<boolean>;
+  releaseSeats(rideId: string, seats: number): Promise<void>;
 }

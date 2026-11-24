@@ -89,7 +89,7 @@ export class SearchRidesUseCase implements ISearchRidesUseCase {
       seats: dto.seats,
       minPrice: dto.minPrice,
       maxPrice: dto.maxPrice,
-     departureWindows: departureWindows?.length ? departureWindows : undefined,
+      departureWindows: departureWindows?.length ? departureWindows : undefined,
       sortBy: dto.sortBy,
       page: dto.page,
       limit: dto.limit,

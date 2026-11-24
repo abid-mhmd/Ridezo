@@ -154,7 +154,22 @@ export class CreateBookingUseCase implements ICreateBookingUseCase {
       },
     };
 
-    const booking = await this.bookingRepository.create(bookingData);
+    const reserved = await this.rideRepository.reserveSeats(
+      ride.id,
+      dto.seatsRequested,
+    );
+
+    if (!reserved) {
+      throw new InsufficientSeatsError();
+    }
+
+    let booking: BookingEntity;
+    try {
+      booking = await this.bookingRepository.create(bookingData);
+    } catch (error) {
+      await this.rideRepository.releaseSeats(ride.id, dto.seatsRequested);
+      throw error;
+    }
 
     const [driverPhoto, vehiclePhoto] = await Promise.all([
       booking.driverSnapshot?.profilePhoto &&

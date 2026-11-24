@@ -361,6 +361,64 @@ export class MongooseRideRepository
     };
   }
 
+  async reserveSeats(rideId: string, seats: number): Promise<boolean> {
+    if (!Types.ObjectId.isValid(rideId) || seats < 1) {
+      return false;
+    }
+
+    const updatedRide = await this.model
+      .findOneAndUpdate(
+        {
+          _id: new Types.ObjectId(rideId),
+          status: RideStatus.SCHEDULED,
+          availableSeats: { $gte: seats },
+        },
+        [
+          {
+            $set: {
+              availableSeats: { $subtract: ['$availableSeats', seats] },
+              status: {
+                $cond: [
+                  { $eq: [{ $subtract: ['$availableSeats', seats] }, 0] },
+                  RideStatus.FULL,
+                  RideStatus.SCHEDULED,
+                ],
+              },
+            },
+          },
+        ],
+        { new: true },
+      )
+      .exec();
+
+    return updatedRide !== null;
+  }
+
+  async releaseSeats(rideId: string, seats: number): Promise<void> {
+    if (!Types.ObjectId.isValid(rideId) || seats < 1) {
+      return;
+    }
+
+    await this.model
+      .updateOne(
+        {
+          _id: new Types.ObjectId(rideId),
+          status: { $in: [RideStatus.SCHEDULED, RideStatus.FULL] },
+        },
+        [
+          {
+            $set: {
+              availableSeats: {
+                $min: ['$totalSeats', { $add: ['$availableSeats', seats] }],
+              },
+              status: RideStatus.SCHEDULED,
+            },
+          },
+        ],
+      )
+      .exec();
+  }
+
   private toEntity(ride: RideDocument): RideEntity {
     const driver = ride.populated('driverId')
       ? (ride.driverId as any)
