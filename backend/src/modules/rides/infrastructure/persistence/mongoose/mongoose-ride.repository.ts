@@ -340,7 +340,7 @@ export class MongooseRideRepository
           path: 'driverId',
           model: User.name,
           select:
-            'firstName lastName profilePhoto rating reviewCount completedRideCount identityVerification languages',
+            'firstName lastName profilePhoto phone rating reviewCount completedRideCount identityVerification languages',
         })
         .populate({
           path: 'vehicleId',
@@ -387,7 +387,7 @@ export class MongooseRideRepository
             },
           },
         ],
-        { new: true },
+        { new: true, updatePipeline: true }, // <-- ADD updatePipeline: true
       )
       .exec();
 
@@ -415,6 +415,7 @@ export class MongooseRideRepository
             },
           },
         ],
+        { updatePipeline: true },
       )
       .exec();
   }

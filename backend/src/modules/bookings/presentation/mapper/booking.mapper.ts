@@ -13,6 +13,7 @@ export class BookingMapper {
       pricePerSeat: booking.pricePerSeat,
       totalPrice: booking.totalPrice,
 
+      passengerSnapshot: booking.passengerSnapshot,
       driverSnapshot: booking.driverSnapshot,
       vehicleSnapshot: booking.vehicleSnapshot,
       rideSnapshot: booking.rideSnapshot,

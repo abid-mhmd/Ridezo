@@ -10,6 +10,10 @@ import type {
   BookingListRole,
 } from '../interfaces/get-my-bookings-for-user.use-case.interface';
 import {
+  USER_REPOSITORY,
+  type IUserRepository,
+} from '../../../users/domain/repositories/user.repository';
+import {
   PROFILE_PHOTO_STORAGE,
   type IProfilePhotoStorage,
 } from '../../../users/application/ports/profile-photo-storage';
@@ -23,6 +27,9 @@ export class GetBookingsForUserUseCase implements IGetBookingsForUserUseCase {
   constructor(
     @Inject(BOOKING_REPOSITORY)
     private readonly bookingRepository: IBookingRepository,
+
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: IUserRepository,
 
     @Inject(PROFILE_PHOTO_STORAGE)
     private readonly profilePhotoStorage: IProfilePhotoStorage,
@@ -47,21 +54,38 @@ export class GetBookingsForUserUseCase implements IGetBookingsForUserUseCase {
         ? await this.bookingRepository.findByDriverId(userId, query)
         : await this.bookingRepository.findByPassengerId(userId, query);
 
+    const userIds = [
+      ...new Set(
+        result.bookings.flatMap((booking) =>
+          [booking.driverId, booking.passengerId].filter(Boolean),
+        ),
+      ),
+    ];
+
+    const users =
+      userIds.length > 0 ? await this.userRepository.findByIds(userIds) : [];
+    const userMap = new Map(users.map((user) => [user.id, user]));
+
     const bookings = await Promise.all(
       result.bookings.map(async (booking) => {
-        const [driverPhoto, vehiclePhoto] = await Promise.all([
-          booking.driverSnapshot?.profilePhoto &&
-          !booking.driverSnapshot.profilePhoto.startsWith('http')
-            ? this.profilePhotoStorage.getUrl(
-                booking.driverSnapshot.profilePhoto,
-              )
-            : Promise.resolve(booking.driverSnapshot?.profilePhoto ?? ''),
-          booking.vehicleSnapshot?.vehiclePhoto &&
-          !booking.vehicleSnapshot.vehiclePhoto.startsWith('http')
-            ? this.vehiclePhotoStorage.getUrl(
-                booking.vehicleSnapshot.vehiclePhoto,
-              )
-            : Promise.resolve(booking.vehicleSnapshot?.vehiclePhoto ?? ''),
+        const driver = userMap.get(booking.driverId);
+        const passenger = userMap.get(booking.passengerId);
+
+        const rawDriverPhoto =
+          booking.driverSnapshot?.profilePhoto || driver?.profilePhoto || '';
+        const rawVehiclePhoto = booking.vehicleSnapshot?.vehiclePhoto || '';
+        const rawPassengerPhoto = passenger?.profilePhoto || '';
+
+        const [driverPhoto, vehiclePhoto, passengerPhoto] = await Promise.all([
+          rawDriverPhoto && !rawDriverPhoto.startsWith('http')
+            ? this.profilePhotoStorage.getUrl(rawDriverPhoto)
+            : Promise.resolve(rawDriverPhoto),
+          rawVehiclePhoto && !rawVehiclePhoto.startsWith('http')
+            ? this.vehiclePhotoStorage.getUrl(rawVehiclePhoto)
+            : Promise.resolve(rawVehiclePhoto),
+          rawPassengerPhoto && !rawPassengerPhoto.startsWith('http')
+            ? this.profilePhotoStorage.getUrl(rawPassengerPhoto)
+            : Promise.resolve(rawPassengerPhoto),
         ]);
 
         return {
@@ -69,7 +93,17 @@ export class GetBookingsForUserUseCase implements IGetBookingsForUserUseCase {
           driverSnapshot: {
             ...booking.driverSnapshot,
             profilePhoto: driverPhoto,
+            phone: driver?.phone ?? booking.driverSnapshot?.phone ?? '',
           },
+          ...(passenger && {
+            passengerSnapshot: {
+              firstName: passenger.firstName,
+              lastName: passenger.lastName,
+              email: passenger.email,
+              phone: passenger.phone,
+              profilePhoto: passengerPhoto,
+            },
+          }),
           vehicleSnapshot: {
             ...booking.vehicleSnapshot,
             vehiclePhoto,

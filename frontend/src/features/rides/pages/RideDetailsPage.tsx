@@ -12,6 +12,7 @@ import {
   Share2,
   Bookmark,
   MessageSquare,
+  Phone,
 } from 'lucide-react';
 
 import { getRideDetails } from '../api/ride.api';
@@ -388,6 +389,15 @@ export default function RideDetailsPage() {
                   <span>· {driverReviewCount} reviews</span>
                   <span>· {completedTrips} highway trips</span>
                 </div>
+                {driver?.phone && (
+                  <a
+                    href={`tel:${driver.phone}`}
+                    className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-[#36e0c0]/25 bg-[#36e0c0]/10 px-3 py-1.5 text-xs font-semibold text-[#36e0c0] transition hover:bg-[#36e0c0]/20"
+                  >
+                    <Phone size={13} />
+                    {driver.phone}
+                  </a>
+                )}
 
                 {driver?.languages?.length ? (
                   <p className="text-[11px] text-[#929bad]">

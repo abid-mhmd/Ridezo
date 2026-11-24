@@ -15,6 +15,7 @@ export interface BookingDriverSnapshot {
   firstName: string;
   lastName: string;
   profilePhoto: string;
+  phone?: string;
 }
 
 export interface BookingVehicleSnapshot {
@@ -33,6 +34,13 @@ export interface BookingRideSnapshot {
   departureTime: string;
   pickupInstructions?: string;
 }
+export interface BookingPassengerSnapshot {
+  firstName: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  profilePhoto?: string;
+}
 
 export interface Booking {
   id: string;
@@ -44,6 +52,7 @@ export interface Booking {
   pricePerSeat: number;
   totalPrice: number;
 
+  passengerSnapshot?: BookingPassengerSnapshot;
   driverSnapshot: BookingDriverSnapshot;
   vehicleSnapshot: BookingVehicleSnapshot;
   rideSnapshot: BookingRideSnapshot;

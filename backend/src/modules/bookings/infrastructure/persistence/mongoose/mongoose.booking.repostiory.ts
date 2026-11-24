@@ -217,24 +217,43 @@ export class MongooseBookingRepository
   }
 
   private toEntity(booking: BookingDocument): BookingEntity {
+    const plain = booking.toObject();
+
     return {
       id: booking._id.toString(),
       rideId: booking.rideId.toString(),
       passengerId: booking.passengerId.toString(),
       driverId: booking.driverId.toString(),
-      seatsRequested: booking.seatsRequested,
-      pricePerSeat: booking.pricePerSeat,
-      totalPrice: booking.totalPrice,
+      seatsRequested: plain.seatsRequested,
+      pricePerSeat: plain.pricePerSeat,
+      totalPrice: plain.totalPrice,
 
-      driverSnapshot: booking.driverSnapshot,
-      vehicleSnapshot: booking.vehicleSnapshot,
-      rideSnapshot: booking.rideSnapshot,
+      driverSnapshot: {
+        firstName: plain.driverSnapshot?.firstName ?? '',
+        lastName: plain.driverSnapshot?.lastName ?? '',
+        profilePhoto: plain.driverSnapshot?.profilePhoto ?? '',
+      },
+      vehicleSnapshot: {
+        brand: plain.vehicleSnapshot?.brand ?? '',
+        model: plain.vehicleSnapshot?.model ?? '',
+        year: plain.vehicleSnapshot?.year ?? 0,
+        color: plain.vehicleSnapshot?.color ?? '',
+        registrationNumber: plain.vehicleSnapshot?.registrationNumber ?? '',
+        vehiclePhoto: plain.vehicleSnapshot?.vehiclePhoto ?? '',
+      },
+      rideSnapshot: {
+        origin: plain.rideSnapshot.origin,
+        destination: plain.rideSnapshot.destination,
+        stops: plain.rideSnapshot.stops ?? [],
+        departureTime: plain.rideSnapshot.departureTime,
+        pickupInstructions: plain.rideSnapshot.pickupInstructions ?? '',
+      },
 
-      message: booking.message,
-      rejectionReason: booking.rejectionReason,
-      status: booking.status,
-      createdAt: booking.createdAt,
-      updatedAt: booking.updatedAt,
+      message: plain.message,
+      rejectionReason: plain.rejectionReason,
+      status: plain.status,
+      createdAt: plain.createdAt,
+      updatedAt: plain.updatedAt,
     };
   }
 }

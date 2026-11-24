@@ -18,8 +18,10 @@ import {
   type IVehiclePhotoStorage,
 } from '../../../vehicles/application/ports/vehicle-photo-storage';
 import type { IGetBookingByIdUseCase } from '../interfaces/get-booking-by-id.use-case.interface';
-
-export const GET_BOOKING_BY_ID_USE_CASE = Symbol('GET_BOOKING_BY_ID_USE_CASE');
+import {
+  USER_REPOSITORY,
+  type IUserRepository,
+} from '../../../users/domain/repositories/user.repository';
 
 @Injectable()
 export class GetBookingByIdUseCase implements IGetBookingByIdUseCase {
@@ -27,6 +29,9 @@ export class GetBookingByIdUseCase implements IGetBookingByIdUseCase {
     @Inject(BOOKING_REPOSITORY)
     private readonly bookingRepository: IBookingRepository,
 
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository:IUserRepository,
+    
     @Inject(PROFILE_PHOTO_STORAGE)
     private readonly profilePhotoStorage: IProfilePhotoStorage,
 
@@ -45,7 +50,12 @@ export class GetBookingByIdUseCase implements IGetBookingByIdUseCase {
       throw new ForbiddenException('You do not have access to this booking.');
     }
 
-    const [driverPhoto, vehiclePhoto] = await Promise.all([
+    const [driver, passenger] = await Promise.all([
+      this.userRepository.findById(booking.driverId),
+      this.userRepository.findById(booking.passengerId),
+    ]);
+
+    const [driverPhoto, vehiclePhoto, passengerPhoto] = await Promise.all([
       booking.driverSnapshot?.profilePhoto &&
       !booking.driverSnapshot.profilePhoto.startsWith('http')
         ? this.profilePhotoStorage.getUrl(booking.driverSnapshot.profilePhoto)
@@ -54,6 +64,9 @@ export class GetBookingByIdUseCase implements IGetBookingByIdUseCase {
       !booking.vehicleSnapshot.vehiclePhoto.startsWith('http')
         ? this.vehiclePhotoStorage.getUrl(booking.vehicleSnapshot.vehiclePhoto)
         : Promise.resolve(booking.vehicleSnapshot?.vehiclePhoto ?? ''),
+      passenger?.profilePhoto && !passenger.profilePhoto.startsWith('http')
+        ? this.profilePhotoStorage.getUrl(passenger.profilePhoto)
+        : Promise.resolve(passenger?.profilePhoto ?? ''),
     ]);
 
     return {
@@ -61,7 +74,17 @@ export class GetBookingByIdUseCase implements IGetBookingByIdUseCase {
       driverSnapshot: {
         ...booking.driverSnapshot,
         profilePhoto: driverPhoto,
+        phone: driver?.phone ?? booking.driverSnapshot?.phone ?? '',
       },
+      ...(passenger && {
+        passengerSnapshot: {
+          firstName: passenger.firstName,
+          lastName: passenger.lastName,
+          email: passenger.email,
+          phone: passenger.phone,
+          profilePhoto: passengerPhoto,
+        },
+      }),
       vehicleSnapshot: {
         ...booking.vehicleSnapshot,
         vehiclePhoto,

@@ -14,6 +14,15 @@ export interface BookingDriverSnapshotDto {
   firstName: string;
   lastName: string;
   profilePhoto: string;
+  phone?: string;
+}
+
+export interface BookingPassengerSnapshotDto {
+  firstName: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  profilePhoto?: string;
 }
 
 export interface BookingVehicleSnapshotDto {
@@ -43,6 +52,7 @@ export class BookingResponseDto {
   pricePerSeat: number;
   totalPrice: number;
 
+  passengerSnapshot?: BookingPassengerSnapshotDto;
   driverSnapshot: BookingDriverSnapshotDto;
   vehicleSnapshot: BookingVehicleSnapshotDto;
   rideSnapshot: BookingRideSnapshotDto;

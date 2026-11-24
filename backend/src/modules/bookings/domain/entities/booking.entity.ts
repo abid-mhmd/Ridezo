@@ -4,6 +4,15 @@ export interface BookingDriverSnapshot {
   firstName: string;
   lastName: string;
   profilePhoto: string;
+  phone?: string;
+}
+
+export interface BookingPassengerSnapshot {
+  firstName: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  profilePhoto?: string;
 }
 
 export interface BookingVehicleSnapshot {
@@ -40,6 +49,7 @@ export interface BookingEntity {
   seatsRequested: number;
   pricePerSeat: number;
   totalPrice: number;
+  passengerSnapshot?: BookingPassengerSnapshot;
   driverSnapshot: BookingDriverSnapshot;
   vehicleSnapshot: BookingVehicleSnapshot;
   rideSnapshot: BookingRideSnapshot;

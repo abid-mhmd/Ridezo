@@ -17,8 +17,6 @@ import { BookingStatus } from '../../domain/enums/booking.enums';
 import type { BookingEntity } from '../../domain/entities/booking.entity';
 import type { ICancelBookingUseCase } from '../interfaces/cancel-booking.use-case.interface';
 
-export const CANCEL_BOOKING_USE_CASE = Symbol('CANCEL_BOOKING_USE_CASE');
-
 @Injectable()
 export class CancelBookingUseCase implements ICancelBookingUseCase {
   constructor(

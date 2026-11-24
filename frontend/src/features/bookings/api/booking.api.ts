@@ -11,6 +11,9 @@ const BOOKING_ENDPOINTS = {
   ROOT: '/bookings',
   MY_BOOKINGS: '/bookings/my-bookings',
   DRIVER_REQUESTS: '/bookings/requests',
+  BY_ID: (bookingId: string) => `/bookings/${bookingId}`,
+  CANCEL: (bookingId: string) => `/bookings/${bookingId}/cancel`,
+  RESPOND: (bookingId: string) => `/bookings/${bookingId}/respond`,
 } as const;
 
 export async function createBooking(
@@ -53,6 +56,40 @@ export async function getDriverBookingRequests(
 
   const response = await apiRequest<ApiResponse<MyBookingsResult>>(
     `${BOOKING_ENDPOINTS.DRIVER_REQUESTS}?${queryParams.toString()}`,
+  );
+
+  return response.data;
+}
+
+export async function getBookingById(bookingId: string): Promise<Booking> {
+  const response = await apiRequest<ApiResponse<Booking>>(
+    BOOKING_ENDPOINTS.BY_ID(bookingId),
+  );
+
+  return response.data;
+}
+
+export async function cancelBooking(bookingId: string): Promise<Booking> {
+  const response = await apiRequest<ApiResponse<Booking>>(
+    BOOKING_ENDPOINTS.CANCEL(bookingId),
+    {
+      method: 'PATCH',
+    },
+  );
+
+  return response.data;
+}
+
+export async function respondToBookingRequest(
+  bookingId: string,
+  payload: { decision: 'accepted' | 'rejected'; rejectionReason?: string },
+): Promise<Booking> {
+  const response = await apiRequest<ApiResponse<Booking>>(
+    BOOKING_ENDPOINTS.RESPOND(bookingId),
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    },
   );
 
   return response.data;
