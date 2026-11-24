@@ -67,39 +67,34 @@ export default function AdminUserDetailsModal({
   const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
 
   useEffect(() => {
-    if (!userId) {
-      setUser(null);
-      setError('');
-      setActionError('');
-      setConfirmAction(null);
-      setActiveTab('overview');
-      return;
-    }
+    if (!userId) return;
 
     let isActive = true;
-    setIsLoading(true);
-    setError('');
-    setActionError('');
-    setConfirmAction(null);
 
-    getAdminUserDetails(accessToken, userId)
-      .then((response) => {
+    async function fetchUserDetails() {
+      try {
+        setIsLoading(true);
+        setError('');
+        setActionError('');
+        setConfirmAction(null);
+        const response = await getAdminUserDetails(accessToken, userId!);
         if (isActive) {
           setUser(response.user);
         }
-      })
-      .catch((err: unknown) => {
+      } catch (err: unknown) {
         if (isActive) {
           setError(
             err instanceof Error ? err.message : 'Unable to load user details.',
           );
         }
-      })
-      .finally(() => {
+      } finally {
         if (isActive) {
           setIsLoading(false);
         }
-      });
+      }
+    }
+
+    void fetchUserDetails();
 
     return () => {
       isActive = false;

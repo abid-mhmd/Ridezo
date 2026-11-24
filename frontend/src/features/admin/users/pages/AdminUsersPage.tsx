@@ -58,20 +58,19 @@ export default function AdminUsersPage({ accessToken }: AdminUsersPageProps) {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(() =>
-    searchParams.get('userId'),
-  );
+  const [modalOverride, setModalOverride] = useState<{
+    paramKey: string;
+    userId: string | null;
+  } | null>(null);
 
   const [result, setResult] = useState<AdminUserListResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const queryUserId = searchParams.get('userId');
-    if (queryUserId) {
-      setSelectedUserId(queryUserId);
-    }
-  }, [searchParams]);
+  const queryUserId = searchParams.get('userId');
+  const paramKey = queryUserId ?? '';
+  const selectedUserId =
+    modalOverride?.paramKey === paramKey ? modalOverride.userId : queryUserId;
 
   useEffect(() => {
     let isActive = true;
@@ -136,8 +135,12 @@ export default function AdminUsersPage({ accessToken }: AdminUsersPageProps) {
     setPage(1);
   };
 
+  const handleSelectUser = (userId: string) => {
+    setModalOverride({ paramKey, userId });
+  };
+
   const handleCloseModal = () => {
-    setSelectedUserId(null);
+    setModalOverride({ paramKey, userId: null });
     if (searchParams.has('userId')) {
       const next = new URLSearchParams(searchParams);
       next.delete('userId');
@@ -330,7 +333,7 @@ export default function AdminUsersPage({ accessToken }: AdminUsersPageProps) {
                   <td className="whitespace-nowrap px-6 py-3.5 text-right">
                     <button
                       type="button"
-                      onClick={() => setSelectedUserId(user.id)}
+                      onClick={() => handleSelectUser(user.id)}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-[#263044] bg-[#080B12] px-3 py-1.5 text-xs font-medium text-[#C37DF5] transition hover:bg-[#C37DF5]/10"
                     >
                       <FiEye size={13} />

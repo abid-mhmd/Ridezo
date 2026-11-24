@@ -89,6 +89,16 @@ export default function RideSearchPage() {
 
   const departureWindowsKey = filters.departureWindows.join(',');
 
+  const selectedDepartureWindows = useMemo(
+    () =>
+      departureWindowsKey
+        ? (departureWindowsKey.split(
+            ',',
+          ) as RideFilterState['departureWindows'])
+        : undefined,
+    [departureWindowsKey],
+  );
+
   useEffect(() => {
     if (!searchValues) return;
 
@@ -113,10 +123,7 @@ export default function RideSearchPage() {
           departureDate: searchValues.departureDate,
           seats: filters.seats,
           maxPrice: filters.maxPrice,
-          departureWindows:
-            filters.departureWindows.length > 0
-              ? filters.departureWindows
-              : undefined,
+          departureWindows: selectedDepartureWindows,
           sortBy,
           page: currentPage,
           limit: 10,
@@ -150,7 +157,7 @@ export default function RideSearchPage() {
     searchValues,
     filters.seats,
     filters.maxPrice,
-    departureWindowsKey,
+    selectedDepartureWindows,
     sortBy,
     currentPage,
   ]);

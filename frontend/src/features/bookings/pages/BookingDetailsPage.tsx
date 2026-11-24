@@ -91,37 +91,35 @@ export default function BookingDetailsPage() {
   const isDriverView = searchParams.get('role') === 'driver';
 
   const [booking, setBooking] = useState<Booking | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(Boolean(bookingId));
+  const [error, setError] = useState(bookingId ? '' : 'Invalid booking ID.');
   const [actionError, setActionError] = useState('');
   const [paymentNotice, setPaymentNotice] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
-    if (!bookingId) {
-      setError('Invalid booking ID.');
-      setIsLoading(false);
-      return;
-    }
+    if (!bookingId) return;
 
     let isActive = true;
-    setIsLoading(true);
-    setError('');
 
-    getBookingById(bookingId)
-      .then((data) => {
+    async function fetchBooking() {
+      try {
+        setIsLoading(true);
+        setError('');
+        const data = await getBookingById(bookingId!);
         if (isActive) setBooking(data);
-      })
-      .catch((err: unknown) => {
+      } catch (err: unknown) {
         if (isActive) {
           setError(
             err instanceof Error ? err.message : 'Unable to load booking.',
           );
         }
-      })
-      .finally(() => {
+      } finally {
         if (isActive) setIsLoading(false);
-      });
+      }
+    }
+
+    void fetchBooking();
 
     return () => {
       isActive = false;

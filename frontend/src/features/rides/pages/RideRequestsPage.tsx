@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Calendar,
   CarFront,
   Check,
   Clock,
+  Eye,
   ExternalLink,
   IndianRupee,
-  Plus,
   Mail,
-  Eye,
   Phone,
+  Plus,
   ShieldCheck,
   UserRound,
   Users,
@@ -44,6 +44,7 @@ function formatDateTime(iso: string) {
     minute: '2-digit',
   });
 }
+
 function getPassengerName(booking: Booking) {
   const fullName = [
     booking.passengerSnapshot?.firstName,
@@ -99,52 +100,67 @@ function getStatusBadge(status: BookingStatus) {
 
 export default function RideRequestsPage() {
   const { rideId } = useParams<{ rideId?: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  const initialTabParam = searchParams.get('tab');
+  const initialTab: FilterTab =
+    initialTabParam === 'accepted' ||
+    initialTabParam === 'rejected' ||
+    initialTabParam === 'all'
+      ? initialTabParam
+      : 'pending';
+
   const [rides, setRides] = useState<Ride[]>([]);
-  const [selectedRideId, setSelectedRideId] = useState<string>(rideId ?? '');
+  const [manualRideId, setManualRideId] = useState<string>('');
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [activeTab, setActiveTab] = useState<FilterTab>('pending');
+  const [activeTab, setActiveTab] = useState<FilterTab>(initialTab);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
   const [busyBookingId, setBusyBookingId] = useState<string | null>(null);
 
   // Inline decline reason state
   const [decliningId, setDecliningId] = useState<string | null>(null);
   const [declineReason, setDeclineReason] = useState('');
 
+  const selectedRideId = manualRideId || rideId || rides[0]?.id || '';
+
   useEffect(() => {
-    if (rideId) setSelectedRideId(rideId);
-  }, [rideId]);
+    let isActive = true;
 
-  const loadData = async () => {
-    setIsLoading(true);
-    setError('');
-    try {
-      const [ridesRes, reqRes] = await Promise.all([
-        getMyRides(1, 50),
-        getDriverBookingRequests(1, 50),
-      ]);
+    async function fetchRequests() {
+      try {
+        setIsLoading(true);
+        setError('');
+        const [ridesRes, reqRes] = await Promise.all([
+          getMyRides(1, 50),
+          getDriverBookingRequests(1, 50),
+        ]);
 
-      setRides(ridesRes.rides);
-      setBookings(reqRes.bookings);
-
-      if (!rideId && !selectedRideId && ridesRes.rides.length > 0) {
-        setSelectedRideId(ridesRes.rides[0].id);
+        if (!isActive) return;
+        setRides(ridesRes.rides);
+        setBookings(reqRes.bookings);
+      } catch (err: unknown) {
+        if (isActive) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : 'Unable to load booking requests.',
+          );
+        }
+      } finally {
+        if (isActive) setIsLoading(false);
       }
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : 'Unable to load booking requests.',
-      );
-    } finally {
-      setIsLoading(false);
     }
-  };
 
-  useEffect(() => {
-    void loadData();
-  }, []);
+    void fetchRequests();
+
+    return () => {
+      isActive = false;
+    };
+  }, [refreshKey]);
 
   const rideBookings = useMemo(() => {
     if (!selectedRideId) return bookings;
@@ -178,7 +194,8 @@ export default function RideRequestsPage() {
     setError('');
     try {
       await respondToBookingRequest(bookingId, { decision: 'accepted' });
-      await loadData();
+      setRefreshKey((prev) => prev + 1);
+      setActiveTab('accepted');
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : 'Unable to accept request.',
@@ -198,7 +215,7 @@ export default function RideRequestsPage() {
       });
       setDecliningId(null);
       setDeclineReason('');
-      await loadData();
+      setRefreshKey((prev) => prev + 1);
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : 'Unable to decline request.',
@@ -288,7 +305,7 @@ export default function RideRequestsPage() {
                 <button
                   key={r.id}
                   type="button"
-                  onClick={() => setSelectedRideId(r.id)}
+                  onClick={() => setManualRideId(r.id)}
                   className={`min-w-[270px] shrink-0 cursor-pointer rounded-xl border p-3.5 text-left transition ${
                     active
                       ? 'border-[#8b78ff] bg-[#8b78ff]/10 shadow-md'
@@ -571,6 +588,7 @@ export default function RideRequestsPage() {
                       <ExternalLink size={13} />
                       View Ride
                     </button>
+
                     {item.status === 'accepted' && (
                       <button
                         type="button"

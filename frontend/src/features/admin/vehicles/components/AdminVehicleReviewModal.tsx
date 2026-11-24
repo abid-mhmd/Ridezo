@@ -36,7 +36,6 @@ interface AdminVehicleReviewModalProps {
   onUpdated: () => void;
 }
 
-// Match your backend DocumentVerificationStatus enum value ('verified' or 'approved')
 const APPROVED_DOCUMENT_STATUS = 'approved' as const;
 
 function formatDate(value: string | null): string {
@@ -74,39 +73,46 @@ export default function AdminVehicleReviewModal({
   const [actionError, setActionError] = useState('');
   const [busyDocumentId, setBusyDocumentId] = useState<string | null>(null);
   const [isUpdatingVehicle, setIsUpdatingVehicle] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Inline rejection form state per document
   const [rejectingDocId, setRejectingDocId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  const loadVehicleDetails = async (targetVehicleId: string) => {
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const data = await getAdminVehicleDetails(accessToken, targetVehicleId);
-      setDetails(data);
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : 'Unable to load vehicle details.',
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (!vehicleId) {
-      setDetails(null);
-      setError('');
-      setActionError('');
-      setRejectingDocId(null);
-      setRejectionReason('');
-      return;
+    if (!vehicleId) return;
+
+    let isActive = true;
+
+    async function fetchDetails() {
+      try {
+        setIsLoading(true);
+        setError('');
+        const data = await getAdminVehicleDetails(accessToken, vehicleId!);
+        if (isActive) {
+          setDetails(data);
+        }
+      } catch (err: unknown) {
+        if (isActive) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : 'Unable to load vehicle details.',
+          );
+        }
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
     }
 
-    void loadVehicleDetails(vehicleId);
-  }, [accessToken, vehicleId]);
+    void fetchDetails();
+
+    return () => {
+      isActive = false;
+    };
+  }, [accessToken, vehicleId, refreshKey]);
 
   useEffect(() => {
     if (!vehicleId) return;
@@ -140,7 +146,7 @@ export default function AdminVehicleReviewModal({
 
       setRejectingDocId(null);
       setRejectionReason('');
-      await loadVehicleDetails(details.id);
+      setRefreshKey((k) => k + 1);
       onUpdated();
     } catch (err: unknown) {
       setActionError(
@@ -171,7 +177,7 @@ export default function AdminVehicleReviewModal({
 
       setRejectingDocId(null);
       setRejectionReason('');
-      await loadVehicleDetails(details.id);
+      setRefreshKey((k) => k + 1);
       onUpdated();
     } catch (err: unknown) {
       setActionError(
@@ -192,7 +198,7 @@ export default function AdminVehicleReviewModal({
 
     try {
       await updateAdminVehicleStatus(accessToken, details.id, { status });
-      await loadVehicleDetails(details.id);
+      setRefreshKey((k) => k + 1);
       onUpdated();
     } catch (err: unknown) {
       setActionError(

@@ -67,39 +67,44 @@ export default function AdminRideDetailsModal({
   onUpdated,
 }: AdminRideDetailsModalProps) {
   const [details, setDetails] = useState<AdminRideDetails | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [actionError, setActionError] = useState('');
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [prevRideId, setPrevRideId] = useState<string | null>(rideId);
 
-  const loadRideDetails = async (targetRideId: string) => {
-    setIsLoading(true);
+  if (rideId !== prevRideId) {
+    setPrevRideId(rideId);
+    setDetails(null);
     setError('');
-
-    try {
-      const data = await getAdminRideDetails(accessToken, targetRideId);
-      setDetails(data);
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : 'Unable to load ride details.',
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    setActionError('');
+    setIsConfirmingCancel(false);
+  }
 
   useEffect(() => {
-    if (!rideId) {
-      setDetails(null);
-      setError('');
-      setActionError('');
-      setIsConfirmingCancel(false);
-      return;
-    }
+    if (!rideId) return;
 
-    void loadRideDetails(rideId);
-  }, [accessToken, rideId]);
+    let cancelled = false;
+
+    getAdminRideDetails(accessToken, rideId)
+      .then((data) => {
+        if (!cancelled) {
+          setDetails(data);
+          setError('');
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setError(
+            err instanceof Error ? err.message : 'Unable to load ride details.',
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [rideId, accessToken]);
 
   useEffect(() => {
     if (!rideId) return;
@@ -120,6 +125,8 @@ export default function AdminRideDetailsModal({
 
   if (!rideId) return null;
 
+  const isLoading = !details && !error;
+
   const canCancel =
     details !== null &&
     details.status !== 'completed' &&
@@ -134,7 +141,8 @@ export default function AdminRideDetailsModal({
     try {
       await cancelAdminRide(accessToken, details.id);
       setIsConfirmingCancel(false);
-      await loadRideDetails(details.id);
+      const refreshed = await getAdminRideDetails(accessToken, details.id);
+      setDetails(refreshed);
       onUpdated();
     } catch (err: unknown) {
       setActionError(
@@ -217,7 +225,7 @@ export default function AdminRideDetailsModal({
 
         {/* Body */}
         <div className="dark-scrollbar flex-1 space-y-5 overflow-y-auto p-6">
-          {isLoading && !details ? (
+          {isLoading ? (
             <div className="py-16 text-center">
               <LoadingState />
             </div>
