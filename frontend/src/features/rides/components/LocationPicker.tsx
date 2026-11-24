@@ -41,6 +41,12 @@ interface LocationPickerProps {
 
 const PHOTON_API = 'https://photon.komoot.io/api/';
 
+function formatSelectedLocation(location: RideLocation): string {
+  return location.address
+    ? `${location.name}, ${location.address}`
+    : location.name;
+}
+
 function mapPhotonLocation(feature: PhotonFeature): RideLocation {
   const properties = feature.properties;
   const name = properties.name ?? 'Unknown location';
@@ -53,7 +59,7 @@ function mapPhotonLocation(feature: PhotonFeature): RideLocation {
     properties.state,
     properties.country,
     properties.postcode,
-  ].filter((value): value is string => Boolean(value));
+  ].filter((item): item is string => Boolean(item));
 
   const address = [...new Set(addressParts)].join(', ');
 
@@ -74,34 +80,33 @@ export default function LocationPicker({
   value = null,
   onSelect,
 }: LocationPickerProps) {
-  const [search, setSearch] = useState('');
+  const [draftSearch, setDraftSearch] = useState('');
   const [suggestions, setSuggestions] = useState<PhotonFeature[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [isLocationSelected, setIsLocationSelected] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [prevPlaceId, setPrevPlaceId] = useState<string | undefined>(
+    value?.placeId,
+  );
 
-  useEffect(() => {
+  if (value?.placeId !== prevPlaceId) {
+    setPrevPlaceId(value?.placeId);
     if (value) {
-      setSearch(value.address ? `${value.name}, ${value.address}` : value.name);
-      setIsLocationSelected(true);
-    } else {
-      setSearch('');
-      setIsLocationSelected(false);
+      setIsEditing(false);
     }
-  }, [value]);
+  }
+
+  const displayValue =
+    !isEditing && value ? formatSelectedLocation(value) : draftSearch;
 
   useEffect(() => {
-    if (isLocationSelected) {
+    if (!isEditing) {
       return;
     }
 
-    const query = search.trim();
-
+    const query = draftSearch.trim();
     if (query.length < 3) {
-      setSuggestions([]);
-      setIsLoading(false);
-      setError('');
       return;
     }
 
@@ -149,26 +154,30 @@ export default function LocationPicker({
       window.clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [search, isLocationSelected]);
+  }, [draftSearch, isEditing]);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setIsLocationSelected(false);
-    setSearch(event.target.value);
-    setIsOpen(true);
+    const nextValue = event.target.value;
+    setIsEditing(true);
+    setDraftSearch(nextValue);
+
+    if (nextValue.trim().length < 3) {
+      setSuggestions([]);
+      setIsLoading(false);
+      setError('');
+      setIsOpen(false);
+    } else {
+      setIsOpen(true);
+    }
+
     onSelect(null);
   };
 
   const handleSelect = (feature: PhotonFeature) => {
     const location = mapPhotonLocation(feature);
 
-    setIsLocationSelected(true);
-
-    setSearch(
-      location.address
-        ? `${location.name}, ${location.address}`
-        : location.name,
-    );
-
+    setIsEditing(false);
+    setDraftSearch(formatSelectedLocation(location));
     setSuggestions([]);
     setIsOpen(false);
     setError('');
@@ -177,11 +186,12 @@ export default function LocationPicker({
   };
 
   const handleClear = () => {
-    setSearch('');
-    setIsLocationSelected(false);
+    setIsEditing(false);
+    setDraftSearch('');
     setSuggestions([]);
     setIsOpen(false);
     setError('');
+    setIsLoading(false);
 
     onSelect(null);
   };
@@ -200,13 +210,14 @@ export default function LocationPicker({
 
         <input
           type="text"
-          value={search}
+          value={displayValue}
           onChange={handleChange}
-          onFocus={() => setIsOpen(true)}
+          onFocus={() => {
+            if (suggestions.length > 0) setIsOpen(true);
+          }}
           placeholder={placeholder}
           autoComplete="off"
-          // Reduced text opacity once typed: text-white/70 with focus:text-white transition
-          className="w-full rounded-xl border border-[#252e3e] bg-[#080b12] py-2.5 pl-9 pr-9 text-xs text-white/70 outline-none placeholder:text-gray-600 focus:border-[#8b78ff] focus:text-white transition"
+          className="w-full rounded-xl border border-[#252e3e] bg-[#080b12] py-2.5 pl-9 pr-9 text-xs text-white/70 outline-none transition placeholder:text-gray-600 focus:border-[#8b78ff] focus:text-white"
         />
 
         {isLoading ? (
@@ -214,11 +225,11 @@ export default function LocationPicker({
             size={15}
             className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-[#8b78ff]"
           />
-        ) : search ? (
+        ) : displayValue ? (
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#929bad] hover:text-white cursor-pointer"
+            className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-[#929bad] hover:text-white"
             aria-label="Clear location"
           >
             <X size={15} />
@@ -243,7 +254,7 @@ export default function LocationPicker({
                 key={location.placeId}
                 type="button"
                 onClick={() => handleSelect(feature)}
-                className="flex w-full items-start gap-2.5 border-b border-[#252e3e] px-3.5 py-2.5 text-left transition last:border-0 hover:bg-[#1b2230] cursor-pointer"
+                className="flex w-full cursor-pointer items-start gap-2.5 border-b border-[#252e3e] px-3.5 py-2.5 text-left transition last:border-0 hover:bg-[#1b2230]"
               >
                 <MapPin size={15} className="mt-0.5 shrink-0 text-[#8b78ff]" />
 
@@ -263,7 +274,8 @@ export default function LocationPicker({
       )}
 
       {isOpen &&
-        search.trim().length >= 3 &&
+        isEditing &&
+        draftSearch.trim().length >= 3 &&
         !isLoading &&
         !error &&
         suggestions.length === 0 && (

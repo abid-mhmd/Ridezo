@@ -13,6 +13,14 @@ import {
 import { RideStatus } from '../../../rides/domain/enums/ride.enums';
 import type { CreateBookingDto } from '../dto/create-booking.dto';
 import type { ICreateBookingUseCase } from '../interfaces/create-booking.use-case.inteface';
+import {
+  PROFILE_PHOTO_STORAGE,
+  type IProfilePhotoStorage,
+} from '../../../users/application/ports/profile-photo-storage';
+import {
+  VEHICLE_PHOTO_STORAGE,
+  type IVehiclePhotoStorage,
+} from '../../../vehicles/application/ports/vehicle-photo-storage';
 
 export class RideNotFoundError extends Error {
   constructor() {
@@ -49,6 +57,13 @@ export class DuplicateBookingError extends Error {
   }
 }
 
+export class RideDetailsUnavailableError extends Error {
+  constructor() {
+    super('Ride driver or vehicle information is unavailable.');
+    this.name = 'RideDetailsUnavailableError';
+  }
+}
+
 @Injectable()
 export class CreateBookingUseCase implements ICreateBookingUseCase {
   constructor(
@@ -57,6 +72,12 @@ export class CreateBookingUseCase implements ICreateBookingUseCase {
 
     @Inject(RIDE_REPOSITORY)
     private readonly rideRepository: IRideRepository,
+
+    @Inject(PROFILE_PHOTO_STORAGE)
+    private readonly profilePhotoStorage: IProfilePhotoStorage,
+
+    @Inject(VEHICLE_PHOTO_STORAGE)
+    private readonly vehiclePhotoStorage: IVehiclePhotoStorage,
   ) {}
 
   async execute(
@@ -96,6 +117,10 @@ export class CreateBookingUseCase implements ICreateBookingUseCase {
 
     const totalPrice = ride.pricePerSeat * dto.seatsRequested;
 
+    if (!ride.driver || !ride.vehicle) {
+      throw new RideDetailsUnavailableError();
+    }
+
     const bookingData: CreateBookingData = {
       rideId: ride.id,
       passengerId,
@@ -105,8 +130,68 @@ export class CreateBookingUseCase implements ICreateBookingUseCase {
       totalPrice,
       message: dto.message,
       status: BookingStatus.PENDING,
+
+      driverSnapshot: {
+        firstName: ride.driver.firstName,
+        lastName: ride.driver.lastName,
+        profilePhoto: ride.driver.profilePhoto,
+      },
+
+      vehicleSnapshot: {
+        brand: ride.vehicle.brand,
+        model: ride.vehicle.model,
+        year: ride.vehicle.year,
+        color: ride.vehicle.color,
+        registrationNumber: ride.vehicle.registrationNumber,
+        vehiclePhoto: ride.vehicle.vehiclePhoto ?? '',
+      },
+      rideSnapshot: {
+        origin: ride.origin,
+        destination: ride.destination,
+        stops: ride.stops,
+        departureTime: ride.departureTime,
+        pickupInstructions: ride.pickupInstructions,
+      },
     };
 
-    return this.bookingRepository.create(bookingData);
+    const reserved = await this.rideRepository.reserveSeats(
+      ride.id,
+      dto.seatsRequested,
+    );
+
+    if (!reserved) {
+      throw new InsufficientSeatsError();
+    }
+
+    let booking: BookingEntity;
+    try {
+      booking = await this.bookingRepository.create(bookingData);
+    } catch (error) {
+      await this.rideRepository.releaseSeats(ride.id, dto.seatsRequested);
+      throw error;
+    }
+
+    const [driverPhoto, vehiclePhoto] = await Promise.all([
+      booking.driverSnapshot?.profilePhoto &&
+      !booking.driverSnapshot.profilePhoto.startsWith('http')
+        ? this.profilePhotoStorage.getUrl(booking.driverSnapshot.profilePhoto)
+        : Promise.resolve(booking.driverSnapshot?.profilePhoto ?? ''),
+      booking.vehicleSnapshot?.vehiclePhoto &&
+      !booking.vehicleSnapshot.vehiclePhoto.startsWith('http')
+        ? this.vehiclePhotoStorage.getUrl(booking.vehicleSnapshot.vehiclePhoto)
+        : Promise.resolve(booking.vehicleSnapshot?.vehiclePhoto ?? ''),
+    ]);
+
+    return {
+      ...booking,
+      driverSnapshot: {
+        ...booking.driverSnapshot,
+        profilePhoto: driverPhoto,
+      },
+      vehicleSnapshot: {
+        ...booking.vehicleSnapshot,
+        vehiclePhoto,
+      },
+    };
   }
 }

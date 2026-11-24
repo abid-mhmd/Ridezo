@@ -17,10 +17,45 @@ import { REFRESH_ADMIN_TOKEN_USE_CASE } from './application/interfaces/refresh-a
 import { LIST_USERS_USE_CASE } from './application/interfaces/list-users.use-case.interface';
 import { GET_USER_DETAILS_USE_CASE } from './application/interfaces/get-user-details.use-case.interface';
 import { CHANGE_USER_ACCOUNT_STATUS_USE_CASE } from './application/interfaces/change-user-account-status.use-case.interface';
+import { BookingsModule } from '../bookings/bookings.module';
+import { AdminBookingsController } from './presentation/admin-bookings.controller';
+import { LIST_ADMIN_BOOKINGS_USE_CASE } from './application/interfaces/list-admin-booking.use-case.interface';
+import { ListAdminBookingsUseCase } from './application/use-cases/list-admin-booking.use-case';
+import { VehiclesModule } from '../vehicles/vehicles.module';
+import { LIST_ADMIN_VEHICLES_USE_CASE } from './application/interfaces/list-admin-vehicles.use-case.interface';
+import { ListAdminVehiclesUseCase } from './application/use-cases/list-admin-vehicles.user-case';
+import { GET_ADMIN_VEHICLE_DETAILS_USE_CASE } from './application/interfaces/get-admin-vehicle-details.use-case.interface';
+import { GetAdminVehicleDetailsUseCase } from './application/use-cases/get-admin-vehicle-details.use-case';
+import { AdminVehiclesController } from './presentation/admin-vehicles.controller';
+import { REVIEW_ADMIN_VEHICLE_DOCUMENT_USE_CASE } from './application/interfaces/review-admin-vehicle-document.use-case.interface';
+import { ReviewAdminVehicleDocumentUseCase } from './application/use-cases/review-admin-vehicle-document.use-case';
+import { UPDATE_ADMIN_VEHICLE_STATUS_USE_CASE } from './application/interfaces/update.admin-vehicle.status.use-case.interface';
+import { UpdateAdminVehicleStatusUseCase } from './application/use-cases/update-admin-vehicle-status.use-case';
+import { LIST_ADMIN_RIDES_USE_CASE } from './application/interfaces/list-admin-rides.use-case.interface';
+import { ListAdminRidesUseCase } from './application/use-cases/list-admin-rides.use-case';
+import { GET_ADMIN_RIDE_DETAILS_USE_CASE } from './application/interfaces/get-admin-ride-details.use-case.interface';
+import { GetAdminRideDetailsUseCase } from './application/use-cases/get-admin-ride-details.use-case';
+import { CANCEL_ADMIN_RIDE_USE_CASE } from './application/interfaces/cancel-admin-ride.use-case.interface';
+import { CancelAdminRideUseCase } from './application/use-cases/cancel-admin-ride.use-case';
+import { RidesModule } from '../rides/rides.module';
+import { AdminRidesController } from './presentation/admin-rides.controller';
 
 @Module({
-  imports: [AuthModule, UsersModule, SecurityModule],
-  controllers: [AdminAuthController, AdminUsersController],
+  imports: [
+    AuthModule,
+    UsersModule,
+    RidesModule,
+    BookingsModule,
+    VehiclesModule,
+    SecurityModule,
+  ],
+  controllers: [
+    AdminAuthController,
+    AdminUsersController,
+    AdminRidesController,
+    AdminBookingsController,
+    AdminVehiclesController,
+  ],
   providers: [
     {
       provide: ADMIN_LOGIN_USE_CASE,
@@ -46,6 +81,38 @@ import { CHANGE_USER_ACCOUNT_STATUS_USE_CASE } from './application/interfaces/ch
     {
       provide: ADMIN_LOGOUT_USE_CASE,
       useClass: AdminLogoutUseCase,
+    },
+    {
+      provide: LIST_ADMIN_RIDES_USE_CASE,
+      useClass: ListAdminRidesUseCase,
+    },
+    {
+      provide: GET_ADMIN_RIDE_DETAILS_USE_CASE,
+      useClass: GetAdminRideDetailsUseCase,
+    },
+    {
+      provide: CANCEL_ADMIN_RIDE_USE_CASE,
+      useClass: CancelAdminRideUseCase,
+    },
+    {
+      provide: LIST_ADMIN_BOOKINGS_USE_CASE,
+      useClass: ListAdminBookingsUseCase,
+    },
+    {
+      provide: LIST_ADMIN_VEHICLES_USE_CASE,
+      useClass: ListAdminVehiclesUseCase,
+    },
+    {
+      provide: GET_ADMIN_VEHICLE_DETAILS_USE_CASE,
+      useClass: GetAdminVehicleDetailsUseCase,
+    },
+    {
+      provide: REVIEW_ADMIN_VEHICLE_DOCUMENT_USE_CASE,
+      useClass: ReviewAdminVehicleDocumentUseCase,
+    },
+    {
+      provide: UPDATE_ADMIN_VEHICLE_STATUS_USE_CASE,
+      useClass: UpdateAdminVehicleStatusUseCase,
     },
   ],
 })

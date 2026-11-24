@@ -1,18 +1,15 @@
 import type { VehicleVerificationStatus } from '../types/vehicle.types';
 
 interface VehicleStatusBadgeProps {
-  status: VehicleVerificationStatus;
+  status?: VehicleVerificationStatus | 'verified' | string;
 }
 
-const statusStyles: Record<
-  VehicleVerificationStatus,
-  { label: string; className: string }
-> = {
+const statusStyles: Record<string, { label: string; className: string }> = {
   pending: {
     label: 'Pending Verification',
     className: 'bg-amber-400/10 text-amber-400 border-amber-400/20',
   },
-  approved: {
+  verified: {
     label: 'Verified',
     className: 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20',
   },
@@ -22,10 +19,16 @@ const statusStyles: Record<
   },
 };
 
+const DEFAULT_STYLE = {
+  label: 'Unknown',
+  className: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+};
+
 export default function VehicleStatusBadge({
   status,
 }: VehicleStatusBadgeProps) {
-  const config = statusStyles[status];
+  const normalizedStatus = status?.toLowerCase() ?? '';
+  const config = statusStyles[normalizedStatus] ?? DEFAULT_STYLE;
 
   return (
     <span

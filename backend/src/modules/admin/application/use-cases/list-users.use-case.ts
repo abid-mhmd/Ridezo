@@ -22,9 +22,9 @@ export class ListUsersUseCase implements IListUsersUseCase {
 
     await Promise.all(
       users.map(async (user) => {
-        if (user.profilePhotoKey) {
+        if (user.profilePhoto) {
           user.profilePhoto = await this.profilePhotoStorage.getUrl(
-            user.profilePhotoKey,
+            user.profilePhoto,
           );
         }
       }),

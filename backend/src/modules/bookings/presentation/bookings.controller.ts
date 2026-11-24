@@ -6,6 +6,8 @@ import {
   Inject,
   Get,
   Query,
+  Patch,
+  Param,
   UseGuards,
   UnauthorizedException,
   NotFoundException,
@@ -35,9 +37,20 @@ import {
 } from '../application/use-cases/create-booking.use-case';
 import { GetMyBookingsQueryDto } from '../application/dto/get-my-bookings-query.dto';
 import {
-  GET_MY_BOOKINGS_USE_CASE,
-  IGetMyBookingsUseCase,
-} from '../application/interfaces/get-my-bookings.use-case.interface';
+  GET_BOOKINGS_FOR_USER_USE_CASE,
+  IGetBookingsForUserUseCase,
+} from '../application/interfaces/get-my-bookings-for-user.use-case.interface';
+import {
+  GET_BOOKING_BY_ID_USE_CASE,
+  IGetBookingByIdUseCase,
+} from '../application/interfaces/get-booking-by-id.use-case.interface';
+import {
+  CANCEL_BOOKING_USE_CASE,
+  ICancelBookingUseCase,
+} from '../application/interfaces/cancel-booking.use-case.interface';
+import { RESPOND_TO_BOOKING_REQUEST_USE_CASE } from '../application/interfaces/respond-to-booking-request.use-case.interface';
+import { RespondToBookingRequestUseCase } from '../application/use-cases/respond-to-booking-request.use-case';
+import { RespondBookingRequestDto } from '../application/dto/respond-booking-request.dto';
 
 @Controller()
 @UseGuards(JwtAuthGuard)
@@ -46,8 +59,17 @@ export class BookingsController {
     @Inject(CREATE_BOOKING_USE_CASE)
     private readonly createBookingUseCase: ICreateBookingUseCase,
 
-    @Inject(GET_MY_BOOKINGS_USE_CASE)
-    private readonly getMyBookingsUseCase: IGetMyBookingsUseCase,
+    @Inject(GET_BOOKINGS_FOR_USER_USE_CASE)
+    private readonly getBookingsForUserUseCase: IGetBookingsForUserUseCase,
+
+    @Inject(GET_BOOKING_BY_ID_USE_CASE)
+    private readonly getBookingByIdUseCase: IGetBookingByIdUseCase,
+
+    @Inject(CANCEL_BOOKING_USE_CASE)
+    private readonly cancelBookingUseCase: ICancelBookingUseCase,
+
+    @Inject(RESPOND_TO_BOOKING_REQUEST_USE_CASE)
+    private readonly respondToBookingRequestUseCase: RespondToBookingRequestUseCase,
   ) {}
 
   @Post(BOOKING_ENDPOINTS.ROOT)
@@ -91,10 +113,14 @@ export class BookingsController {
       totalPages: number;
     }>
   > {
-    const result = await this.getMyBookingsUseCase.execute(request.user.sub, {
-      page: query.page,
-      limit: query.limit,
-    });
+    const result = await this.getBookingsForUserUseCase.execute(
+      request.user.sub,
+      {
+        page: query.page,
+        limit: query.limit,
+      },
+      'passenger',
+    );
 
     return {
       success: true,
@@ -106,6 +132,94 @@ export class BookingsController {
         limit: query.limit,
         totalPages: Math.ceil(result.total / query.limit),
       },
+    };
+  }
+
+  @Get(BOOKING_ENDPOINTS.BOOKING_REQUESTS)
+  async getDriverBookingRequests(
+    @Req() request: Request & { user: AccessTokenPayload },
+    @Query() query: GetMyBookingsQueryDto,
+  ): Promise<
+    ApiResponse<{
+      bookings: BookingResponseDto[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    }>
+  > {
+    const result = await this.getBookingsForUserUseCase.execute(
+      request.user.sub,
+      {
+        page: query.page,
+        limit: query.limit,
+      },
+      'driver',
+    );
+
+    return {
+      success: true,
+      message: BOOKING_MESSAGES.LIST_RETRIEVED,
+      data: {
+        bookings: BookingMapper.toResponseList(result.bookings),
+        total: result.total,
+        page: query.page,
+        limit: query.limit,
+        totalPages: Math.ceil(result.total / query.limit),
+      },
+    };
+  }
+
+  @Get(BOOKING_ENDPOINTS.BY_ID)
+  async getBookingById(
+    @Req() request: Request & { user: AccessTokenPayload },
+    @Param('bookingId') bookingId: string,
+  ): Promise<ApiResponse<BookingResponseDto>> {
+    const booking = await this.getBookingByIdUseCase.execute(
+      bookingId,
+      request.user.sub,
+    );
+
+    return {
+      success: true,
+      message: BOOKING_MESSAGES.RETRIEVED,
+      data: BookingMapper.toResponse(booking),
+    };
+  }
+
+  @Patch(BOOKING_ENDPOINTS.CANCEL)
+  async cancelBooking(
+    @Req() request: Request & { user: AccessTokenPayload },
+    @Param('bookingId') bookingId: string,
+  ): Promise<ApiResponse<BookingResponseDto>> {
+    const booking = await this.cancelBookingUseCase.execute(
+      bookingId,
+      request.user.sub,
+    );
+
+    return {
+      success: true,
+      message: BOOKING_MESSAGES.CANCELLED,
+      data: BookingMapper.toResponse(booking),
+    };
+  }
+
+  @Patch(BOOKING_ENDPOINTS.RESPOND)
+  async respondToBookingRequest(
+    @Req() request: Request & { user: AccessTokenPayload },
+    @Param('bookingId') bookingId: string,
+    @Body() dto: RespondBookingRequestDto,
+  ): Promise<ApiResponse<BookingResponseDto>> {
+    const booking = await this.respondToBookingRequestUseCase.execute(
+      bookingId,
+      request.user.sub,
+      dto,
+    );
+
+    return {
+      success: true,
+      message: BOOKING_MESSAGES.RESPONDED,
+      data: BookingMapper.toResponse(booking),
     };
   }
 

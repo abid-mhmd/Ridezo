@@ -11,6 +11,8 @@ export type CreateBookingData = Omit<
 export interface ListBookingsQuery {
   page: number;
   limit: number;
+  search?: string;
+  passengerIds?: string[];
 }
 
 export interface UpdateBookingStatusData {
@@ -49,4 +51,9 @@ export interface IBookingRepository {
     expectedStatus: BookingStatus,
     data: UpdateBookingStatusData,
   ): Promise<BookingEntity | null>;
+
+  findAll(query: ListBookingsQuery): Promise<{
+    bookings: BookingEntity[];
+    total: number;
+  }>;
 }

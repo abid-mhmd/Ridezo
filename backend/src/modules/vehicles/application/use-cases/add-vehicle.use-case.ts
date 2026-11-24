@@ -37,8 +37,7 @@ export class AddVehicleUseCase implements IAddVehicleUseCase {
       ...dto,
       ownerId,
       registrationNumber,
-      vehiclePhoto: '',
-      vehiclePhotoKey: dto.vehiclePhotoKey ?? '',
+      vehiclePhoto: dto.vehiclePhoto ?? '',
     });
   }
 }

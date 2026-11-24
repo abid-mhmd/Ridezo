@@ -8,6 +8,7 @@ import {
 } from '../../../domain/repositories/user.repository';
 import type { UserEntity } from '../../../domain/entities/user.entity';
 import { User, type UserDocument } from './user.schema';
+import { UserRole } from '../../../domain/enums/user.enums';
 import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository';
 
 @Injectable()
@@ -63,7 +64,6 @@ export class MongooseUserRepository
       passwordHash: user.passwordHash,
       about: user.about,
       profilePhoto: user.profilePhoto,
-      profilePhotoKey: user.profilePhotoKey,
 
       role: user.role,
       accountStatus: user.accountStatus,
@@ -132,7 +132,6 @@ export class MongooseUserRepository
       lastName?: string;
       about?: string;
       profilePhoto?: string;
-      profilePhotoKey?: string;
       languages?: string[];
       preferences?: Record<string, unknown>;
       location?: {
@@ -211,5 +210,21 @@ export class MongooseUserRepository
       .exec();
 
     return user ? this.toEntity(user) : null;
+  }
+
+  async findByIds(ids: string[]): Promise<UserEntity[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const users = await this.model
+      .find({
+        _id: { $in: ids },
+        role: { $ne: UserRole.ADMIN },
+      })
+      .select('-passwordHash -googleId')
+      .exec();
+
+    return users.map((user) => this.toEntity(user));
   }
 }

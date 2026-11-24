@@ -25,7 +25,6 @@ import { getMyProfile } from './features/user/api/profile.api';
 import AdminLoginPage from './features/admin/auth/pages/AdminLoginPage';
 import AdminUsersPage from './features/admin/users/pages/AdminUsersPage';
 import AdminLayout from './features/admin/components/AdminLayout';
-import AdminUserDetailsPage from './features/admin/users/pages/AdmiUserDetailsPage';
 
 import {
   refreshAdminSession,
@@ -42,6 +41,13 @@ import CreateRidePage from './features/rides/pages/CreateRidePage';
 import RideDetailsPage from './features/rides/pages/RideDetailsPage';
 import MyRidesPage from './features/rides/pages/MyRidesPage';
 import EditRidePage from './features/rides/pages/EditRidePage';
+import BookingDetailsPage from './features/bookings/pages/BookingDetailsPage';
+import RideRequestsPage from './features/rides/pages/RideRequestsPage';
+import BookingSuccessPage from './features/bookings/pages/BookingSuccessPage';
+import AdminRidesPage from './features/admin/rides/pages/AdminRidesPage';
+import AdminBookingsPage from './features/admin/bookings/pages/AdminBookingPage';
+import AdminVehiclesPage from './features/admin/vehicles/pages/AdminVehiclesPage';
+import DriverRideDetailsPage from './features/rides/pages/DriverRideDetailsPage';
 
 function GoogleCallbackHandler({
   onLoginSuccess,
@@ -301,8 +307,16 @@ function App() {
           />
 
           <Route
-            path="users/:userId"
-            element={<AdminUserDetailsPage accessToken={adminAccessToken!} />}
+            path="bookings"
+            element={<AdminBookingsPage accessToken={adminAccessToken!} />}
+          />
+          <Route
+            path="vehicles"
+            element={<AdminVehiclesPage accessToken={adminAccessToken!} />}
+          />
+          <Route
+            path="rides"
+            element={<AdminRidesPage accessToken={adminAccessToken!} />}
           />
         </Route>
 
@@ -343,7 +357,11 @@ function App() {
             isInitializing ? (
               <FullScreenLoader />
             ) : accessToken && user ? (
-              <AppLayout user={user} onLogout={handleLogout} showSidebar={false} />
+              <AppLayout
+                user={user}
+                onLogout={handleLogout}
+                showSidebar={false}
+              />
             ) : (
               <Navigate to="/login" replace />
             )
@@ -353,8 +371,19 @@ function App() {
           <Route path="/rides/search" element={<RideSearchPage />} />
           <Route path="/rides/create" element={<CreateRidePage />} />
           <Route path="/rides/:rideId" element={<RideDetailsPage />} />
+          <Route
+            path="/rides/:rideId/host"
+            element={<DriverRideDetailsPage />}
+          />
           <Route path="/my-rides" element={<MyRidesPage />} />
           <Route path="/rides/:rideId/edit" element={<EditRidePage />} />
+          <Route path="/bookings/:bookingId" element={<BookingDetailsPage />} />
+          <Route
+            path="/rides/:rideId/requests"
+            element={<RideRequestsPage />}
+          />
+          <Route path="/my-rides/requests" element={<RideRequestsPage />} />
+          <Route path="/booking-success" element={<BookingSuccessPage />} />
         </Route>
 
         {/* Fallback */}

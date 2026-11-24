@@ -24,6 +24,7 @@ export interface RideDriverSummary {
   lastName: string;
   profilePhoto: string;
   rating: number;
+  phone?: string;
   reviewCount: number;
   completedRideCount: number;
   identityVerificationStatus: string;
@@ -36,6 +37,7 @@ export interface RideVehicleSummary {
   model: string;
   year: number;
   color: string;
+  registrationNumber: string;
   vehiclePhoto: string;
   verificationStatus: string;
 }
@@ -69,6 +71,8 @@ export interface SearchRidesParams {
   seats: number;
   minPrice?: number;
   maxPrice?: number;
+  departureWindows?: ('morning' | 'afternoon' | 'evening')[];
+  sortBy?: 'departure' | 'price-low' | 'price-high';
   page?: number;
   limit?: number;
 }

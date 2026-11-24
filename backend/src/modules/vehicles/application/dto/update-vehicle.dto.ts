@@ -53,5 +53,5 @@ export class UpdateVehicleDto {
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  vehiclePhotoKey?: string;
+  vehiclePhoto?: string;
 }

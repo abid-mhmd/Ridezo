@@ -1,6 +1,6 @@
 interface UserAvatarProps {
-  firstName: string;
-  lastName?: string;
+  firstName?: string | null;
+  lastName?: string | null;
   profilePhoto?: string | null;
   size?: 'small' | 'large' | 'profile';
 }
@@ -17,18 +17,22 @@ export default function UserAvatar({
     profile: 'h-24 w-24 rounded-2xl text-3xl',
   }[size];
 
+  const safeFirstName = (firstName ?? '').trim();
+  const safeLastName = (lastName ?? '').trim();
+  const fullName = `${safeFirstName} ${safeLastName}`.trim() || 'User';
+
   if (profilePhoto) {
     return (
       <img
         src={profilePhoto}
-        alt={`${firstName} ${lastName}`}
+        alt={fullName}
         className={`shrink-0 border border-[#263044] object-cover ${sizeClasses}`}
       />
     );
   }
 
   const initials =
-    `${firstName.charAt(0)}${lastName?.charAt(0) ?? ''}`.toUpperCase() || 'U';
+    `${safeFirstName.charAt(0)}${safeLastName.charAt(0)}`.toUpperCase() || 'U';
 
   return (
     <div

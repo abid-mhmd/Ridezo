@@ -28,7 +28,7 @@ export class RemoveProfilePhotoUseCase implements IRemoveProfilePhotoUseCase {
       throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
-    if (!user.profilePhoto && !user.profilePhotoKey) {
+    if (!user.profilePhoto) {
       return {
         message: 'No profile photo to remove.',
       };
@@ -36,19 +36,18 @@ export class RemoveProfilePhotoUseCase implements IRemoveProfilePhotoUseCase {
 
     const updatedUser = await this.userRepository.updateProfile(userId, {
       profilePhoto: '',
-      profilePhotoKey: '',
     });
 
     if (!updatedUser) {
       throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
-    if (user.profilePhotoKey) {
+    if (user.profilePhoto) {
       try {
-        await this.profilePhotoStorage.delete(user.profilePhotoKey);
+        await this.profilePhotoStorage.delete(user.profilePhoto);
       } catch (error) {
         this.logger.error(
-          `Failed to delete profile photo: ${user.profilePhotoKey}`,
+          `Failed to delete profile photo: ${user.profilePhoto}`,
           error instanceof Error ? error.stack : undefined,
         );
       }

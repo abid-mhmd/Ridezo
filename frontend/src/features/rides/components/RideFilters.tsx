@@ -1,51 +1,65 @@
-import { useState } from 'react';
 import { SlidersHorizontal, ShieldCheck } from 'lucide-react';
 
-interface RideFiltersProps {
-  initialMinPrice?: number;
-  initialMaxPrice?: number;
-  onApply: (filters: { minPrice?: number; maxPrice?: number }) => void;
+export type DepartureWindow = 'morning' | 'afternoon' | 'evening';
+
+export interface RideFilterState {
+  departureWindows: DepartureWindow[];
+  maxPrice?: number;
+  seats: number;
+  verifiedDriverOnly: boolean;
+  topRatedOnly: boolean;
+  acCabinOnly: boolean;
+  maxTwoBackseatOnly: boolean;
+  languages: string[];
 }
 
-export default function RideFilters({
-  initialMinPrice,
-  initialMaxPrice,
-  onApply,
-}: RideFiltersProps) {
-  const [minPrice] = useState(initialMinPrice?.toString() ?? '');
-  const [maxPrice, setMaxPrice] = useState(
-    initialMaxPrice?.toString() ?? '400',
-  );
-  const [selectedSeatTab, setSelectedSeatTab] = useState<'1' | '2' | '3'>('1');
-  const [error, setError] = useState('');
+interface RideFiltersProps {
+  filters: RideFilterState;
+  onChange: (next: RideFilterState) => void;
+  onClear: () => void;
+}
 
-  const handlePriceChange = (val: string) => {
-    setMaxPrice(val);
-    const max = val === '' ? undefined : Number(val);
-    onApply({
-      minPrice: minPrice === '' ? undefined : Number(minPrice),
-      maxPrice: max,
-    });
+const WINDOWS: { value: DepartureWindow; label: string }[] = [
+  { value: 'morning', label: 'Morning (Before 12:00)' },
+  { value: 'afternoon', label: 'Afternoon (12:00 - 18:00)' },
+  { value: 'evening', label: 'Evening (18:00 - 24:00)' },
+];
+
+const LANGUAGES = ['Malayalam', 'English', 'Hindi'];
+
+export default function RideFilters({
+  filters,
+  onChange,
+  onClear,
+}: RideFiltersProps) {
+  const toggleWindow = (win: DepartureWindow) => {
+    const exists = filters.departureWindows.includes(win);
+    const next = exists
+      ? filters.departureWindows.filter((w) => w !== win)
+      : [...filters.departureWindows, win];
+    onChange({ ...filters, departureWindows: next });
   };
 
-  const handleClear = () => {
-    setMaxPrice('600');
-    setError('');
-    onApply({});
+  const toggleLanguage = (lang: string) => {
+    const exists = filters.languages.includes(lang);
+    const next = exists
+      ? filters.languages.filter((l) => l !== lang)
+      : [...filters.languages, lang];
+    onChange({ ...filters, languages: next });
   };
 
   return (
-    <aside className="w-full rounded-2xl border border-[#252e3e] bg-[#111722] p-5 font-sans text-gray-100 space-y-5 shadow-xl">
+    <aside className="w-full space-y-5 rounded-2xl border border-[#252e3e] bg-[#111722] p-5 font-sans text-gray-100 shadow-xl">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[#252e3e] pb-3">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
+        <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white">
           <SlidersHorizontal size={14} className="text-[#8b78ff]" /> Filter
           rides
         </h3>
         <button
           type="button"
-          onClick={handleClear}
-          className="text-[11px] text-[#36e0c0] hover:underline cursor-pointer"
+          onClick={onClear}
+          className="cursor-pointer text-[11px] text-[#36e0c0] hover:underline"
         >
           Clear all
         </button>
@@ -57,207 +71,174 @@ export default function RideFilters({
           DEPARTURE WINDOW
         </h4>
         <div className="space-y-2 text-xs text-[#c7cddd]">
-          <label className="flex items-center justify-between cursor-pointer">
-            <span className="flex items-center gap-2">
+          {WINDOWS.map((win) => (
+            <label
+              key={win.value}
+              className="flex cursor-pointer items-center gap-2"
+            >
               <input
                 type="checkbox"
-                defaultChecked
+                checked={filters.departureWindows.includes(win.value)}
+                onChange={() => toggleWindow(win.value)}
                 className="rounded bg-[#080b12] accent-[#8b78ff]"
               />
-              Morning (06:00 - 12:00)
-            </span>
-            <span className="text-[10px] text-[#657086]">[5]</span>
-          </label>
-          <label className="flex items-center justify-between cursor-pointer">
-            <span className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                defaultChecked
-                className="rounded bg-[#080b12] accent-[#8b78ff]"
-              />
-              Afternoon (12:00 - 18:00)
-            </span>
-            <span className="text-[10px] text-[#657086]">[4]</span>
-          </label>
-          <label className="flex items-center justify-between cursor-pointer">
-            <span className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                defaultChecked
-                className="rounded bg-[#080b12] accent-[#8b78ff]"
-              />
-              Evening (18:00 - 24:00)
-            </span>
-            <span className="text-[10px] text-[#657086]">[3]</span>
-          </label>
+              <span>{win.label}</span>
+            </label>
+          ))}
         </div>
       </div>
 
       {/* 2. Max Price / Seat */}
-      <div className="space-y-2.5 pt-2 border-t border-[#252e3e]">
+      <div className="space-y-2.5 border-t border-[#252e3e] pt-3">
         <div className="flex items-center justify-between text-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#929bad]">
             MAX PRICE / SEAT
           </span>
           <span className="font-mono font-bold text-[#36e0c0]">
-            ₹{maxPrice || '400'}
+            {filters.maxPrice ? `₹${filters.maxPrice}` : 'Any'}
           </span>
         </div>
 
         <input
           type="range"
-          min="150"
-          max="600"
-          step="25"
-          value={maxPrice}
-          onChange={(e) => handlePriceChange(e.target.value)}
+          min="100"
+          max="2000"
+          step="50"
+          value={filters.maxPrice ?? 2000}
+          onChange={(e) => {
+            const val = Number(e.target.value);
+            onChange({
+              ...filters,
+              maxPrice: val >= 2000 ? undefined : val,
+            });
+          }}
           className="w-full accent-[#8b78ff]"
         />
 
         <div className="flex justify-between text-[10px] text-[#657086]">
-          <span>₹150</span>
-          <span>₹600</span>
+          <span>₹100</span>
+          <span>₹2000+</span>
         </div>
       </div>
+
       {/* 3. Seats Needed */}
-      <div className="space-y-2 pt-2 border-t border-[#252e3e]">
+      <div className="space-y-2 border-t border-[#252e3e] pt-3">
         <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#929bad]">
           SEATS NEEDED
         </h4>
         <div className="grid grid-cols-3 gap-1.5">
-          {(['1', '2', '3'] as const).map((s) => (
+          {[1, 2, 3].map((seatCount) => (
             <button
-              key={s}
+              key={seatCount}
               type="button"
-              onClick={() => setSelectedSeatTab(s)}
-              className={`rounded-lg border py-1 text-center text-[11px] font-medium transition cursor-pointer ${
-                selectedSeatTab === s
+              onClick={() => onChange({ ...filters, seats: seatCount })}
+              className={`cursor-pointer rounded-lg border py-1.5 text-center text-[11px] font-medium transition ${
+                filters.seats === seatCount
                   ? 'border-[#8b78ff] bg-[#8b78ff]/20 text-white shadow-sm'
                   : 'border-[#252e3e] bg-[#080b12] text-[#929bad] hover:text-white'
               }`}
             >
-              {s === '3' ? '3+ Seats' : `${s} Seat`}
+              {seatCount === 3 ? '3+ Seats' : `${seatCount}+ Seat`}
             </button>
           ))}
         </div>
       </div>
 
       {/* 4. Trust & Driver Tier */}
-      <div className="space-y-2.5 pt-2 border-t border-[#252e3e]">
+      <div className="space-y-2.5 border-t border-[#252e3e] pt-3">
         <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#929bad]">
           TRUST &amp; DRIVER TIER
         </h4>
         <div className="space-y-2 text-xs text-[#c7cddd]">
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-2">
             <input
               type="checkbox"
-              defaultChecked
+              checked={filters.verifiedDriverOnly}
+              onChange={(e) =>
+                onChange({ ...filters, verifiedDriverOnly: e.target.checked })
+              }
               className="rounded bg-[#080b12] accent-[#8b78ff]"
             />
-            Verified ID &amp; Gov ID 🛡️
+            Verified ID &amp; Gov ID
           </label>
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-2">
             <input
               type="checkbox"
+              checked={filters.topRatedOnly}
+              onChange={(e) =>
+                onChange({ ...filters, topRatedOnly: e.target.checked })
+              }
               className="rounded bg-[#080b12] accent-[#8b78ff]"
             />
-            Woman Driver Only ♀
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              defaultChecked
-              className="rounded bg-[#080b12] accent-[#8b78ff]"
-            />
-            Top Rated (4.8+ ★) ⭐
+            Top Rated (4.8+ ★)
           </label>
         </div>
       </div>
 
       {/* 5. Vehicle & Comfort */}
-      <div className="space-y-2.5 pt-2 border-t border-[#252e3e]">
+      <div className="space-y-2.5 border-t border-[#252e3e] pt-3">
         <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#929bad]">
           VEHICLE &amp; COMFORT
         </h4>
         <div className="space-y-2 text-xs text-[#c7cddd]">
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-2">
             <input
               type="checkbox"
-              defaultChecked
+              checked={filters.acCabinOnly}
+              onChange={(e) =>
+                onChange({ ...filters, acCabinOnly: e.target.checked })
+              }
               className="rounded bg-[#080b12] accent-[#8b78ff]"
             />
-            AC Cabin ❄
+            AC Cabin
           </label>
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-2">
             <input
               type="checkbox"
+              checked={filters.maxTwoBackseatOnly}
+              onChange={(e) =>
+                onChange({ ...filters, maxTwoBackseatOnly: e.target.checked })
+              }
               className="rounded bg-[#080b12] accent-[#8b78ff]"
             />
-            Clean EV Only ⚡
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              defaultChecked
-              className="rounded bg-[#080b12] accent-[#8b78ff]"
-            />
-            Max 2 in Backseat 💺
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              defaultChecked
-              className="rounded bg-[#080b12] accent-[#8b78ff]"
-            />
-            Luggage Space (Boot) 🧳
+            Max 2 in Backseat
           </label>
         </div>
       </div>
 
       {/* 6. Driver Language */}
-      <div className="space-y-2.5 pt-2 border-t border-[#252e3e]">
+      <div className="space-y-2.5 border-t border-[#252e3e] pt-3">
         <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#929bad]">
           DRIVER LANGUAGE
         </h4>
         <div className="space-y-2 text-xs text-[#c7cddd]">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              defaultChecked
-              className="rounded bg-[#080b12] accent-[#8b78ff]"
-            />
-            Malayalam (फ्लूएंट)
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              defaultChecked
-              className="rounded bg-[#080b12] accent-[#8b78ff]"
-            />
-            English
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              className="rounded bg-[#080b12] accent-[#8b78ff]"
-            />
-            Hindi
-          </label>
+          {LANGUAGES.map((lang) => (
+            <label
+              key={lang}
+              className="flex cursor-pointer items-center gap-2"
+            >
+              <input
+                type="checkbox"
+                checked={filters.languages.includes(lang)}
+                onChange={() => toggleLanguage(lang)}
+                className="rounded bg-[#080b12] accent-[#8b78ff]"
+              />
+              <span>{lang}</span>
+            </label>
+          ))}
         </div>
       </div>
 
-      {/* Tripzo Secure Escrow Badge Box */}
-      <div className="rounded-xl border border-[#36e0c0]/30 bg-[#36e0c0]/10 p-3 space-y-1">
-        <p className="text-[11px] font-bold text-[#36e0c0] flex items-center gap-1.5">
-          <ShieldCheck size={14} /> Tripzo Secure Escrow
+      {/* Ridezo Secure Escrow Badge Box */}
+      <div className="space-y-1 rounded-xl border border-[#36e0c0]/30 bg-[#36e0c0]/10 p-3">
+        <p className="flex items-center gap-1.5 text-[11px] font-bold text-[#36e0c0]">
+          <ShieldCheck size={14} /> Ridezo Secure Escrow
         </p>
-        <p className="text-[10px] text-[#c7cddd] leading-relaxed">
+        <p className="text-[10px] leading-relaxed text-[#c7cddd]">
           Driver is only paid after you arrive safely at your drop-off station
           and authenticate completion.
         </p>
       </div>
-
-      {error && <p className="text-[11px] text-red-400">{error}</p>}
     </aside>
   );
 }

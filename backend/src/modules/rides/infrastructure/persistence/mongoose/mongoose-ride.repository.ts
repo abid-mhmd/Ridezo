@@ -11,45 +11,10 @@ import type {
 import type { RideEntity } from '../../../domain/entities/ride.entity';
 import { Ride, type RideDocument } from './ride.schema';
 import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository';
+import type { AdminListRidesQuery } from '../../../domain/repositories/ride.repository';
 import { RideStatus } from '../../../domain/enums/ride.enums';
 import { User } from '../../../../users/infrastructure/persistence/mongoose/user.schema';
 import { Vehicle } from '../../../../vehicles/infrastructure/persistence/mongoose/vehicle.schema';
-
-type PopulatedDriver = {
-  _id: Types.ObjectId;
-  firstName: string;
-  lastName: string;
-  profilePhoto: string;
-  profilePhotoKey: string;
-
-  rating: number;
-  reviewCount: number;
-  completedRideCount: number;
-  identityVerification: {
-    status: string;
-  };
-  languages: string[];
-};
-
-type PopulatedVehicle = {
-  _id: Types.ObjectId;
-  brand: string;
-  model: string;
-  year: number;
-  color: string;
-  vehiclePhoto: string;
-  vehiclePhotoKey: string;
-
-  verificationStatus: string;
-};
-
-type RideWithPopulatedReferences = Omit<
-  RideDocument,
-  'driverId' | 'vehicleId'
-> & {
-  driverId: Types.ObjectId | PopulatedDriver;
-  vehicleId: Types.ObjectId | PopulatedVehicle;
-};
 
 const EARTH_RADIUS_KM = 6378.1;
 const RIDE_SEARCH_RADIUS_KM = 10;
@@ -89,13 +54,13 @@ export class MongooseRideRepository
         path: 'driverId',
         model: User.name,
         select:
-          'firstName lastName profilePhoto profilePhotoKey rating reviewCount completedRideCount identityVerification languages',
+          'firstName lastName profilePhoto phone  rating reviewCount completedRideCount identityVerification languages',
       })
       .populate({
         path: 'vehicleId',
         model: Vehicle.name,
         select:
-          'brand model year color vehiclePhoto vehiclePhotoKey verificationStatus',
+          'brand model year color vehiclePhoto registrationNumber  verificationStatus',
       })
       .exec();
 
@@ -134,6 +99,59 @@ export class MongooseRideRepository
 
     return {
       rides: documents.map((ride) => this.toEntity(ride)),
+      total,
+    };
+  }
+
+  async findAll(
+    query: AdminListRidesQuery,
+  ): Promise<{ rides: RideEntity[]; total: number }> {
+    const filter: Record<string, unknown> = {};
+
+    if (query.status) {
+      filter.status = query.status;
+    }
+
+    if (query.search?.trim()) {
+      const escaped = query.search
+        .trim()
+        .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escaped, 'i');
+
+      filter.$or = [
+        { 'origin.name': regex },
+        { 'origin.address': regex },
+        { 'destination.name': regex },
+        { 'destination.address': regex },
+      ];
+    }
+
+    const skip = (query.page - 1) * query.limit;
+
+    const [rides, total] = await Promise.all([
+      this.model
+        .find(filter)
+        .populate({
+          path: 'driverId',
+          model: User.name,
+          select:
+            'firstName lastName profilePhoto rating reviewCount completedRideCount identityVerification languages',
+        })
+        .populate({
+          path: 'vehicleId',
+          model: Vehicle.name,
+          select:
+            'brand model year color vehiclePhoto registrationNumber verificationStatus',
+        })
+        .sort({ departureTime: -1 })
+        .skip(skip)
+        .limit(query.limit)
+        .exec(),
+      this.model.countDocuments(filter).exec(),
+    ]);
+
+    return {
+      rides: rides.map((ride) => this.toEntity(ride)),
       total,
     };
   }
@@ -192,6 +210,24 @@ export class MongooseRideRepository
     return result.modifiedCount > 0;
   }
 
+  async cancelByAdmin(rideId: string): Promise<boolean> {
+    if (!Types.ObjectId.isValid(rideId)) {
+      return false;
+    }
+
+    const result = await this.model
+      .updateOne(
+        {
+          _id: new Types.ObjectId(rideId),
+          status: { $nin: [RideStatus.COMPLETED, RideStatus.CANCELLED] },
+        },
+        { $set: { status: RideStatus.CANCELLED } },
+      )
+      .exec();
+
+    return result.modifiedCount > 0;
+  }
+
   async search(
     query: SearchRidesQuery,
     excludeDriverId?: string,
@@ -199,16 +235,14 @@ export class MongooseRideRepository
     rides: RideEntity[];
     total: number;
   }> {
-    const startOfDay = new Date(query.departureDate);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-
-    const startOfNextDay = new Date(startOfDay);
-    startOfNextDay.setUTCDate(startOfNextDay.getUTCDate() + 1);
-
     const now = new Date();
+    const dateStr = new Date(query.departureDate).toISOString().slice(0, 10);
+
+    // Full day in IST (00:00:00 to 23:59:59.999 IST)
+    const startOfDayIST = new Date(`${dateStr}T00:00:00.000+05:30`);
+    const endOfDayIST = new Date(`${dateStr}T23:59:59.999+05:30`);
 
     const filter: Record<string, unknown> = {
-      // Origin must be within 10 km
       'origin.coordinates': {
         $geoWithin: {
           $centerSphere: [
@@ -218,7 +252,6 @@ export class MongooseRideRepository
         },
       },
 
-      // Destination must also be within 10 km
       'destination.coordinates': {
         $geoWithin: {
           $centerSphere: [
@@ -228,20 +261,47 @@ export class MongooseRideRepository
         },
       },
 
-      // Departure date
+      // Base departure date filter (IST)
       departureTime: {
-        $gte: startOfDay > now ? startOfDay : now,
-        $lt: startOfNextDay,
+        $gte: startOfDayIST > now ? startOfDayIST : now,
+        $lte: endOfDayIST,
       },
 
-      // Available seats
       availableSeats: {
         $gte: query.seats,
       },
 
-      // Only scheduled rides
       status: RideStatus.SCHEDULED,
     };
+
+    // Multi-select departure windows (IST: UTC+5:30)
+    if (query.departureWindows && query.departureWindows.length > 0) {
+      const windowConditions = query.departureWindows.map((win) => {
+        let winStart = startOfDayIST;
+        let winEnd = endOfDayIST;
+
+        if (win === 'morning') {
+          winStart = new Date(`${dateStr}T00:00:00.000+05:30`);
+          winEnd = new Date(`${dateStr}T12:00:00.000+05:30`);
+        } else if (win === 'afternoon') {
+          winStart = new Date(`${dateStr}T12:00:00.000+05:30`);
+          winEnd = new Date(`${dateStr}T18:00:00.000+05:30`);
+        } else if (win === 'evening') {
+          winStart = new Date(`${dateStr}T18:00:00.000+05:30`);
+          winEnd = new Date(`${dateStr}T23:59:59.999+05:30`);
+        }
+
+        return {
+          departureTime: {
+            $gte: winStart > now ? winStart : now,
+            $lt: winEnd,
+          },
+        };
+      });
+
+      delete filter.departureTime;
+      filter.$or = windowConditions;
+    }
 
     if (excludeDriverId && Types.ObjectId.isValid(excludeDriverId)) {
       filter.driverId = {
@@ -266,6 +326,13 @@ export class MongooseRideRepository
 
     const skip = (query.page - 1) * query.limit;
 
+    const sortQuery: Record<string, 1 | -1> =
+      query.sortBy === 'price-low'
+        ? { pricePerSeat: 1, departureTime: 1 }
+        : query.sortBy === 'price-high'
+          ? { pricePerSeat: -1, departureTime: 1 }
+          : { departureTime: 1, _id: 1 };
+
     const [documents, total] = await Promise.all([
       this.model
         .find(filter)
@@ -273,15 +340,15 @@ export class MongooseRideRepository
           path: 'driverId',
           model: User.name,
           select:
-            'firstName lastName profilePhoto profilePhotoKey  rating reviewCount completedRideCount identityVerification languages',
+            'firstName lastName profilePhoto phone rating reviewCount completedRideCount identityVerification languages',
         })
         .populate({
           path: 'vehicleId',
           model: Vehicle.name,
           select:
-            'brand model year color vehiclePhoto vehiclePhotoKey  verificationStatus',
+            'brand model year color vehiclePhoto registrationNumber verificationStatus',
         })
-        .sort({ departureTime: 1, _id: 1 })
+        .sort(sortQuery)
         .skip(skip)
         .limit(query.limit)
         .exec(),
@@ -292,6 +359,65 @@ export class MongooseRideRepository
       rides: documents.map((ride) => this.toEntity(ride)),
       total,
     };
+  }
+
+  async reserveSeats(rideId: string, seats: number): Promise<boolean> {
+    if (!Types.ObjectId.isValid(rideId) || seats < 1) {
+      return false;
+    }
+
+    const updatedRide = await this.model
+      .findOneAndUpdate(
+        {
+          _id: new Types.ObjectId(rideId),
+          status: RideStatus.SCHEDULED,
+          availableSeats: { $gte: seats },
+        },
+        [
+          {
+            $set: {
+              availableSeats: { $subtract: ['$availableSeats', seats] },
+              status: {
+                $cond: [
+                  { $eq: [{ $subtract: ['$availableSeats', seats] }, 0] },
+                  RideStatus.FULL,
+                  RideStatus.SCHEDULED,
+                ],
+              },
+            },
+          },
+        ],
+        { new: true, updatePipeline: true }, // <-- ADD updatePipeline: true
+      )
+      .exec();
+
+    return updatedRide !== null;
+  }
+
+  async releaseSeats(rideId: string, seats: number): Promise<void> {
+    if (!Types.ObjectId.isValid(rideId) || seats < 1) {
+      return;
+    }
+
+    await this.model
+      .updateOne(
+        {
+          _id: new Types.ObjectId(rideId),
+          status: { $in: [RideStatus.SCHEDULED, RideStatus.FULL] },
+        },
+        [
+          {
+            $set: {
+              availableSeats: {
+                $min: ['$totalSeats', { $add: ['$availableSeats', seats] }],
+              },
+              status: RideStatus.SCHEDULED,
+            },
+          },
+        ],
+        { updatePipeline: true },
+      )
+      .exec();
   }
 
   private toEntity(ride: RideDocument): RideEntity {
@@ -305,16 +431,20 @@ export class MongooseRideRepository
 
     return {
       id: ride._id.toString(),
-      driverId: driver ? driver._id.toString() : ride.driverId.toString(),
-      vehicleId: vehicle ? vehicle._id.toString() : ride.vehicleId.toString(),
+      driverId: driver
+        ? driver._id.toString()
+        : (ride.driverId?.toString() ?? ''),
+      vehicleId: vehicle
+        ? vehicle._id.toString()
+        : (ride.vehicleId?.toString() ?? ''),
 
       ...(driver && {
         driver: {
           id: driver._id.toString(),
           firstName: driver.firstName,
           lastName: driver.lastName,
+          phone: driver.phone,
           profilePhoto: driver.profilePhoto,
-          profilePhotoKey: driver.profilePhotoKey,
           rating: driver.rating,
           reviewCount: driver.reviewCount,
           completedRideCount: driver.completedRideCount,
@@ -330,8 +460,8 @@ export class MongooseRideRepository
           model: vehicle.model,
           year: vehicle.year,
           color: vehicle.color,
+          registrationNumber: vehicle.registrationNumber,
           vehiclePhoto: vehicle.vehiclePhoto,
-          vehiclePhotoKey: vehicle.vehiclePhotoKey,
           verificationStatus: vehicle.verificationStatus,
         },
       }),

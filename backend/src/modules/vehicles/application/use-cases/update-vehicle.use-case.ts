@@ -39,8 +39,15 @@ export class UpdateVehicleUseCase implements IUpdateVehicleUseCase {
       throw new NotFoundException(VEHICLE_MESSAGES.NOT_FOUND);
     }
 
-    if (dto.registrationNumber !== undefined) {
-      const registrationNumber = dto.registrationNumber
+    const updateData: UpdateVehicleDto = { ...dto };
+
+    // Do not overwrite the stored S3 key if the frontend sent back an existing presigned URL
+    if (updateData.vehiclePhoto?.startsWith('http')) {
+      delete updateData.vehiclePhoto;
+    }
+
+    if (updateData.registrationNumber !== undefined) {
+      const registrationNumber = updateData.registrationNumber
         .replace(/[\s-]/g, '')
         .toUpperCase();
 
@@ -54,36 +61,27 @@ export class UpdateVehicleUseCase implements IUpdateVehicleUseCase {
         throw new VehicleRegistrationAlreadyExistsError();
       }
 
-      dto = {
-        ...dto,
-        registrationNumber,
-      };
+      updateData.registrationNumber = registrationNumber;
     }
 
     const vehicle = await this.vehicleRepository.update(
       vehicleId,
       ownerId,
-      dto,
+      updateData,
     );
 
     if (!vehicle) {
       throw new NotFoundException(VEHICLE_MESSAGES.NOT_FOUND);
     }
 
-    // Generate a presigned URL for the updated vehicle photo.
-    if (vehicle.vehiclePhotoKey) {
-      vehicle.vehiclePhoto = await this.vehiclePhotoStorage.getUrl(
-        vehicle.vehiclePhotoKey,
-      );
-    }
+    // Capture the raw S3 key BEFORE converting vehicle.vehiclePhoto to a signed URL
+    const previousPhotoKey = existingVehicle.vehiclePhoto;
+    const currentPhotoKey = vehicle.vehiclePhoto;
 
-    // Delete the previous photo only when a different key was saved.
-    const previousPhotoKey = existingVehicle.vehiclePhotoKey;
-    const currentPhotoKey = vehicle.vehiclePhotoKey;
-
+    // Delete the previous S3 object only when a different key was saved
     if (
       previousPhotoKey &&
-      currentPhotoKey &&
+      !previousPhotoKey.startsWith('http') &&
       previousPhotoKey !== currentPhotoKey
     ) {
       try {
@@ -94,6 +92,12 @@ export class UpdateVehicleUseCase implements IUpdateVehicleUseCase {
           error instanceof Error ? error.stack : undefined,
         );
       }
+    }
+
+    // Generate a presigned URL for the response
+    if (currentPhotoKey && !currentPhotoKey.startsWith('http')) {
+      vehicle.vehiclePhoto =
+        await this.vehiclePhotoStorage.getUrl(currentPhotoKey);
     }
 
     return vehicle;

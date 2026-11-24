@@ -164,20 +164,96 @@ export class MongooseBookingRepository
     return booking ? this.toEntity(booking) : null;
   }
 
+  async findAll(
+    query: ListBookingsQuery,
+  ): Promise<{ bookings: BookingEntity[]; total: number }> {
+    const skip = (query.page - 1) * query.limit;
+    const filter: Record<string, unknown> = {};
+
+    if (query.search?.trim()) {
+      const escapedSearch = query.search
+        .trim()
+        .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      const searchRegex = new RegExp(escapedSearch, 'i');
+
+      const orConditions: Record<string, unknown>[] = [
+        { 'driverSnapshot.firstName': searchRegex },
+        { 'driverSnapshot.lastName': searchRegex },
+        { 'rideSnapshot.origin.name': searchRegex },
+        { 'rideSnapshot.destination.name': searchRegex },
+        { 'vehicleSnapshot.brand': searchRegex },
+        { 'vehicleSnapshot.model': searchRegex },
+        { 'vehicleSnapshot.registrationNumber': searchRegex },
+        { status: searchRegex },
+      ];
+
+      const validPassengerIds = (query.passengerIds ?? [])
+        .filter((id) => Types.ObjectId.isValid(id))
+        .map((id) => new Types.ObjectId(id));
+
+      if (validPassengerIds.length > 0) {
+        orConditions.push({ passengerId: { $in: validPassengerIds } });
+      }
+
+      filter.$or = orConditions;
+    }
+
+    const [documents, total] = await Promise.all([
+      this.model
+        .find(filter)
+        .sort({ createdAt: -1, _id: -1 })
+        .skip(skip)
+        .limit(query.limit)
+        .exec(),
+
+      this.model.countDocuments(filter).exec(),
+    ]);
+
+    return {
+      bookings: documents.map((booking) => this.toEntity(booking)),
+      total,
+    };
+  }
+
   private toEntity(booking: BookingDocument): BookingEntity {
+    const plain = booking.toObject();
+
     return {
       id: booking._id.toString(),
       rideId: booking.rideId.toString(),
       passengerId: booking.passengerId.toString(),
       driverId: booking.driverId.toString(),
-      seatsRequested: booking.seatsRequested,
-      pricePerSeat: booking.pricePerSeat,
-      totalPrice: booking.totalPrice,
-      message: booking.message,
-      rejectionReason: booking.rejectionReason,
-      status: booking.status,
-      createdAt: booking.createdAt,
-      updatedAt: booking.updatedAt,
+      seatsRequested: plain.seatsRequested,
+      pricePerSeat: plain.pricePerSeat,
+      totalPrice: plain.totalPrice,
+
+      driverSnapshot: {
+        firstName: plain.driverSnapshot?.firstName ?? '',
+        lastName: plain.driverSnapshot?.lastName ?? '',
+        profilePhoto: plain.driverSnapshot?.profilePhoto ?? '',
+      },
+      vehicleSnapshot: {
+        brand: plain.vehicleSnapshot?.brand ?? '',
+        model: plain.vehicleSnapshot?.model ?? '',
+        year: plain.vehicleSnapshot?.year ?? 0,
+        color: plain.vehicleSnapshot?.color ?? '',
+        registrationNumber: plain.vehicleSnapshot?.registrationNumber ?? '',
+        vehiclePhoto: plain.vehicleSnapshot?.vehiclePhoto ?? '',
+      },
+      rideSnapshot: {
+        origin: plain.rideSnapshot.origin,
+        destination: plain.rideSnapshot.destination,
+        stops: plain.rideSnapshot.stops ?? [],
+        departureTime: plain.rideSnapshot.departureTime,
+        pickupInstructions: plain.rideSnapshot.pickupInstructions ?? '',
+      },
+
+      message: plain.message,
+      rejectionReason: plain.rejectionReason,
+      status: plain.status,
+      createdAt: plain.createdAt,
+      updatedAt: plain.updatedAt,
     };
   }
 }

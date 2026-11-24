@@ -6,7 +6,7 @@ import type { Ride, SearchRidesResult } from '../types/ride.types';
 import RideSearchForm from '../components/RideSearchForm';
 import type { RideSearchFormValues } from '../components/RideSearchForm';
 import RideCard from '../components/Ride-card';
-import RideFilters from '../components/RideFilters';
+import RideFilters, { type RideFilterState } from '../components/RideFilters';
 import Pagination from '../../../components/layout/Pagination';
 import LoadingState from '../../../components/LoadingState';
 
@@ -14,12 +14,20 @@ interface SearchLocationState {
   search?: RideSearchFormValues;
 }
 
-interface PriceFilters {
-  minPrice?: number;
-  maxPrice?: number;
-}
-
 type RideSortOption = 'departure' | 'price-low' | 'price-high';
+
+function createDefaultFilters(seats: number): RideFilterState {
+  return {
+    departureWindows: [],
+    maxPrice: undefined,
+    seats,
+    verifiedDriverOnly: false,
+    topRatedOnly: false,
+    acCabinOnly: false,
+    maxTwoBackseatOnly: false,
+    languages: [],
+  };
+}
 
 export default function RideSearchPage() {
   const location = useLocation();
@@ -35,22 +43,61 @@ export default function RideSearchPage() {
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const [priceFilters, setPriceFilters] = useState<PriceFilters>({});
-
+  const [filters, setFilters] = useState<RideFilterState>(() =>
+    createDefaultFilters(initialSearch?.seats ?? 1),
+  );
   const [sortBy, setSortBy] = useState<RideSortOption>('departure');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   const handleSearch = (values: RideSearchFormValues) => {
     setSearchValues(values);
+    setFilters((prev) => ({ ...prev, seats: values.seats }));
     setCurrentPage(1);
   };
 
-  const handleApplyFilters = (filters: PriceFilters) => {
-    setPriceFilters(filters);
+  const handleFilterChange = (next: RideFilterState) => {
+    const serverFilterChanged =
+      next.seats !== filters.seats ||
+      next.maxPrice !== filters.maxPrice ||
+      next.departureWindows.join(',') !== filters.departureWindows.join(',');
+
+    if (searchValues && next.seats !== searchValues.seats) {
+      setSearchValues({ ...searchValues, seats: next.seats });
+    }
+
+    setFilters(next);
+
+    if (serverFilterChanged) {
+      setCurrentPage(1);
+    }
+  };
+
+  const handleClearFilters = () => {
+    const resetSeats = 1;
+    if (searchValues && searchValues.seats !== resetSeats) {
+      setSearchValues({ ...searchValues, seats: resetSeats });
+    }
+    setFilters(createDefaultFilters(resetSeats));
     setCurrentPage(1);
   };
+
+  const handleSortChange = (nextSort: RideSortOption) => {
+    setSortBy(nextSort);
+    setCurrentPage(1);
+  };
+
+  const departureWindowsKey = filters.departureWindows.join(',');
+
+  const selectedDepartureWindows = useMemo(
+    () =>
+      departureWindowsKey
+        ? (departureWindowsKey.split(
+            ',',
+          ) as RideFilterState['departureWindows'])
+        : undefined,
+    [departureWindowsKey],
+  );
 
   useEffect(() => {
     if (!searchValues) return;
@@ -74,9 +121,10 @@ export default function RideSearchPage() {
           destinationLongitude,
           destinationLatitude,
           departureDate: searchValues.departureDate,
-          seats: searchValues.seats,
-          minPrice: priceFilters.minPrice,
-          maxPrice: priceFilters.maxPrice,
+          seats: filters.seats,
+          maxPrice: filters.maxPrice,
+          departureWindows: selectedDepartureWindows,
+          sortBy,
           page: currentPage,
           limit: 10,
         });
@@ -105,26 +153,66 @@ export default function RideSearchPage() {
     return () => {
       isActive = false;
     };
-  }, [searchValues, priceFilters, currentPage]);
+  }, [
+    searchValues,
+    filters.seats,
+    filters.maxPrice,
+    selectedDepartureWindows,
+    sortBy,
+    currentPage,
+  ]);
 
-  const sortedRides = useMemo(() => {
-    const result = [...rides];
+  const hasClientFilters = Boolean(
+    filters.verifiedDriverOnly ||
+    filters.topRatedOnly ||
+    filters.acCabinOnly ||
+    filters.maxTwoBackseatOnly ||
+    filters.languages.length > 0,
+  );
 
-    switch (sortBy) {
-      case 'price-low':
-        return result.sort((a, b) => a.pricePerSeat - b.pricePerSeat);
+  const visibleRides = useMemo(() => {
+    return rides.filter((ride) => {
+      if (
+        filters.verifiedDriverOnly &&
+        !['verified', 'approved'].includes(
+          ride.driver?.identityVerificationStatus?.toLowerCase() ?? '',
+        )
+      ) {
+        return false;
+      }
 
-      case 'price-high':
-        return result.sort((a, b) => b.pricePerSeat - a.pricePerSeat);
+      if (filters.topRatedOnly && (ride.driver?.rating ?? 0) < 4.8) {
+        return false;
+      }
 
-      default:
-        return result.sort(
-          (a, b) =>
-            new Date(a.departureTime).getTime() -
-            new Date(b.departureTime).getTime(),
+      if (
+        filters.acCabinOnly &&
+        !ride.preferences?.climateControl?.toLowerCase().includes('ac')
+      ) {
+        return false;
+      }
+
+      if (
+        filters.maxTwoBackseatOnly &&
+        !ride.preferences?.seatingComfort?.toLowerCase().includes('two') &&
+        !ride.preferences?.seatingComfort?.includes('2')
+      ) {
+        return false;
+      }
+
+      if (filters.languages.length > 0) {
+        const driverLangs = (ride.driver?.languages ?? []).map((l) =>
+          l.toLowerCase(),
         );
-    }
-  }, [rides, sortBy]);
+        const hasMatch = filters.languages.some((l) =>
+          driverLangs.includes(l.toLowerCase()),
+        );
+        if (!hasMatch) return false;
+      }
+
+      return true;
+    });
+  }, [rides, filters]);
 
   if (!searchValues) {
     return (
@@ -150,7 +238,7 @@ export default function RideSearchPage() {
     );
   }
 
-  const showFilters = isLoading || rides.length > 0;
+  const displayedCount = hasClientFilters ? visibleRides.length : total;
 
   return (
     <div className="mx-auto max-w-7xl space-y-4 pb-8 font-sans text-gray-100">
@@ -194,23 +282,15 @@ export default function RideSearchPage() {
       </section>
 
       {/* Results Section */}
-      <div
-        className={
-          showFilters
-            ? 'grid grid-cols-1 gap-5 lg:grid-cols-[230px_minmax(0,1fr)]'
-            : 'w-full'
-        }
-      >
-        {/* Price Filters */}
-        {showFilters && (
-          <aside className="w-full lg:sticky lg:top-5 lg:self-start">
-            <RideFilters
-              initialMinPrice={priceFilters.minPrice}
-              initialMaxPrice={priceFilters.maxPrice}
-              onApply={handleApplyFilters}
-            />
-          </aside>
-        )}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
+        {/* Filters Sidebar */}
+        <aside className="w-full lg:sticky lg:top-5 lg:self-start">
+          <RideFilters
+            filters={filters}
+            onChange={handleFilterChange}
+            onClear={handleClearFilters}
+          />
+        </aside>
 
         {/* Ride Results */}
         <section className="min-w-0 space-y-4">
@@ -219,7 +299,7 @@ export default function RideSearchPage() {
               <h2 className="text-sm font-bold text-white">
                 {isLoading
                   ? 'Searching rides...'
-                  : `${total} ${total === 1 ? 'ride' : 'rides'} found`}
+                  : `${displayedCount} ${displayedCount === 1 ? 'ride' : 'rides'} found`}
               </h2>
 
               <p className="mt-0.5 text-[11px] text-[#929bad]">
@@ -227,7 +307,7 @@ export default function RideSearchPage() {
               </p>
             </div>
 
-            {!isLoading && !error && rides.length > 0 && (
+            {!isLoading && !error && visibleRides.length > 0 && (
               <div className="flex items-center gap-2">
                 <label
                   htmlFor="rideSort"
@@ -240,7 +320,7 @@ export default function RideSearchPage() {
                   id="rideSort"
                   value={sortBy}
                   onChange={(event) =>
-                    setSortBy(event.target.value as RideSortOption)
+                    handleSortChange(event.target.value as RideSortOption)
                   }
                   className="rounded-lg border border-[#252e3e] bg-[#111722] px-3 py-2 text-xs text-white outline-none focus:border-[#8b78ff]"
                 >
@@ -260,7 +340,7 @@ export default function RideSearchPage() {
             </div>
           )}
 
-          {!isLoading && !error && rides.length === 0 && (
+          {!isLoading && !error && visibleRides.length === 0 && (
             <div className="rounded-2xl border border-[#252e3e] bg-[#111722] p-10 text-center">
               <MapPin size={32} className="mx-auto text-[#929bad]" />
 
@@ -269,15 +349,15 @@ export default function RideSearchPage() {
               </h3>
 
               <p className="mx-auto mt-1 max-w-md text-xs text-[#929bad]">
-                We couldn't find any rides for this journey. Try changing your
-                locations, travel date or seat count.
+                We couldn&apos;t find any rides matching your current filters.
+                Try clearing filters or changing your travel date.
               </p>
             </div>
           )}
 
-          {!isLoading && !error && rides.length > 0 && (
+          {!isLoading && !error && visibleRides.length > 0 && (
             <div className="space-y-3">
-              {sortedRides.map((ride) => (
+              {visibleRides.map((ride) => (
                 <RideCard
                   key={ride.id}
                   ride={ride}

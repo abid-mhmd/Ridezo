@@ -1,6 +1,14 @@
 import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { FiUsers, FiLogOut, FiX } from 'react-icons/fi';
+
+import {
+  FiUsers,
+  FiCalendar,
+  FiTruck,
+  FiLogOut,
+  FiX,
+  FiNavigation,
+} from 'react-icons/fi';
 
 interface AdminSidebarProps {
   isMobileOpen: boolean;
@@ -13,6 +21,21 @@ const navigationItems = [
     label: 'Users',
     path: '/admin/users',
     icon: <FiUsers size={17} className="shrink-0" />,
+  },
+  {
+    label: 'Rides',
+    path: '/admin/rides',
+    icon: <FiNavigation size={17} className="shrink-0" />,
+  },
+  {
+    label: 'Bookings',
+    path: '/admin/bookings',
+    icon: <FiCalendar size={17} className="shrink-0" />,
+  },
+  {
+    label: 'Vehicles',
+    path: '/admin/vehicles',
+    icon: <FiTruck size={17} className="shrink-0" />,
   },
 ];
 
@@ -31,8 +54,11 @@ export default function AdminSidebar({
   // Lock body scroll when mobile drawer is open
   useEffect(() => {
     if (!isMobileOpen) return;
+
     const previousOverflow = document.body.style.overflow;
+
     document.body.style.overflow = 'hidden';
+
     return () => {
       document.body.style.overflow = previousOverflow;
     };
@@ -50,7 +76,7 @@ export default function AdminSidebar({
         />
       )}
 
-      {/* Clean Fixed Sidebar */}
+      {/* Fixed Sidebar */}
       <aside
         aria-label="Admin sidebar"
         className={`
@@ -71,10 +97,12 @@ export default function AdminSidebar({
             <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#C37DF5] to-[#D56BCF] text-sm font-black text-white shadow-md">
               R
             </span>
+
             <div>
               <p className="text-sm font-bold tracking-tight text-[#F8FAFC]">
                 ridezo<span className="text-[#C37DF5]">.</span>
               </p>
+
               <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#707B8F]">
                 Administration
               </p>
@@ -91,7 +119,7 @@ export default function AdminSidebar({
           </button>
         </div>
 
-        {/* Navigation list */}
+        {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-5">
           <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#707B8F]">
             Workspace
@@ -104,10 +132,10 @@ export default function AdminSidebar({
                 to={item.path}
                 onClick={onCloseMobile}
                 className={({ isActive }) =>
-                  `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all ${
+                  `group relative flex items-center gap-3 rounded-xl border px-3 py-2.5 text-xs font-semibold transition-all ${
                     isActive
-                      ? 'border border-[#C37DF5]/20 bg-gradient-to-r from-[#C37DF5]/15 to-[#D56BCF]/5 text-[#C37DF5]'
-                      : 'border border-transparent text-[#A7B0C0] hover:bg-[#111722] hover:text-[#F8FAFC]'
+                      ? 'border-[#C37DF5]/20 bg-gradient-to-r from-[#C37DF5]/15 to-[#D56BCF]/5 text-[#C37DF5]'
+                      : 'border-transparent text-[#A7B0C0] hover:bg-[#111722] hover:text-[#F8FAFC]'
                   }`
                 }
               >
@@ -116,8 +144,11 @@ export default function AdminSidebar({
                     {isActive && (
                       <span className="absolute bottom-2 left-0 top-2 w-[3px] rounded-r-full bg-[#C37DF5]" />
                     )}
+
                     {item.icon}
+
                     <span className="flex-1">{item.label}</span>
+
                     {isActive && (
                       <span className="h-1.5 w-1.5 rounded-full bg-[#C37DF5]" />
                     )}
@@ -128,16 +159,18 @@ export default function AdminSidebar({
           </div>
         </nav>
 
-        {/* Administrator profile & Sign out */}
+        {/* Administrator profile and logout */}
         <div className="shrink-0 border-t border-[#263044] p-3">
-          <div className="mb-2.5 flex items-center gap-2.5 rounded-xl bg-[#111722] p-2.5 border border-[#263044]">
+          <div className="mb-2.5 flex items-center gap-2.5 rounded-xl border border-[#263044] bg-[#111722] p-2.5">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#C37DF5]/20 bg-[#C37DF5]/10 text-xs font-bold text-[#C37DF5]">
               A
             </div>
+
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-medium text-[#F8FAFC]">
                 Administrator
               </p>
+
               <p className="text-[10px] text-[#707B8F]">Admin account</p>
             </div>
           </div>
@@ -148,6 +181,7 @@ export default function AdminSidebar({
             className="flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-xs font-medium text-[#A7B0C0] transition hover:border-red-500/10 hover:bg-red-500/10 hover:text-red-300"
           >
             <FiLogOut size={16} className="shrink-0" />
+
             <span>Sign out</span>
           </button>
         </div>

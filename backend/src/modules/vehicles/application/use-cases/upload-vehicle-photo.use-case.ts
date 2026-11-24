@@ -41,13 +41,13 @@ export class UploadVehiclePhotoUseCase implements IUploadVehiclePhotoUseCase {
         file.mimetype,
       );
 
-      const vehiclePhoto = await this.vehiclePhotoStorage.getUrl(
+      const previewUrl = await this.vehiclePhotoStorage.getUrl(
         result.objectKey,
       );
 
       return {
-        vehiclePhoto,
-        vehiclePhotoKey: result.objectKey,
+        vehiclePhoto: result.objectKey,
+        previewUrl,
       };
     } catch {
       throw new InternalServerErrorException(

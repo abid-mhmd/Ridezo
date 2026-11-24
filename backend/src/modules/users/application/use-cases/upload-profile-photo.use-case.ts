@@ -63,8 +63,7 @@ export class UploadProfilePhotoUseCase implements IUploadProfilePhotoUseCase {
       const profilePhotoUrl = await this.profilePhotoStorage.getUrl(objectKey);
 
       const updatedUser = await this.userRepository.updateProfile(userId, {
-        profilePhoto: '',
-        profilePhotoKey: objectKey,
+        profilePhoto: objectKey,
       });
 
       if (!updatedUser) {
@@ -73,12 +72,12 @@ export class UploadProfilePhotoUseCase implements IUploadProfilePhotoUseCase {
         throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
       }
 
-      if (user.profilePhotoKey) {
+      if (user.profilePhoto) {
         try {
-          await this.profilePhotoStorage.delete(user.profilePhotoKey);
+          await this.profilePhotoStorage.delete(user.profilePhoto);
         } catch (error) {
           this.logger.error(
-            `Failed to delete previous profile photo: ${user.profilePhotoKey}`,
+            `Failed to delete previous profile photo: ${user.profilePhoto}`,
             error instanceof Error ? error.stack : undefined,
           );
         }

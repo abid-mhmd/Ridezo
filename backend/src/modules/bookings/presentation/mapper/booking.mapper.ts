@@ -8,12 +8,20 @@ export class BookingMapper {
       rideId: booking.rideId,
       passengerId: booking.passengerId,
       driverId: booking.driverId,
+
       seatsRequested: booking.seatsRequested,
       pricePerSeat: booking.pricePerSeat,
       totalPrice: booking.totalPrice,
+
+      passengerSnapshot: booking.passengerSnapshot,
+      driverSnapshot: booking.driverSnapshot,
+      vehicleSnapshot: booking.vehicleSnapshot,
+      rideSnapshot: booking.rideSnapshot,
+
       message: booking.message,
       rejectionReason: booking.rejectionReason,
       status: booking.status,
+
       createdAt: booking.createdAt,
       updatedAt: booking.updatedAt,
     };

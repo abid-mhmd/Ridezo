@@ -119,6 +119,7 @@ import { VerifyVehicleDocumentUseCase } from './application/use-cases/verify-veh
     VEHICLE_REPOSITORY,
     VEHICLE_DOCUMENT_REPOSITORY,
     VEHICLE_PHOTO_STORAGE,
+    VEHICLE_DOCUMENT_STORAGE,
   ],
 })
 export class VehiclesModule {}

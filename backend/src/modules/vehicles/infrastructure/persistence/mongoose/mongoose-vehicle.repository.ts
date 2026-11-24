@@ -5,6 +5,7 @@ import { Types, type Model } from 'mongoose';
 import type {
   CreateVehicleData,
   IVehicleRepository,
+  ListVehicleQuery,
   UpdateVehicleData,
 } from '../../../domain/repositories/vehicle.repository';
 import type { VehicleEntity } from '../../../domain/entities/vehicle.entity';
@@ -30,6 +31,51 @@ export class MongooseVehicleRepository
       ownerId: new Types.ObjectId(data.ownerId),
     });
     return this.toEntity(vehicle);
+  }
+
+  async findById(vehicleId: string): Promise<VehicleEntity | null> {
+    const vehicle = await this.findDocumentById(vehicleId);
+    return vehicle ? this.toEntity(vehicle) : null;
+  }
+
+  async findAll(
+    query: ListVehicleQuery,
+  ): Promise<{ vehicles: VehicleEntity[]; total: number }> {
+    const filter: Record<string, unknown> = {};
+
+    if (query.status) {
+      filter.verificationStatus = query.status;
+    }
+
+    if (query.search?.trim()) {
+      const escapedSearch = query.search
+        .trim()
+        .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escapedSearch, 'i');
+
+      filter.$or = [
+        { registrationNumber: regex },
+        { brand: regex },
+        { model: regex },
+      ];
+    }
+
+    const skip = (query.page - 1) * query.limit;
+
+    const [vehicles, total] = await Promise.all([
+      this.model
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(query.limit)
+        .exec(),
+      this.model.countDocuments(filter).exec(),
+    ]);
+
+    return {
+      vehicles: vehicles.map((vehicle) => this.toEntity(vehicle)),
+      total,
+    };
   }
 
   async findByIdAndOwner(
@@ -158,7 +204,6 @@ export class MongooseVehicleRepository
       seatCapacity: vehicle.seatCapacity,
       fuelType: vehicle.fuelType,
       vehiclePhoto: vehicle.vehiclePhoto,
-      vehiclePhotoKey: vehicle.vehiclePhotoKey,
       verificationStatus: vehicle.verificationStatus,
       isActive: vehicle.isActive,
       createdAt: vehicle.createdAt,

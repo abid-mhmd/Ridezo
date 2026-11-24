@@ -12,7 +12,7 @@ export type VehicleFormSubmitValues = Omit<
   VehicleFormValues,
   'vehiclePhoto'
 > & {
-  vehiclePhotoKey?: string;
+  vehiclePhoto?: string;
 };
 
 interface VehicleFormProps {
@@ -144,13 +144,13 @@ export default function VehicleForm({
       setSubmitError('');
       setErrors({});
 
-      let vehiclePhotoKey: string | undefined;
+      let vehiclePhoto: string | undefined;
 
       // Upload selected image to S3.
       if (selectedFile) {
         const uploaded = await uploadVehiclePhoto(selectedFile);
 
-        vehiclePhotoKey = uploaded.vehiclePhotoKey;
+        vehiclePhoto = uploaded.vehiclePhoto;
 
         // Keep the preview URL for display.
         setPhotoPreviewUrl(uploaded.vehiclePhoto);
@@ -162,7 +162,7 @@ export default function VehicleForm({
 
       await onSubmit({
         ...vehicleDetails,
-        vehiclePhotoKey,
+        vehiclePhoto,
       });
     } catch (error) {
       setSubmitError(

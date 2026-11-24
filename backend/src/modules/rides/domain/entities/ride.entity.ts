@@ -51,8 +51,6 @@ export interface RideDriverSummary {
   firstName: string;
   lastName: string;
   profilePhoto: string;
-  profilePhotoKey: string;
-
   rating: number;
   reviewCount: number;
   completedRideCount: number;
@@ -66,7 +64,7 @@ export interface RideVehicleSummary {
   model: string;
   year: number;
   color: string;
+  registrationNumber: string;
   vehiclePhoto: string;
-  vehiclePhotoKey: string;
   verificationStatus: string;
 }

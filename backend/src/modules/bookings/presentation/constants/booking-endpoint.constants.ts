@@ -6,4 +6,5 @@ export const BOOKING_ENDPOINTS = {
   ACCEPT: 'bookings/:bookingId/accept',
   REJECT: 'bookings/:bookingId/reject',
   CANCEL: 'bookings/:bookingId/cancel',
+  RESPOND: 'bookings/:bookingId/respond',
 } as const;

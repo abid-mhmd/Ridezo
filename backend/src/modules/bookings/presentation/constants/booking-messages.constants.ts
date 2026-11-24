@@ -5,4 +5,5 @@ export const BOOKING_MESSAGES = {
   ACCEPTED: 'Booking accepted successfully.',
   REJECTED: 'Booking rejected successfully.',
   CANCELLED: 'Booking cancelled successfully.',
+  RESPONDED: 'Booking request updated successfully.',
 };

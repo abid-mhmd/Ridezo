@@ -12,9 +12,12 @@ import {
   Share2,
   Bookmark,
   MessageSquare,
+  Phone,
 } from 'lucide-react';
 
 import { getRideDetails } from '../api/ride.api';
+import { createBooking } from '../../bookings/api/booking.api';
+
 import type { Ride } from '../types/ride.types';
 
 function formatDepartureTime(value: string): string {
@@ -49,6 +52,35 @@ export default function RideDetailsPage() {
   const [error, setError] = useState('');
   const [seatsToReserve, setSeatsToReserve] = useState(1);
 
+  const [isBooking, setIsBooking] = useState(false);
+  const [bookingError, setBookingError] = useState('');
+
+  async function handleBooking() {
+    if (!rideId || !ride || isBooking) return;
+
+    try {
+      setIsBooking(true);
+      setBookingError('');
+
+      const booking = await createBooking({
+        rideId,
+        seatsRequested: seatsToReserve,
+      });
+
+      navigate('/booking-success', {
+        state: { booking },
+      });
+    } catch (error) {
+      setBookingError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to submit booking request.',
+      );
+    } finally {
+      setIsBooking(false);
+    }
+  }
+
   useEffect(() => {
     let isMounted = true;
 
@@ -67,6 +99,7 @@ export default function RideDetailsPage() {
 
         if (isMounted) {
           setRide(response);
+          setSeatsToReserve(1);
         }
       } catch (err) {
         if (isMounted) {
@@ -122,7 +155,6 @@ export default function RideDetailsPage() {
   const driver = ride.driver;
   const vehicle = ride.vehicle;
 
-  // Use API data when available; otherwise retain existing static values.
   const driverName = driver
     ? `${driver.firstName} ${driver.lastName}`.trim()
     : 'Anand K.';
@@ -308,7 +340,7 @@ export default function RideDetailsPage() {
             </div>
           </section>
 
-          {/* Host & Navigator: Driver Details */}
+          {/* Driver Details */}
           <section className="space-y-3 rounded-2xl border border-[#252e3e] bg-[#111722] p-5 shadow-xl sm:p-6">
             <div className="flex items-center justify-between border-b border-[#252e3e] pb-3">
               <div>
@@ -355,9 +387,17 @@ export default function RideDetailsPage() {
                   </span>
 
                   <span>· {driverReviewCount} reviews</span>
-
                   <span>· {completedTrips} highway trips</span>
                 </div>
+                {driver?.phone && (
+                  <a
+                    href={`tel:${driver.phone}`}
+                    className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-[#36e0c0]/25 bg-[#36e0c0]/10 px-3 py-1.5 text-xs font-semibold text-[#36e0c0] transition hover:bg-[#36e0c0]/20"
+                  >
+                    <Phone size={13} />
+                    {driver.phone}
+                  </a>
+                )}
 
                 {driver?.languages?.length ? (
                   <p className="text-[11px] text-[#929bad]">
@@ -368,7 +408,6 @@ export default function RideDetailsPage() {
 
               <button
                 type="button"
-                onClick={() => alert('Opening chat with driver...')}
                 className="inline-flex cursor-pointer items-center gap-1 rounded-xl border border-[#30394b] bg-[#161b27] px-3.5 py-2 text-[11px] font-semibold text-white transition hover:bg-[#202838]"
               >
                 <MessageSquare size={13} className="text-[#8b78ff]" />
@@ -383,7 +422,7 @@ export default function RideDetailsPage() {
             </div>
           </section>
 
-          {/* Highway Machine: Vehicle Details */}
+          {/* Vehicle Details */}
           <section className="space-y-4 rounded-2xl border border-[#252e3e] bg-[#111722] p-5 shadow-xl sm:p-6">
             <div className="flex items-center justify-between border-b border-[#252e3e] pb-3">
               <div>
@@ -426,11 +465,9 @@ export default function RideDetailsPage() {
                   <p className="text-[9px] font-bold uppercase text-[#929bad]">
                     CLIMATE CONTROL
                   </p>
-
                   <p className="text-xs font-semibold text-white">
                     Dual Blower AC
                   </p>
-
                   <p className="text-[10px] text-[#929bad]">
                     Pre-set at ultra 23°C throughout journey.
                   </p>
@@ -440,11 +477,9 @@ export default function RideDetailsPage() {
                   <p className="text-[9px] font-bold uppercase text-[#929bad]">
                     REAR SPACING
                   </p>
-
                   <p className="text-xs font-semibold text-white">
                     Max 2 in Rear Seat
                   </p>
-
                   <p className="text-[10px] text-[#929bad]">
                     Guaranteed empty middle seat.
                   </p>
@@ -454,11 +489,9 @@ export default function RideDetailsPage() {
                   <p className="text-[9px] font-bold uppercase text-[#929bad]">
                     TRUNK CAPACITY
                   </p>
-
                   <p className="text-xs font-semibold text-white">
                     Spacious Boot 311L
                   </p>
-
                   <p className="text-[10px] text-[#929bad]">
                     Accommodates 2 medium suitcases.
                   </p>
@@ -549,10 +582,11 @@ export default function RideDetailsPage() {
               <div className="flex items-center justify-between rounded-xl border border-[#252e3e] bg-[#080b12] p-1.5">
                 <button
                   type="button"
+                  disabled={isBooking}
                   onClick={() =>
                     setSeatsToReserve(Math.max(1, seatsToReserve - 1))
                   }
-                  className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg bg-[#1b2230] text-white hover:bg-[#252e3e]"
+                  className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg bg-[#1b2230] text-white hover:bg-[#252e3e] disabled:opacity-50"
                 >
                   -
                 </button>
@@ -563,12 +597,13 @@ export default function RideDetailsPage() {
 
                 <button
                   type="button"
+                  disabled={isBooking || seatsToReserve >= ride.availableSeats}
                   onClick={() =>
                     setSeatsToReserve(
                       Math.min(ride.availableSeats, seatsToReserve + 1),
                     )
                   }
-                  className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg bg-[#1b2230] text-white hover:bg-[#252e3e]"
+                  className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg bg-[#1b2230] text-white hover:bg-[#252e3e] disabled:opacity-50"
                 >
                   +
                 </button>
@@ -615,19 +650,35 @@ export default function RideDetailsPage() {
 
             <button
               type="button"
-              onClick={() =>
-                alert(
-                  `Seat reservation request submitted for ${seatsToReserve} seat(s)!`,
-                )
+              onClick={handleBooking}
+              disabled={
+                isBooking ||
+                ride.availableSeats === 0 ||
+                ride.status !== 'scheduled'
               }
-              className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-[#8b78ff] to-[#ec4899] py-3 text-xs font-semibold text-white shadow-lg transition hover:opacity-90"
+              className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-[#8b78ff] to-[#ec4899] py-3 text-xs font-semibold text-white shadow-lg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              🚀 Request to Join Ride
+              {isBooking ? (
+                <>
+                  <LoaderCircle
+                    className="mr-2 inline animate-spin"
+                    size={14}
+                  />
+                  Sending Request...
+                </>
+              ) : (
+                '🚀 Request to Join Ride'
+              )}
             </button>
+
+            {bookingError && (
+              <p role="alert" className="text-xs text-red-400">
+                {bookingError}
+              </p>
+            )}
 
             <button
               type="button"
-              onClick={() => alert('Opening chat with driver...')}
               className="w-full cursor-pointer rounded-xl border border-[#30394b] bg-[#161b27] py-2 text-xs font-medium text-[#c7cddd] transition hover:text-white"
             >
               Message Driver before booking

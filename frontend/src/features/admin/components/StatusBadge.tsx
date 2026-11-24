@@ -5,14 +5,25 @@ interface StatusBadgeProps {
 export default function StatusBadge({ status }: StatusBadgeProps) {
   const getStatusStyles = (value: string): string => {
     switch (value.toLowerCase()) {
+      // User statuses
       case 'active':
+      case 'completed':
         return 'border-[#34D399]/20 bg-[#34D399]/10 text-[#34D399]';
 
       case 'suspended':
+      case 'pending':
         return 'border-amber-500/20 bg-amber-500/10 text-amber-300';
 
       case 'deactivated':
+      case 'rejected':
         return 'border-red-500/20 bg-red-500/10 text-red-300';
+
+      // Booking statuses
+      case 'accepted':
+        return 'border-sky-500/20 bg-sky-500/10 text-sky-400';
+
+      case 'cancelled':
+        return 'border-gray-500/20 bg-gray-500/10 text-gray-400';
 
       default:
         return 'border-gray-500/20 bg-gray-500/10 text-gray-300';

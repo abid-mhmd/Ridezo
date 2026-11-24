@@ -1,5 +1,3 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
@@ -11,32 +9,33 @@ export default function Pagination({
   totalPages,
   onPageChange,
 }: PaginationProps) {
-  if (totalPages <= 1) return null;
+  const safeTotalPages = Math.max(1, totalPages);
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), safeTotalPages);
 
   return (
-    <div className="mt-6 flex items-center justify-center gap-4">
+    <div className="flex items-center gap-2">
       <button
         type="button"
-        disabled={currentPage === 1}
-        onClick={() => onPageChange(currentPage - 1)}
-        className="flex items-center gap-1 rounded-lg border border-[#30394b] px-3 py-2 text-sm text-white transition hover:bg-[#202838] disabled:cursor-not-allowed disabled:opacity-40"
+        disabled={safeCurrentPage <= 1}
+        onClick={() => onPageChange(Math.max(1, safeCurrentPage - 1))}
+        className="inline-flex items-center gap-1 rounded-lg border border-[#263044] bg-[#080B12] px-3 py-1.5 text-xs font-medium text-[#A7B0C0] transition hover:text-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-40"
       >
-        <ChevronLeft size={16} />
         Previous
       </button>
 
-      <span className="text-sm text-gray-400">
-        Page {currentPage} of {totalPages}
+      <span className="min-w-16 text-center text-xs text-[#A7B0C0]">
+        {safeCurrentPage} / {safeTotalPages}
       </span>
 
       <button
         type="button"
-        disabled={currentPage === totalPages}
-        onClick={() => onPageChange(currentPage + 1)}
-        className="flex items-center gap-1 rounded-lg border border-[#30394b] px-3 py-2 text-sm text-white transition hover:bg-[#202838] disabled:cursor-not-allowed disabled:opacity-40"
+        disabled={safeCurrentPage >= safeTotalPages}
+        onClick={() =>
+          onPageChange(Math.min(safeTotalPages, safeCurrentPage + 1))
+        }
+        className="inline-flex items-center gap-1 rounded-lg border border-[#263044] bg-[#080B12] px-3 py-1.5 text-xs font-medium text-[#A7B0C0] transition hover:text-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-40"
       >
         Next
-        <ChevronRight size={16} />
       </button>
     </div>
   );

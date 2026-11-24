@@ -16,7 +16,6 @@ export interface VehicleEntity {
   seatCapacity: number;
   fuelType: FuelType;
   vehiclePhoto: string;
-  vehiclePhotoKey: string;
   verificationStatus: VehicleVerificationStatus;
   isActive: boolean;
   createdAt: Date;
