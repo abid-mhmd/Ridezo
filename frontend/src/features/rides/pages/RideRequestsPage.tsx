@@ -9,6 +9,9 @@ import {
   ExternalLink,
   IndianRupee,
   Plus,
+  Mail,
+  Eye,
+  Phone,
   ShieldCheck,
   UserRound,
   Users,
@@ -40,6 +43,17 @@ function formatDateTime(iso: string) {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+function getPassengerName(booking: Booking) {
+  const fullName = [
+    booking.passengerSnapshot?.firstName,
+    booking.passengerSnapshot?.lastName,
+  ]
+    .filter(Boolean)
+    .join(' ');
+  return (
+    fullName || `Passenger #${booking.passengerId.slice(-6).toUpperCase()}`
+  );
 }
 
 function formatShortDate(iso: string) {
@@ -387,22 +401,54 @@ export default function RideRequestsPage() {
                 {/* Top Row: Passenger & Status */}
                 <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#252e3e] pb-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#8b78ff]/15 text-[#b6a8ff]">
-                      <UserRound size={20} />
-                    </div>
+                    {item.passengerSnapshot?.profilePhoto ? (
+                      <img
+                        src={item.passengerSnapshot.profilePhoto}
+                        alt={getPassengerName(item)}
+                        className="h-11 w-11 rounded-full border border-[#36e0c0]/30 object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#8b78ff]/15 text-[#b6a8ff]">
+                        <UserRound size={20} />
+                      </div>
+                    )}
+
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-sm font-bold text-white">
-                          Passenger #{item.passengerId.slice(-6).toUpperCase()}
+                          {getPassengerName(item)}
                         </p>
                         <span className="rounded-full border border-[#36e0c0]/30 bg-[#36e0c0]/10 px-2 py-0.5 text-[10px] font-medium text-[#36e0c0]">
                           Ridezo Passenger
                         </span>
                       </div>
-                      <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-[#929bad]">
-                        <Clock size={11} />
-                        Requested {formatDateTime(item.createdAt)}
-                      </p>
+
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#929bad]">
+                        <span className="flex items-center gap-1">
+                          <Clock size={11} />
+                          Requested {formatDateTime(item.createdAt)}
+                        </span>
+
+                        {item.passengerSnapshot?.phone && (
+                          <a
+                            href={`tel:${item.passengerSnapshot.phone}`}
+                            className="inline-flex items-center gap-1 font-medium text-[#36e0c0] hover:underline"
+                          >
+                            <Phone size={11} />
+                            {item.passengerSnapshot.phone}
+                          </a>
+                        )}
+
+                        {item.passengerSnapshot?.email && (
+                          <a
+                            href={`mailto:${item.passengerSnapshot.email}`}
+                            className="inline-flex items-center gap-1 text-[#c7cddd] hover:text-white"
+                          >
+                            <Mail size={11} />
+                            {item.passengerSnapshot.email}
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -525,6 +571,18 @@ export default function RideRequestsPage() {
                       <ExternalLink size={13} />
                       View Ride
                     </button>
+                    {item.status === 'accepted' && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(`/bookings/${item.id}?role=driver`)
+                        }
+                        className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#36e0c0]/30 bg-[#36e0c0]/10 px-3.5 py-2 text-xs font-semibold text-[#36e0c0] transition hover:bg-[#36e0c0]/20"
+                      >
+                        <Eye size={13} />
+                        View Booking
+                      </button>
+                    )}
 
                     {item.status === 'pending' && !isDeclining && (
                       <>

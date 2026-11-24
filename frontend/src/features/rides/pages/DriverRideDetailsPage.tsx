@@ -8,13 +8,19 @@ import {
   CheckCircle2,
   Clock,
   Edit3,
+  Eye,
   IndianRupee,
   LoaderCircle,
+  Mail,
+  Phone,
+  UserRound,
   Users,
 } from 'lucide-react';
 
 import { cancelRide, getRideDetails } from '../api/ride.api';
+import { getDriverBookingRequests } from '../../bookings/api/booking.api';
 import type { Ride } from '../types/ride.types';
+import type { Booking } from '../../bookings/types/booking-types';
 
 function formatDepartureTime(value: string): string {
   return new Date(value).toLocaleString('en-IN', {
@@ -39,11 +45,26 @@ function formatPreference(value?: string): string {
     .join(' ');
 }
 
+function getPassengerName(booking: Booking): string {
+  const fullName = [
+    booking.passengerSnapshot?.firstName,
+    booking.passengerSnapshot?.lastName,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    fullName || `Passenger #${booking.passengerId.slice(-6).toUpperCase()}`
+  );
+}
+
 export default function DriverRideDetailsPage() {
   const { rideId } = useParams<{ rideId: string }>();
   const navigate = useNavigate();
 
   const [ride, setRide] = useState<Ride | null>(null);
+  const [bookedPassengers, setBookedPassengers] = useState<Booking[]>([]);
+  const [pendingCount, setPendingCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionError, setActionError] = useState('');
@@ -62,8 +83,25 @@ export default function DriverRideDetailsPage() {
       try {
         setIsLoading(true);
         setError('');
-        const response = await getRideDetails(rideId);
-        if (isMounted) setRide(response);
+
+        const [rideResponse, requestsResponse] = await Promise.all([
+          getRideDetails(rideId),
+          getDriverBookingRequests(1, 50),
+        ]);
+
+        if (!isMounted) return;
+
+        setRide(rideResponse);
+
+        const rideRequests = requestsResponse.bookings.filter(
+          (b) => b.rideId === rideId,
+        );
+        setBookedPassengers(
+          rideRequests.filter((b) => b.status === 'accepted'),
+        );
+        setPendingCount(
+          rideRequests.filter((b) => b.status === 'pending').length,
+        );
       } catch (err) {
         if (isMounted) {
           setError(
@@ -280,6 +318,102 @@ export default function DriverRideDetailsPage() {
             </div>
           </section>
 
+          {/* Booked Passengers */}
+          <section className="space-y-4 rounded-2xl border border-[#252e3e] bg-[#111722] p-5 shadow-xl sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#252e3e] pb-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-[#36e0c0]">
+                  CONFIRMED PASSENGERS
+                </span>
+                <h2 className="text-xs font-bold text-white">
+                  Booked Passengers ({bookedPassengers.length})
+                </h2>
+              </div>
+
+              <span className="rounded-full bg-[#36e0c0]/10 px-2.5 py-0.5 text-[10px] font-semibold text-[#36e0c0]">
+                {bookedSeats} / {ride.totalSeats} seats filled
+              </span>
+            </div>
+
+            {bookedPassengers.length === 0 ? (
+              <p className="rounded-xl border border-[#252e3e] bg-[#080b12] p-4 text-center text-xs text-[#929bad]">
+                No confirmed passengers for this ride yet.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {bookedPassengers.map((booking) => {
+                  const fullName = getPassengerName(booking);
+
+                  return (
+                    <div
+                      key={booking.id}
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#252e3e] bg-[#080b12] p-3.5"
+                    >
+                      <div className="flex items-center gap-3">
+                        {booking.passengerSnapshot?.profilePhoto ? (
+                          <img
+                            src={booking.passengerSnapshot.profilePhoto}
+                            alt={fullName}
+                            className="h-11 w-11 rounded-full border border-[#36e0c0]/30 object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#36e0c0]/15 text-[#36e0c0]">
+                            <UserRound size={18} />
+                          </div>
+                        )}
+
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-bold text-white">
+                            {fullName}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-[#929bad]">
+                            {booking.passengerSnapshot?.phone && (
+                              <a
+                                href={`tel:${booking.passengerSnapshot.phone}`}
+                                className="inline-flex items-center gap-1 font-medium text-[#36e0c0] hover:underline"
+                              >
+                                <Phone size={11} />
+                                {booking.passengerSnapshot.phone}
+                              </a>
+                            )}
+                            {booking.passengerSnapshot?.email && (
+                              <a
+                                href={`mailto:${booking.passengerSnapshot.email}`}
+                                className="inline-flex items-center gap-1 hover:text-white"
+                              >
+                                <Mail size={11} />
+                                {booking.passengerSnapshot.email}
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2.5">
+                        <span className="rounded-lg border border-[#252e3e] bg-[#111722] px-2.5 py-1 text-[11px] text-[#c7cddd]">
+                          {booking.seatsRequested} seat
+                          {booking.seatsRequested === 1 ? '' : 's'} · ₹
+                          {booking.totalPrice.toLocaleString('en-IN')}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            navigate(`/bookings/${booking.id}?role=driver`)
+                          }
+                          className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-[#36e0c0]/30 bg-[#36e0c0]/15 px-2.5 py-1.5 text-[11px] font-semibold text-[#36e0c0] transition hover:bg-[#36e0c0]/25"
+                        >
+                          <Eye size={12} />
+                          View Booking
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
           {/* Vehicle Details */}
           {vehicle && (
             <section className="space-y-4 rounded-2xl border border-[#252e3e] bg-[#111722] p-5 shadow-xl sm:p-6">
@@ -380,7 +514,7 @@ export default function DriverRideDetailsPage() {
           )}
         </div>
 
-        {/* Right Column: Host Summary & Controls (No Booking / Message Buttons) */}
+        {/* Right Column: Host Summary & Controls */}
         <aside className="space-y-4 lg:sticky lg:top-24 lg:col-span-4">
           <div className="space-y-4 rounded-2xl border border-[#252e3e] bg-[#111722] p-5 shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#252e3e] pb-3">
@@ -416,14 +550,29 @@ export default function DriverRideDetailsPage() {
             </div>
 
             <div className="space-y-2 pt-2">
-              {canManage && (
+              {canManage && pendingCount > 0 && (
                 <button
                   type="button"
-                  onClick={() => navigate(`/rides/${ride.id}/requests`)}
+                  onClick={() =>
+                    navigate(`/rides/${ride.id}/requests?tab=pending`)
+                  }
                   className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#8b78ff] to-[#ec4899] py-2.5 text-xs font-semibold text-white shadow-lg transition hover:opacity-90"
                 >
                   <Users size={14} />
-                  Manage Ride Requests
+                  Manage Ride Requests ({pendingCount})
+                </button>
+              )}
+
+              {bookedPassengers.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(`/rides/${ride.id}/requests?tab=accepted`)
+                  }
+                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#36e0c0]/30 bg-[#36e0c0]/10 py-2.5 text-xs font-semibold text-[#36e0c0] transition hover:bg-[#36e0c0]/20"
+                >
+                  <Users size={14} />
+                  View Accepted Bookings ({bookedPassengers.length})
                 </button>
               )}
 

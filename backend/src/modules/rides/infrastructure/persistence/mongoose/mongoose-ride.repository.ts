@@ -54,7 +54,7 @@ export class MongooseRideRepository
         path: 'driverId',
         model: User.name,
         select:
-          'firstName lastName profilePhoto  rating reviewCount completedRideCount identityVerification languages',
+          'firstName lastName profilePhoto phone  rating reviewCount completedRideCount identityVerification languages',
       })
       .populate({
         path: 'vehicleId',
@@ -443,6 +443,7 @@ export class MongooseRideRepository
           id: driver._id.toString(),
           firstName: driver.firstName,
           lastName: driver.lastName,
+          phone: driver.phone,
           profilePhoto: driver.profilePhoto,
           rating: driver.rating,
           reviewCount: driver.reviewCount,
