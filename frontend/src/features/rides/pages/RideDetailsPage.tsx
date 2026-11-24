@@ -408,7 +408,6 @@ export default function RideDetailsPage() {
 
               <button
                 type="button"
-                onClick={() => alert('Opening chat with driver...')}
                 className="inline-flex cursor-pointer items-center gap-1 rounded-xl border border-[#30394b] bg-[#161b27] px-3.5 py-2 text-[11px] font-semibold text-white transition hover:bg-[#202838]"
               >
                 <MessageSquare size={13} className="text-[#8b78ff]" />
@@ -680,7 +679,6 @@ export default function RideDetailsPage() {
 
             <button
               type="button"
-              onClick={() => alert('Opening chat with driver...')}
               className="w-full cursor-pointer rounded-xl border border-[#30394b] bg-[#161b27] py-2 text-xs font-medium text-[#c7cddd] transition hover:text-white"
             >
               Message Driver before booking

@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+
 import {
   BOOKING_REPOSITORY,
   type IBookingRepository,
@@ -7,7 +8,14 @@ import {
   USER_REPOSITORY,
   type IUserRepository,
 } from '../../../users/domain/repositories/user.repository';
-import { PROFILE_PHOTO_STORAGE ,type IProfilePhotoStorage } from '../../../users/application/ports/profile-photo-storage';
+import {
+  PROFILE_PHOTO_STORAGE,
+  type IProfilePhotoStorage,
+} from '../../../users/application/ports/profile-photo-storage';
+import {
+  VEHICLE_PHOTO_STORAGE,
+  type IVehiclePhotoStorage,
+} from '../../../vehicles/application/ports/vehicle-photo-storage';
 import type { BookingEntity } from '../../domain/entities/booking.entity';
 import type {
   IGetBookingsForUserUseCase,
@@ -19,11 +27,27 @@ export class GetBookingsForUserUseCase implements IGetBookingsForUserUseCase {
   constructor(
     @Inject(BOOKING_REPOSITORY)
     private readonly bookingRepository: IBookingRepository,
+
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
+
     @Inject(PROFILE_PHOTO_STORAGE)
     private readonly profilePhotoStorage: IProfilePhotoStorage,
+
+    @Inject(VEHICLE_PHOTO_STORAGE)
+    private readonly vehiclePhotoStorage: IVehiclePhotoStorage,
   ) {}
+
+  private async resolvePhotoUrl(
+    value: string | undefined,
+    storage: { getUrl(objectKey: string): Promise<string> },
+  ): Promise<string> {
+    if (!value) return '';
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return value;
+    }
+    return storage.getUrl(value);
+  }
 
   async execute(
     userId: string,
@@ -52,34 +76,48 @@ export class GetBookingsForUserUseCase implements IGetBookingsForUserUseCase {
 
     const enrichedBookings = await Promise.all(
       result.bookings.map(async (booking) => {
-        if (role === 'driver') {
-          const passenger = userMap.get(booking.passengerId);
-          if (!passenger) return booking;
+        const driver =
+          role === 'passenger' ? userMap.get(booking.driverId) : undefined;
+        const passenger =
+          role === 'driver' ? userMap.get(booking.passengerId) : undefined;
 
-          const profilePhoto =
-            passenger.profilePhoto && !passenger.profilePhoto.startsWith('http')
-              ? await this.profilePhotoStorage.getUrl(passenger.profilePhoto)
-              : (passenger.profilePhoto ?? '');
+        const [driverPhoto, vehiclePhoto, passengerPhoto] = await Promise.all([
+          this.resolvePhotoUrl(
+            driver?.profilePhoto || booking.driverSnapshot?.profilePhoto,
+            this.profilePhotoStorage,
+          ),
+          this.resolvePhotoUrl(
+            booking.vehicleSnapshot?.vehiclePhoto,
+            this.vehiclePhotoStorage,
+          ),
+          passenger
+            ? this.resolvePhotoUrl(
+                passenger.profilePhoto,
+                this.profilePhotoStorage,
+              )
+            : Promise.resolve(''),
+        ]);
 
-          return {
-            ...booking,
+        return {
+          ...booking,
+          driverSnapshot: {
+            ...booking.driverSnapshot,
+            profilePhoto: driverPhoto,
+            phone: driver?.phone ?? booking.driverSnapshot?.phone ?? '',
+          },
+          vehicleSnapshot: {
+            ...booking.vehicleSnapshot,
+            vehiclePhoto,
+          },
+          ...(passenger && {
             passengerSnapshot: {
               firstName: passenger.firstName,
               lastName: passenger.lastName,
               email: passenger.email,
               phone: passenger.phone,
-              profilePhoto,
+              profilePhoto: passengerPhoto,
             },
-          };
-        }
-
-        const driver = userMap.get(booking.driverId);
-        return {
-          ...booking,
-          driverSnapshot: {
-            ...booking.driverSnapshot,
-            phone: driver?.phone ?? booking.driverSnapshot.phone ?? '',
-          },
+          }),
         };
       }),
     );

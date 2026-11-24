@@ -30,8 +30,8 @@ export class GetBookingByIdUseCase implements IGetBookingByIdUseCase {
     private readonly bookingRepository: IBookingRepository,
 
     @Inject(USER_REPOSITORY)
-    private readonly userRepository:IUserRepository,
-    
+    private readonly userRepository: IUserRepository,
+
     @Inject(PROFILE_PHOTO_STORAGE)
     private readonly profilePhotoStorage: IProfilePhotoStorage,
 

@@ -1,14 +1,22 @@
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, ShieldCheck } from 'lucide-react';
+import {
+  AlertCircle,
+  CheckCircle2,
+  Eye,
+  ShieldCheck,
+  Users,
+} from 'lucide-react';
 
 import type { Ride, RideStatus } from '../types/ride.types';
+import type { Booking } from '../../bookings/types/booking-types';
 
 interface MyRideCardProps {
   ride: Ride;
   onCancel: (rideId: string) => void;
-  onManageRequests: (rideId: string) => void;
+  onManageRequests: (rideId: string, tab?: 'pending' | 'accepted') => void;
   isCancelling: boolean;
-  pendingRequestCount: number;
+  pendingBookings: Booking[];
+  acceptedBookings: Booking[];
 }
 
 function getStatusStyle(status: RideStatus): string {
@@ -30,10 +38,7 @@ function getStatusStyle(status: RideStatus): string {
 
 function formatDepartureTime(value: string): string {
   const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return 'Date unavailable';
-  }
+  if (Number.isNaN(date.getTime())) return 'Date unavailable';
 
   return date.toLocaleString('en-IN', {
     day: '2-digit',
@@ -44,27 +49,51 @@ function formatDepartureTime(value: string): string {
   });
 }
 
+function getPassengerName(booking: Booking): string {
+  const fullName = [
+    booking.passengerSnapshot?.firstName,
+    booking.passengerSnapshot?.lastName,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    fullName || `Passenger #${booking.passengerId.slice(-6).toUpperCase()}`
+  );
+}
+
 export default function MyRideCard({
   ride,
   onCancel,
   onManageRequests,
   isCancelling,
-  pendingRequestCount,
+  pendingBookings,
+  acceptedBookings,
 }: MyRideCardProps) {
   const navigate = useNavigate();
 
-  const canCancel = ride.status === 'scheduled' || ride.status === 'full';
-
+  const isActiveRide = ride.status === 'scheduled' || ride.status === 'full';
   const bookedSeats = ride.totalSeats - ride.availableSeats;
+  const pendingCount = pendingBookings.length;
+  const acceptedCount = acceptedBookings.length;
+
+  const confirmedSeats = acceptedBookings.reduce(
+    (sum, b) => sum + b.seatsRequested,
+    0,
+  );
+  const confirmedFare = acceptedBookings.reduce(
+    (sum, b) => sum + b.totalPrice,
+    0,
+  );
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-[#252e3e] bg-[#111722] transition duration-200 hover:border-[#8b78ff]/40 shadow-xl">
-      <div className="p-4 sm:p-5 space-y-4">
+    <article className="overflow-hidden rounded-2xl border border-[#252e3e] bg-[#111722] shadow-xl transition duration-200 hover:border-[#8b78ff]/40">
+      <div className="space-y-4 p-4 sm:p-5">
         {/* Role & Status */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#252e3e] pb-3">
           <div className="flex items-center gap-2">
-            <span className="rounded-full border px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-purple-500/15 border-purple-500/30 text-[#b6a8ff]">
-              🚗 YOU'RE DRIVING
+            <span className="rounded-full border border-purple-500/30 bg-purple-500/15 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#b6a8ff]">
+              🚗 YOU&apos;RE DRIVING
             </span>
 
             <span
@@ -72,38 +101,28 @@ export default function MyRideCard({
             >
               {ride.status}
             </span>
-
-            {ride.status === 'started' && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#36e0c0]/10 px-2 py-0.5 text-[9px] font-bold text-[#36e0c0] animate-pulse">
-                ● LIVE NOW
-              </span>
-            )}
           </div>
 
-          <span className="text-[10px] text-[#929bad] font-mono">
-            REF: #TRP-{ride.id.slice(0, 5).toUpperCase()}
+          <span className="font-mono text-[10px] text-[#929bad]">
+            REF: #TRP-{ride.id.slice(-5).toUpperCase()}
           </span>
         </div>
 
-        {/* Route & Ride Information */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 items-center">
-          <div className="lg:col-span-8 space-y-4">
-            {/* Route */}
+        {/* Route & Summary */}
+        <div className="grid grid-cols-1 items-center gap-4 lg:grid-cols-12">
+          <div className="space-y-3 lg:col-span-8">
             <div className="flex items-start gap-3">
-              <div className="flex flex-col items-center mt-1">
+              <div className="mt-1 flex flex-col items-center">
                 <span className="h-2.5 w-2.5 rounded-full border-2 border-[#36e0c0] bg-[#080b12]" />
-
-                <span className="w-0.5 h-10 bg-[#252e3e] my-1" />
-
+                <span className="my-1 h-10 w-0.5 bg-[#252e3e]" />
                 <span className="h-2.5 w-2.5 rounded-full border-2 border-[#8b78ff] bg-[#080b12]" />
               </div>
 
-              <div className="space-y-4 flex-1">
+              <div className="flex-1 space-y-4">
                 <div>
                   <p className="text-xs font-bold text-white">
                     {formatDepartureTime(ride.departureTime)}
                   </p>
-
                   <p className="text-[11px] text-[#929bad]">
                     {ride.origin.name}
                   </p>
@@ -113,7 +132,6 @@ export default function MyRideCard({
                   <p className="text-xs font-bold text-white">
                     Destination Drop
                   </p>
-
                   <p className="text-[11px] text-[#929bad]">
                     {ride.destination.name}
                   </p>
@@ -121,115 +139,114 @@ export default function MyRideCard({
               </div>
             </div>
 
-            {/* Booking Requests */}
-            {(ride.status === 'scheduled' || ride.status === 'full') && (
-              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 space-y-2 text-xs">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold text-amber-300 flex items-center gap-1">
+            {/* Pending Requests — only shown when pending requests exist */}
+            {isActiveRide && pendingCount > 0 && (
+              <div className="space-y-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 font-bold text-amber-300">
                     <AlertCircle size={13} />
-                    Booking Requests
+                    Pending Booking Requests
                   </span>
-
-                  <span className="text-[10px] text-[#929bad]">
-                    {pendingRequestCount} pending
+                  <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold text-amber-200">
+                    {pendingCount} Pending
                   </span>
                 </div>
-
-                <p className="text-[10px] text-[#c7cddd]">
-                  {pendingRequestCount > 0
-                    ? `You have ${pendingRequestCount} pending booking request(s).`
-                    : 'There are no pending booking requests.'}
+                <p className="text-[11px] text-[#c7cddd]">
+                  You have {pendingCount} pending seat request
+                  {pendingCount === 1 ? '' : 's'} awaiting your approval.
                 </p>
-
-                <button
-                  type="button"
-                  onClick={() => onManageRequests(ride.id)}
-                  className="text-[10px] font-bold text-[#b6a8ff] hover:text-white transition"
-                >
-                  Manage Requests →
-                </button>
               </div>
             )}
 
-            {/* Vehicle Details */}
-            {ride.vehicle && (
-              <div className="flex items-center gap-3 rounded-xl border border-[#252e3e] bg-[#080b12] p-3">
-                {ride.vehicle.vehiclePhoto && (
-                  <img
-                    src={ride.vehicle.vehiclePhoto}
-                    alt={`${ride.vehicle.brand} ${ride.vehicle.model}`}
-                    className="h-12 w-16 rounded-lg object-cover"
-                  />
-                )}
-
-                <div>
-                  <p className="text-xs font-bold text-white">
-                    {ride.vehicle.brand} {ride.vehicle.model}
-                  </p>
-
-                  <p className="text-[10px] text-[#929bad]">
-                    {ride.vehicle.year} · {ride.vehicle.color}
-                  </p>
-
-                  <p className="text-[10px] text-[#929bad]">
-                    {ride.vehicle.registrationNumber}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Live Status */}
-            {ride.status === 'started' && (
-              <div className="rounded-xl border border-[#252e3e] bg-[#080b12] p-3 space-y-1.5 text-xs">
-                <div className="flex justify-between text-[10px] text-[#929bad]">
-                  <span>Trip Status</span>
-
-                  <span className="text-[#36e0c0] font-bold">In Progress</span>
+            {/* Confirmed Bookings — only shown when accepted bookings exist */}
+            {acceptedCount > 0 && (
+              <div className="space-y-2.5 rounded-xl border border-[#36e0c0]/30 bg-[#36e0c0]/10 p-3 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="flex items-center gap-1.5 font-bold text-[#36e0c0]">
+                    <CheckCircle2 size={14} />
+                    Confirmed Bookings ({acceptedCount})
+                  </span>
+                  <span className="text-[10px] font-semibold text-[#c7cddd]">
+                    {confirmedSeats} seat{confirmedSeats === 1 ? '' : 's'} · ₹
+                    {confirmedFare.toLocaleString('en-IN')}
+                  </span>
                 </div>
 
-                <p className="text-[10px] text-[#36e0c0]">
-                  Your ride is currently in progress.
-                </p>
+                <div className="space-y-1.5">
+                  {acceptedBookings.map((booking) => (
+                    <div
+                      key={booking.id}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#252e3e] bg-[#080b12]/80 px-3 py-2"
+                    >
+                      <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                        <Users size={12} className="text-[#36e0c0]" />
+                        <span className="font-semibold text-white">
+                          {getPassengerName(booking)}
+                        </span>
+                        {booking.passengerSnapshot?.phone && (
+                          <span className="text-[#36e0c0]">
+                            · {booking.passengerSnapshot.phone}
+                          </span>
+                        )}
+                        <span className="text-[#929bad]">
+                          · {booking.seatsRequested} seat
+                          {booking.seatsRequested === 1 ? '' : 's'} · ₹
+                          {booking.totalPrice.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(`/bookings/${booking.id}?role=driver`)
+                        }
+                        className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-[#36e0c0]/30 bg-[#36e0c0]/15 px-2.5 py-1 text-[10px] font-semibold text-[#36e0c0] transition hover:bg-[#36e0c0]/25"
+                      >
+                        <Eye size={11} />
+                        View Booking
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
-          {/* Ride Summary */}
-          <div className="lg:col-span-4 rounded-xl border border-[#252e3e] bg-[#080b12] p-4 space-y-2.5 text-xs">
+          {/* Right Summary Panel */}
+          <div className="space-y-2.5 rounded-xl border border-[#252e3e] bg-[#080b12] p-4 text-xs lg:col-span-4">
             <div className="flex items-center gap-2 border-b border-[#252e3e] pb-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#8b78ff]/15 text-[#8b78ff]">
                 🚗
               </div>
-
               <div>
-                <p className="text-[10px] font-bold text-white">Ride Summary</p>
-
-                <p className="text-[9px] text-[#929bad]">Your offered ride</p>
+                <p className="text-[10px] font-bold text-white">
+                  {ride.vehicle
+                    ? `${ride.vehicle.brand} ${ride.vehicle.model}`
+                    : 'Ride Summary'}
+                </p>
+                <p className="font-mono text-[9px] text-[#929bad]">
+                  {ride.vehicle?.registrationNumber || 'Your offered ride'}
+                </p>
               </div>
             </div>
 
             <div className="flex justify-between text-[#929bad]">
-              <span>Total Seats</span>
-              <span className="text-white font-medium">{ride.totalSeats}</span>
-            </div>
-
-            <div className="flex justify-between text-[#929bad]">
-              <span>Available Seats</span>
-              <span className="text-white font-medium">
-                {ride.availableSeats}
-              </span>
-            </div>
-
-            <div className="flex justify-between text-[#929bad]">
               <span>Capacity Booked</span>
-              <span className="text-white font-medium">
+              <span className="font-medium text-white">
                 {bookedSeats} of {ride.totalSeats} Seats
               </span>
             </div>
 
             <div className="flex justify-between text-[#929bad]">
-              <span>Price Per Seat</span>
-              <span className="text-[#36e0c0] font-bold">
+              <span>Available Seats</span>
+              <span className="font-medium text-white">
+                {ride.availableSeats}
+              </span>
+            </div>
+
+            <div className="flex justify-between text-[#929bad]">
+              <span>Rate / Seat</span>
+              <span className="font-bold text-[#36e0c0]">
                 ₹{ride.pricePerSeat}
               </span>
             </div>
@@ -238,36 +255,60 @@ export default function MyRideCard({
 
         {/* Footer Actions */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#252e3e] pt-3 text-xs">
-          <span className="text-[10px] text-[#36e0c0] flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 text-[10px] text-[#36e0c0]">
             <ShieldCheck size={13} />
-            Ride Information
+            Host Controls
           </span>
 
           <div className="flex flex-wrap items-center gap-2">
-            {ride.status === 'started' && (
+            {isActiveRide && pendingCount > 0 && (
               <button
                 type="button"
-                onClick={() => navigate('/rides/tracking')}
-                className="rounded-xl bg-[#36e0c0] px-3.5 py-2 text-xs font-semibold text-black transition hover:bg-[#2bc2a1]"
+                onClick={() => onManageRequests(ride.id, 'pending')}
+                className="cursor-pointer rounded-xl bg-gradient-to-r from-[#8b78ff] to-[#ec4899] px-3.5 py-2 text-xs font-semibold text-white shadow-md transition hover:opacity-90"
               >
-                View Live Trip
+                Manage Requests ({pendingCount})
+              </button>
+            )}
+
+            {acceptedCount > 0 && (
+              <button
+                type="button"
+                onClick={() => onManageRequests(ride.id, 'accepted')}
+                className={`cursor-pointer rounded-xl px-3.5 py-2 text-xs font-semibold transition ${
+                  pendingCount === 0
+                    ? 'bg-[#36e0c0] text-black shadow-md hover:bg-[#2bc2a1]'
+                    : 'border border-[#36e0c0]/30 bg-[#36e0c0]/10 text-[#36e0c0] hover:bg-[#36e0c0]/20'
+                }`}
+              >
+                View Bookings ({acceptedCount})
               </button>
             )}
 
             <button
               type="button"
-              onClick={() => navigate(`/rides/${ride.id}`)}
-              className="rounded-xl border border-[#30394b] bg-[#161b27] px-3.5 py-2 text-xs font-medium text-[#c7cddd] transition hover:text-white"
+              onClick={() => navigate(`/rides/${ride.id}/host`)}
+              className="cursor-pointer rounded-xl border border-[#30394b] bg-[#161b27] px-3.5 py-2 text-xs font-medium text-[#c7cddd] transition hover:text-white"
             >
-              Trip Details
+              Ride Details
             </button>
 
-            {canCancel && (
+            {ride.status === 'scheduled' && (
+              <button
+                type="button"
+                onClick={() => navigate(`/rides/${ride.id}/edit`)}
+                className="cursor-pointer rounded-xl border border-[#30394b] bg-[#161b27] px-3.5 py-2 text-xs font-medium text-[#c7cddd] transition hover:text-white"
+              >
+                Edit Ride
+              </button>
+            )}
+
+            {isActiveRide && (
               <button
                 type="button"
                 disabled={isCancelling}
                 onClick={() => onCancel(ride.id)}
-                className="rounded-xl border border-red-500/20 bg-red-500/10 px-3.5 py-2 text-xs font-semibold text-red-300 transition hover:bg-red-500/20 disabled:opacity-50"
+                className="cursor-pointer rounded-xl border border-red-500/20 bg-red-500/10 px-3.5 py-2 text-xs font-semibold text-red-300 transition hover:bg-red-500/20 disabled:opacity-50"
               >
                 {isCancelling ? 'Cancelling...' : 'Cancel Ride'}
               </button>

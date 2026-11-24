@@ -1,7 +1,14 @@
 import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 
-import { FiUsers, FiCalendar, FiTruck, FiLogOut, FiX ,FiNavigation} from 'react-icons/fi';
+import {
+  FiUsers,
+  FiCalendar,
+  FiTruck,
+  FiLogOut,
+  FiX,
+  FiNavigation,
+} from 'react-icons/fi';
 
 interface AdminSidebarProps {
   isMobileOpen: boolean;

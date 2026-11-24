@@ -24,7 +24,7 @@ export interface RideDriverSummary {
   lastName: string;
   profilePhoto: string;
   rating: number;
-  phone?:string;
+  phone?: string;
   reviewCount: number;
   completedRideCount: number;
   identityVerificationStatus: string;
