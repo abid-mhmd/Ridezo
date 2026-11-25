@@ -41,12 +41,19 @@ import {
   IRemoveProfilePhotoUseCase,
   REMOVE_PROFILE_PHOTO_USE_CASE,
 } from '../application/interfaces/remove-profile-photo.use-case.interface';
+import { SUBMIT_IDENTITY_VERIFICATION_USE_CASE ,ISubmitIdentityVerificationUseCase } from '../application/interfaces/submit-identity-verification.use-case.interface';
+import { IDENTITY_DOCUMENT_UPLOAD_LIMITS } from '../domain/constants/identity-verification.constants';
+import { SubmitIdentityVerificationDto } from '../application/dto/submit-identity-verification.dto';
 
 @Controller()
 export class UsersController {
   constructor(
     @Inject(GET_USER_PROFILE_USE_CASE)
     private readonly getUserProfileUseCase: IGetUserProfileUseCase,
+
+    @Inject(SUBMIT_IDENTITY_VERIFICATION_USE_CASE)
+    private readonly submitIdentityVerificationUseCase:ISubmitIdentityVerificationUseCase,
+
     @Inject(UPDATE_PROFILE_USE_CASE)
     private readonly updateProfileUseCase: IUpdateProfileUseCase,
 
@@ -55,6 +62,7 @@ export class UsersController {
 
     @Inject(REMOVE_PROFILE_PHOTO_USE_CASE)
     private readonly removeProfilePhotUseCase: IRemoveProfilePhotoUseCase,
+
   ) {}
 
   @Get(API_ENDPOINTS.USERS.PROFILE)
@@ -153,5 +161,59 @@ export class UsersController {
       );
     }
     return this.removeProfilePhotUseCase.execute(request.user.sub);
+  }
+
+  @Post(API_ENDPOINTS.USERS.IDENTITY_VERIFICATION)
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('document', {
+      storage: memoryStorage(),
+      limits: {
+        fileSize: IDENTITY_DOCUMENT_UPLOAD_LIMITS.MAX_FILE_SIZE_BYTES,
+        files: 1,
+      },
+      fileFilter: (_request, file, callback) => {
+        if (
+          !(
+            IDENTITY_DOCUMENT_UPLOAD_LIMITS.ALLOWED_MIME_TYPES as readonly string[]
+          ).includes(file.mimetype)
+        ) {
+          callback(
+            new BadRequestException(
+              'Only JPG, PNG, and WEBP images are allowed.',
+            ),
+            false,
+          );
+          return;
+        }
+        callback(null, true);
+      },
+    }),
+  )
+  async submitIdentityVerification(
+    @Req() request: Request & { user?: AccessTokenPayload },
+    @Body() dto: SubmitIdentityVerificationDto,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<ApiResponse<UserProfileResponseDto>> {
+    if (!request.user) {
+      throw new UnauthorizedException(
+        API_MESSAGES.AUTH.AUTHENTICATION_REQUIRED,
+      );
+    }
+    if (!file) {
+      throw new BadRequestException('Please upload a document image.');
+    }
+
+    const updatedUser = await this.submitIdentityVerificationUseCase.execute(
+      request.user.sub,
+      dto,
+      file,
+    );
+
+    return {
+      success: true,
+      message: API_MESSAGES.USERS.IDENTITY_VERIFICATION_SUBMITTED,
+      data: UserProfileMapper.toResponse(updatedUser),
+    };
   }
 }

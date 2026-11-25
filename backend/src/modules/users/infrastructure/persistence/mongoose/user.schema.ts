@@ -51,9 +51,6 @@ export class IdentityVerification {
   @Prop({ type: String, default: null })
   documentKey?: string | null;
 
-  @Prop({ type: Number, min: 0, max: 100, default: undefined })
-  confidenceScore?: number;
-
   @Prop({ type: String, trim: true, maxlength: 300, default: null })
   rejectionReason?: string | null;
 

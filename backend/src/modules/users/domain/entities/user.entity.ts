@@ -17,17 +17,18 @@ export interface UserLocation {
 
 export interface IdentityVerification {
   status: IdentityVerificationStatus;
-  documentType?: IdentityDocumentType;
-  maskedDocumentNumber?: string;
-  documentHash?: string;
+  documentType?: IdentityDocumentType | null;
+  maskedDocumentNumber?: string | null;
+  documentHash?: string | null;
   documentKey?: string | null;
-  documentUrl?: string | null;
-  confidenceScore?: number;
+  expiryDate?: Date | null;
   rejectionReason?: string | null;
   consentGivenAt?: Date | null;
   submittedAt?: Date | null;
-  verifiedAt: Date | null;
+  verifiedAt?: Date | null;
+  reviewedAt?: Date | null;
 }
+
 export interface UserPreferences {
   smoking?: SmokingPreference;
   pets?: PetPreference;
