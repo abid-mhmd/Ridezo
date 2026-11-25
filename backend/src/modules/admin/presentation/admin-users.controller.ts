@@ -29,6 +29,9 @@ import {
   CHANGE_USER_ACCOUNT_STATUS_USE_CASE,
   IChangeUserAccountStatusUseCase,
 } from '../application/interfaces/change-user-account-status.use-case.interface';
+import { ReviewUserIdentityDto } from '../application/dto/review-user-identity.dto';
+import { REVIEW_USER_IDENTITY_USE_CASE } from '../application/interfaces/review-user-identity.use-case.interface';
+import { ReviewUserIdentityUseCase } from '../application/use-cases/review-user-identity.use-case';
 
 @Controller(API_ENDPOINTS.ADMIN.USERS)
 @UseGuards(JwtAuthGuard, AdminRoleGuard)
@@ -42,6 +45,9 @@ export class AdminUsersController {
 
     @Inject(CHANGE_USER_ACCOUNT_STATUS_USE_CASE)
     private readonly changeUserAccountStatusUseCase: IChangeUserAccountStatusUseCase,
+
+    @Inject(REVIEW_USER_IDENTITY_USE_CASE)
+    private readonly reviewUserIdentityUseCase: ReviewUserIdentityUseCase,
   ) {}
 
   @Get()
@@ -87,6 +93,23 @@ export class AdminUsersController {
       success: true,
       message: API_MESSAGES.ADMIN.USER_ACCOUNT_STATUS,
       data: result,
+    };
+  }
+
+  @Patch(API_ENDPOINTS.ADMIN.REVIEW_USER_IDENTITY)
+  async reviewUserIdentity(
+    @Param('userId') userId: string,
+    @Body() dto: ReviewUserIdentityDto,
+  ) {
+    const updatedUser = await this.reviewUserIdentityUseCase.execute(
+      userId,
+      dto,
+    );
+
+    return {
+      success: true,
+      message: API_MESSAGES.ADMIN.USER_IDENTITY_REVIEWED,
+      data: AdminUserMapper.toDetailsResponse(updatedUser),
     };
   }
 }

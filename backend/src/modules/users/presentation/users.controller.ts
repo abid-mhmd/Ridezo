@@ -41,7 +41,10 @@ import {
   IRemoveProfilePhotoUseCase,
   REMOVE_PROFILE_PHOTO_USE_CASE,
 } from '../application/interfaces/remove-profile-photo.use-case.interface';
-import { SUBMIT_IDENTITY_VERIFICATION_USE_CASE ,ISubmitIdentityVerificationUseCase } from '../application/interfaces/submit-identity-verification.use-case.interface';
+import {
+  SUBMIT_IDENTITY_VERIFICATION_USE_CASE,
+  ISubmitIdentityVerificationUseCase,
+} from '../application/interfaces/submit-identity-verification.use-case.interface';
 import { IDENTITY_DOCUMENT_UPLOAD_LIMITS } from '../domain/constants/identity-verification.constants';
 import { SubmitIdentityVerificationDto } from '../application/dto/submit-identity-verification.dto';
 
@@ -52,7 +55,7 @@ export class UsersController {
     private readonly getUserProfileUseCase: IGetUserProfileUseCase,
 
     @Inject(SUBMIT_IDENTITY_VERIFICATION_USE_CASE)
-    private readonly submitIdentityVerificationUseCase:ISubmitIdentityVerificationUseCase,
+    private readonly submitIdentityVerificationUseCase: ISubmitIdentityVerificationUseCase,
 
     @Inject(UPDATE_PROFILE_USE_CASE)
     private readonly updateProfileUseCase: IUpdateProfileUseCase,
@@ -62,7 +65,6 @@ export class UsersController {
 
     @Inject(REMOVE_PROFILE_PHOTO_USE_CASE)
     private readonly removeProfilePhotUseCase: IRemoveProfilePhotoUseCase,
-
   ) {}
 
   @Get(API_ENDPOINTS.USERS.PROFILE)

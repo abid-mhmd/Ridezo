@@ -22,8 +22,7 @@ export const API_MESSAGES = {
     SESSION_INVALID: 'Admin session is no longer valid.',
     USER_RETRIEVED_SUCCESS: 'Users retrieved successfully.',
     USER_ACCOUNT_STATUS: 'User account status updated successfully.',
-    USER_IDENTITY_REVIEWED:
-      'User identity verification reviewed successfully.',
+    USER_IDENTITY_REVIEWED: 'User identity verification reviewed successfully.',
     INVALID_USER_ID: 'Invalid user ID.',
     RIDES_RETRIEVED_SUCCESS: 'Rides retrieved successfully.',
     RIDE_RETRIEVED_SUCCESS: 'Ride details retrieved successfully.',

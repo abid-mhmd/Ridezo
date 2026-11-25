@@ -13,6 +13,10 @@ import type { IProfilePhotoStorage } from '../../../users/application/ports/prof
 import { Inject } from '@nestjs/common';
 import { API_MESSAGES } from '../../../../common/constants/message.constants';
 import { IGetUserDetailsUseCase } from '../interfaces/get-user-details.use-case.interface';
+import {
+  IDENTITY_DOCUMENT_STORAGE,
+  IIdentityDocumentStorage,
+} from '../../../users/application/ports/identity-document-storage';
 
 @Injectable()
 export class GetUserDetailsUseCase implements IGetUserDetailsUseCase {
@@ -22,6 +26,9 @@ export class GetUserDetailsUseCase implements IGetUserDetailsUseCase {
 
     @Inject(PROFILE_PHOTO_STORAGE)
     private readonly profilePhotoStorage: IProfilePhotoStorage,
+
+    @Inject(IDENTITY_DOCUMENT_STORAGE)
+    private readonly identityDocumentStorage: IIdentityDocumentStorage,
   ) {}
 
   async execute(userId: string) {
@@ -43,6 +50,14 @@ export class GetUserDetailsUseCase implements IGetUserDetailsUseCase {
       user.profilePhoto = await this.profilePhotoStorage.getUrl(
         user.profilePhoto,
       );
+    }
+    if (user.identityVerification?.documentKey) {
+      user.identityVerification = {
+        ...user.identityVerification,
+        documentKey: await this.identityDocumentStorage.getUrl(
+          user.identityVerification.documentKey,
+        ),
+      };
     }
 
     return user;
