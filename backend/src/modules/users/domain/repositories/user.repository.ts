@@ -51,6 +51,9 @@ export interface IUserRepository {
     userId: string,
     accountStatus: UserEntity['accountStatus'],
   ): Promise<UserEntity | null>;
-  findByIdentityDocumentHash(documentHash:string):Promise<UserEntity|null>;
-  updateIdentityVerification(userId:string,data:IdentityVerification):Promise<UserEntity|null>;
+  findByIdentityDocumentHash(documentHash: string): Promise<UserEntity | null>;
+  updateIdentityVerification(
+    userId: string,
+    data: IdentityVerification,
+  ): Promise<UserEntity | null>;
 }

@@ -21,7 +21,7 @@ export interface IdentityVerification {
   maskedDocumentNumber?: string;
   documentHash?: string;
   documentKey?: string | null;
-  documentUrl?: string | null; 
+  documentUrl?: string | null;
   confidenceScore?: number;
   rejectionReason?: string | null;
   consentGivenAt?: Date | null;
