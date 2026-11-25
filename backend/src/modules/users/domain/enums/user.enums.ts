@@ -16,6 +16,13 @@ export enum IdentityVerificationStatus {
   REJECTED = 'rejected',
 }
 
+export enum IdentityDocumentType {
+  DRIVING_LICENSE = 'driving_license',
+  AADHAAR = 'aadhaar',
+  PAN = 'pan',
+  PASSPORT = 'passport',
+}
+
 export enum SmokingPreference {
   NON_SMOKING = 'non-smoking',
   SMOKING_ALLOWED = 'smoking-allowed',

@@ -6,6 +6,7 @@ import {
   SeatingComfortPreference,
   PetPreference,
   ClimateControlPreference,
+  IdentityDocumentType,
 } from '../enums/user.enums';
 
 export interface UserLocation {
@@ -16,6 +17,15 @@ export interface UserLocation {
 
 export interface IdentityVerification {
   status: IdentityVerificationStatus;
+  documentType?: IdentityDocumentType;
+  maskedDocumentNumber?: string;
+  documentHash?: string;
+  documentKey?: string | null;
+  documentUrl?: string | null; 
+  confidenceScore?: number;
+  rejectionReason?: string | null;
+  consentGivenAt?: Date | null;
+  submittedAt?: Date | null;
   verifiedAt: Date | null;
 }
 export interface UserPreferences {

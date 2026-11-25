@@ -6,7 +6,10 @@ import {
   ListUsersQuery,
   IUserRepository,
 } from '../../../domain/repositories/user.repository';
-import type { UserEntity } from '../../../domain/entities/user.entity';
+import type {
+  IdentityVerification,
+  UserEntity,
+} from '../../../domain/entities/user.entity';
 import { User, type UserDocument } from './user.schema';
 import { UserRole } from '../../../domain/enums/user.enums';
 import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository';
@@ -226,5 +229,29 @@ export class MongooseUserRepository
       .exec();
 
     return users.map((user) => this.toEntity(user));
+  }
+
+  async findByIdentityDocumentHash(
+    documentHash: string,
+  ): Promise<UserEntity | null> {
+    const doc = await this.model
+      .findOne({ 'identityVerification.documentHash': documentHash })
+      .exec();
+    return doc ? this.toEntity(doc) : null;
+  }
+
+  async updateIdentityVerification(
+    userId: string,
+    data: IdentityVerification,
+  ): Promise<UserEntity | null> {
+    const doc = await this.model
+      .findByIdAndUpdate(
+        userId,
+        { $set: { identityVerification: data } },
+        { new: true },
+      )
+      .exec();
+
+    return doc ? this.toEntity(doc) : null;
   }
 }

@@ -8,6 +8,7 @@ import {
   SeatingComfortPreference,
   ClimateControlPreference,
   PetPreference,
+  IdentityDocumentType,
 } from '../../../domain/enums/user.enums';
 
 export type UserDocument = HydratedDocument<User> & {
@@ -37,6 +38,30 @@ export class IdentityVerification {
     default: IdentityVerificationStatus.NOT_STARTED,
   })
   status: IdentityVerificationStatus;
+
+  @Prop({ type: String, enum: IdentityDocumentType, default: undefined })
+  documentType?: IdentityDocumentType;
+
+  @Prop({ type: String, trim: true, default: undefined })
+  maskedDocumentNumber?: string;
+
+  @Prop({ type: String, default: undefined })
+  documentHash?: string;
+
+  @Prop({ type: String, default: null })
+  documentKey?: string | null;
+
+  @Prop({ type: Number, min: 0, max: 100, default: undefined })
+  confidenceScore?: number;
+
+  @Prop({ type: String, trim: true, maxlength: 300, default: null })
+  rejectionReason?: string | null;
+
+  @Prop({ type: Date, default: null })
+  consentGivenAt?: Date | null;
+
+  @Prop({ type: Date, default: null })
+  submittedAt?: Date | null;
 
   @Prop({ type: Date, default: null })
   verifiedAt: Date | null;
@@ -208,4 +233,14 @@ export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.index(
   { phone: 1 },
   { unique: true, partialFilterExpression: { phone: { $type: 'string' } } },
+);
+
+UserSchema.index(
+  { 'identityVerification.documentHash': 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      'identityVerification.documentHash': { $type: 'string' },
+    },
+  },
 );

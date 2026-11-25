@@ -1,4 +1,4 @@
-import type { UserEntity } from '../entities/user.entity';
+import type { IdentityVerification, UserEntity } from '../entities/user.entity';
 
 export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
 
@@ -51,4 +51,6 @@ export interface IUserRepository {
     userId: string,
     accountStatus: UserEntity['accountStatus'],
   ): Promise<UserEntity | null>;
+  findByIdentityDocumentHash(documentHash:string):Promise<UserEntity|null>;
+  updateIdentityVerification(userId:string,data:IdentityVerification):Promise<UserEntity|null>;
 }
