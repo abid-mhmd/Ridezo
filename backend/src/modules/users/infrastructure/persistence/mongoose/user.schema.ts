@@ -39,17 +39,20 @@ export class IdentityVerification {
   })
   status: IdentityVerificationStatus;
 
-  @Prop({ type: String, enum: IdentityDocumentType, default: undefined })
-  documentType?: IdentityDocumentType;
+  @Prop({ type: String, enum: IdentityDocumentType, default: null })
+  documentType?: IdentityDocumentType | null;
 
-  @Prop({ type: String, trim: true, default: undefined })
-  maskedDocumentNumber?: string;
+  @Prop({ type: String, trim: true, default: null })
+  maskedDocumentNumber?: string | null;
 
   @Prop({ type: String, default: undefined })
-  documentHash?: string;
+  documentHash?: string | null;
 
   @Prop({ type: String, default: null })
   documentKey?: string | null;
+
+  @Prop({ type: Date, default: null })
+  expiryDate?: Date | null;
 
   @Prop({ type: String, trim: true, maxlength: 300, default: null })
   rejectionReason?: string | null;
@@ -61,7 +64,10 @@ export class IdentityVerification {
   submittedAt?: Date | null;
 
   @Prop({ type: Date, default: null })
-  verifiedAt: Date | null;
+  verifiedAt?: Date | null;
+
+  @Prop({ type: Date, default: null })
+  reviewedAt?: Date | null;
 }
 
 export const IdentityVerificationSchema =
