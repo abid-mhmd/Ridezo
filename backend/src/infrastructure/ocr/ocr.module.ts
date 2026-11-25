@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
-import { OCR_SERVICE, TesseractOcrService } from './tesseract-ocr.service';
+import { OCR_SERVICE } from './ocr.port';
+import { TesseractOcrService } from './tesseract-ocr.service';
+
 @Module({
   providers: [
     {

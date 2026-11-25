@@ -54,6 +54,6 @@ export interface IUserRepository {
   findByIdentityDocumentHash(documentHash: string): Promise<UserEntity | null>;
   updateIdentityVerification(
     userId: string,
-    data: IdentityVerification,
+    data: Partial<UserEntity['identityVerification']>,
   ): Promise<UserEntity | null>;
 }

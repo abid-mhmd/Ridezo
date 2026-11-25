@@ -1,16 +1,14 @@
-// src/infrastructure/ocr/tesseract-ocr.service.ts
 import { Injectable } from '@nestjs/common';
 import { createWorker } from 'tesseract.js';
-
-export const OCR_SERVICE = Symbol('OCR_SERVICE');
-
-export interface IOcrService {
-  extractText(buffer: Buffer): Promise<string>;
-}
+import type { IOcrService } from './ocr.port';
 
 @Injectable()
 export class TesseractOcrService implements IOcrService {
-  async extractText(buffer: Buffer): Promise<string> {
+  async extractText(buffer: Buffer, mimeType: string): Promise<string> {
+    if (!mimeType.startsWith('image/')) {
+      return '';
+    }
+
     let worker: Awaited<ReturnType<typeof createWorker>> | undefined;
 
     try {
@@ -18,6 +16,7 @@ export class TesseractOcrService implements IOcrService {
       const {
         data: { text },
       } = await worker.recognize(buffer);
+
       return text ?? '';
     } catch {
       return '';
