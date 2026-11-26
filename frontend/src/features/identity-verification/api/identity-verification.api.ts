@@ -75,5 +75,9 @@ export async function reviewUserIdentity(
     );
   }
 
-  return (data as ApiResponse<UserVerificationData>).data;
+  const parsed = data as ApiResponse<
+    UserVerificationData & { user?: UserVerificationData }
+  >;
+
+  return parsed.data?.user ?? parsed.data;
 }

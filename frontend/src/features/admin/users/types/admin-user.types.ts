@@ -1,4 +1,4 @@
-import type { IdentityVerificationInfo } from "../../../identity-verification/types/identity-verification.types";
+import type { IdentityVerificationInfo } from '../../../identity-verification/types/identity-verification.types';
 
 export type AccountStatus = 'active' | 'suspended' | 'deactivated';
 

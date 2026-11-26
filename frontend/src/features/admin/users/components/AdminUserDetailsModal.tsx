@@ -69,6 +69,7 @@ export default function AdminUserDetailsModal({
 
   // Identity KYC review state
   const [rejectionReason, setRejectionReason] = useState('');
+  const [kycError, setKycError] = useState('');
   const [isReviewingKyc, setIsReviewingKyc] = useState(false);
 
   useEffect(() => {
@@ -81,6 +82,7 @@ export default function AdminUserDetailsModal({
         setIsLoading(true);
         setError('');
         setActionError('');
+        setKycError('');
         setConfirmAction(null);
         setRejectionReason('');
         const response = await getAdminUserDetails(accessToken, userId!);
@@ -159,12 +161,12 @@ export default function AdminUserDetailsModal({
     if (!user) return;
     const trimmedReason = rejectionReason.trim();
     if (decision === 'reject' && !trimmedReason) {
-      setActionError('Please enter a reason before rejecting verification.');
+      setKycError('Please enter a reason before rejecting verification.');
       return;
     }
 
     setIsReviewingKyc(true);
-    setActionError('');
+    setKycError('');
 
     try {
       const updated = await reviewUserIdentity(accessToken, user.id, {
@@ -195,7 +197,7 @@ export default function AdminUserDetailsModal({
       setRejectionReason('');
       onUpdated();
     } catch (err: unknown) {
-      setActionError(
+      setKycError(
         err instanceof Error
           ? err.message
           : 'Failed to review identity verification.',
@@ -559,12 +561,23 @@ export default function AdminUserDetailsModal({
                             <input
                               type="text"
                               value={rejectionReason}
-                              onChange={(e) =>
-                                setRejectionReason(e.target.value)
-                              }
+                              onChange={(e) => {
+                                setRejectionReason(e.target.value);
+                                if (kycError) setKycError('');
+                              }}
                               placeholder="Rejection reason (required to reject)"
                               className="w-full rounded-lg border border-[#263044] bg-[#111722] px-2.5 py-1.5 text-[11px] text-[#F8FAFC] outline-none focus:border-[#C37DF5]"
                             />
+
+                            {kycError && (
+                              <p
+                                role="alert"
+                                className="flex items-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/10 px-2.5 py-1.5 text-[11px] text-red-300"
+                              >
+                                <FiAlertCircle size={13} className="shrink-0" />
+                                <span>{kycError}</span>
+                              </p>
+                            )}
 
                             <div className="flex gap-2">
                               <button

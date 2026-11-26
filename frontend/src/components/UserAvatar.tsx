@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface UserAvatarProps {
   firstName?: string | null;
@@ -13,11 +13,7 @@ export default function UserAvatar({
   profilePhoto,
   size = 'small',
 }: UserAvatarProps) {
-  const [imgError, setImgError] = useState(false);
-
-  useEffect(() => {
-    setImgError(false);
-  }, [profilePhoto]);
+  const [failedPhotoUrl, setFailedPhotoUrl] = useState<string | null>(null);
 
   const sizeClasses = {
     small: 'h-9 w-9 rounded-xl text-xs',
@@ -29,13 +25,15 @@ export default function UserAvatar({
   const safeLastName = (lastName ?? '').trim();
   const fullName = `${safeFirstName} ${safeLastName}`.trim() || 'User';
 
-  if (profilePhoto && !imgError) {
+  const showPhoto = Boolean(profilePhoto && failedPhotoUrl !== profilePhoto);
+
+  if (showPhoto && profilePhoto) {
     return (
       <img
         src={profilePhoto}
         alt={fullName}
         referrerPolicy="no-referrer"
-        onError={() => setImgError(true)}
+        onError={() => setFailedPhotoUrl(profilePhoto)}
         className={`shrink-0 border border-[#263044] object-cover ${sizeClasses}`}
       />
     );

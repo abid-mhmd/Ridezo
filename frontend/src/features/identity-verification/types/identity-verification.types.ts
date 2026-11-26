@@ -1,14 +1,8 @@
 export type IdentityVerificationStatus =
-  | 'not_started'
-  | 'pending'
-  | 'verified'
-  | 'rejected';
+  'not_started' | 'pending' | 'verified' | 'rejected';
 
 export type IdentityDocumentType =
-  | 'driving_license'
-  | 'aadhaar'
-  | 'pan'
-  | 'passport';
+  'driving_license' | 'aadhaar' | 'pan' | 'passport';
 
 export interface IdentityVerificationInfo {
   status: IdentityVerificationStatus;
@@ -18,5 +12,5 @@ export interface IdentityVerificationInfo {
   rejectionReason: string | null;
   submittedAt: string | null;
   verifiedAt: string | null;
-  documentUrl?: string | null; 
+  documentUrl?: string | null;
 }

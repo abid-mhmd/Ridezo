@@ -1,4 +1,4 @@
-import type { IdentityVerificationInfo } from "../../identity-verification/types/identity-verification.types";
+import type { IdentityVerificationInfo } from '../../identity-verification/types/identity-verification.types';
 
 export interface UserPreferences {
   smoking?: 'non-smoking' | 'smoking-allowed' | 'no-preference';
