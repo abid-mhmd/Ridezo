@@ -44,6 +44,7 @@ import { GoogleAccountLinkRequiredError } from '../application/use-cases/google-
 import type { GoogleProfile } from '../application/use-cases/google-auth.use-case';
 import { API_MESSAGES } from '../../../common/constants/message.constants';
 import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants';
+import { ApiResponseHelper } from '../../../common/helpers/api-response.helper';
 import type { ApiResponse } from '../../../common/interfaces/api-responce.interface';
 import {
   CurrentUserResponseDto,
@@ -99,39 +100,39 @@ import {
 export class AuthController {
   constructor(
     @Inject(REGISTER_USER_USE_CASE)
-    private readonly registerUserUseCase: IRegisterUserUseCase,
+    private readonly _registerUserUseCase: IRegisterUserUseCase,
 
     @Inject(SEND_EMAIL_OTP_USE_CASE)
-    private readonly sendEmailOtpUseCase: ISendEmailOtpUseCase,
+    private readonly _sendEmailOtpUseCase: ISendEmailOtpUseCase,
 
     @Inject(VERIFY_EMAIL_OTP_USE_CASE)
-    private readonly verifyEmailOtpUseCase: IVerifyEmailOtpUseCase,
+    private readonly _verifyEmailOtpUseCase: IVerifyEmailOtpUseCase,
 
     @Inject(LOGIN_USER_USE_CASE)
-    private readonly loginUserUseCase: ILoginUserUseCase,
+    private readonly _loginUserUseCase: ILoginUserUseCase,
 
     @Inject(REQUEST_PASSWORD_RESET_OTP_USE_CASE)
-    private readonly requestPasswordResetOtpUseCase: IRequestPasswordResetOtpUseCase,
+    private readonly _requestPasswordResetOtpUseCase: IRequestPasswordResetOtpUseCase,
 
     @Inject(VERIFY_PASSWORD_RESET_OTP_USE_CASE)
-    private readonly verifyPasswordResetOtpUseCase: IVerifyPasswordResetOtpUseCase,
+    private readonly _verifyPasswordResetOtpUseCase: IVerifyPasswordResetOtpUseCase,
 
     @Inject(RESET_PASSWORD_USE_CASE)
-    private readonly resetPasswordUseCase: IResetPasswordUseCase,
+    private readonly _resetPasswordUseCase: IResetPasswordUseCase,
 
     @Inject(GOOGLE_AUTH_USE_CASE)
-    private readonly googleAuthUseCase: IGoogleAuthUseCase,
+    private readonly _googleAuthUseCase: IGoogleAuthUseCase,
 
     @Inject(REFRESH_ACCESS_TOKEN_USE_CASE)
-    private readonly refreshAccessTokenUseCase: IRefreshAccessTokenUseCase,
+    private readonly _refreshAccessTokenUseCase: IRefreshAccessTokenUseCase,
 
     @Inject(LOGOUT_USER_USE_CASE)
-    private readonly logoutUserUseCase: ILogoutUserUseCase,
+    private readonly _logoutUserUseCase: ILogoutUserUseCase,
 
     @Inject(TOKEN_SERVICE)
-    private readonly tokenService: ITokenService,
+    private readonly _tokenService: ITokenService,
 
-    private readonly configService: ConfigService,
+    private readonly _configService: ConfigService,
   ) {}
 
   @Post(API_ENDPOINTS.AUTH.REGISTER)
@@ -140,12 +141,10 @@ export class AuthController {
     @Body() input: RegisterUserDto,
   ): Promise<ApiResponse<RegisterResponseDto>> {
     try {
-      const user = await this.registerUserUseCase.execute(input);
+      const user = await this._registerUserUseCase.execute(input);
 
-      return {
-        success: true,
-        message: API_MESSAGES.AUTH.REGISTRATION_SUCCESS,
-        data: {
+      return ApiResponseHelper.success(
+        {
           user: {
             id: user.id,
             firstName: user.firstName,
@@ -153,7 +152,8 @@ export class AuthController {
             email: user.email,
           },
         },
-      };
+        API_MESSAGES.AUTH.REGISTRATION_SUCCESS,
+      );
     } catch (error) {
       if (error instanceof EmailAlreadyRegisteredError) {
         throw new ConflictException(error.message);
@@ -166,24 +166,18 @@ export class AuthController {
   @Post(API_ENDPOINTS.AUTH.EMAIL_OTP)
   @HttpCode(HttpStatus.OK)
   async requestEmailOtp(@Body() input: RequestEmailOtpDto) {
-    await this.sendEmailOtpUseCase.execute(input.email);
+    await this._sendEmailOtpUseCase.execute(input.email);
 
-    return {
-      success: true,
-      message: API_MESSAGES.USERS.OTP_SENT,
-    };
+    return ApiResponseHelper.success(null, API_MESSAGES.USERS.OTP_SENT);
   }
 
   @Post(API_ENDPOINTS.AUTH.VERIFY_EMAIL_OTP)
   @HttpCode(HttpStatus.OK)
   async verifyEmailOtp(@Body() input: VerifyEmailOtpDto) {
     try {
-      await this.verifyEmailOtpUseCase.execute(input.email, input.otp);
+      await this._verifyEmailOtpUseCase.execute(input.email, input.otp);
 
-      return {
-        success: true,
-        message: API_MESSAGES.AUTH.EMAIL_VERIFIED,
-      };
+      return ApiResponseHelper.success(null, API_MESSAGES.AUTH.EMAIL_VERIFIED);
     } catch (error) {
       if (error instanceof TooManyOtpAttemptsError) {
         throw new HttpException(error.message, HttpStatus.TOO_MANY_REQUESTS);
@@ -204,20 +198,18 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<ApiResponse<LoginResponseDto>> {
     try {
-      const result = await this.loginUserUseCase.execute(input);
+      const result = await this._loginUserUseCase.execute(input);
 
       response.cookie('ridezo_refresh', result.refreshToken, {
         httpOnly: true,
-        secure: this.configService.get<string>('NODE_ENV') === 'production',
+        secure: this._configService.get<string>('NODE_ENV') === 'production',
         sameSite: 'lax',
         path: '/api/auth',
         maxAge: result.refreshTtl * 1000,
       });
 
-      return {
-        success: true,
-        message: API_MESSAGES.AUTH.LOGIN_SUCCESS,
-        data: {
+      return ApiResponseHelper.success(
+        {
           accessToken: result.accessToken,
           expiresIn: result.expiresIn,
           user: {
@@ -228,7 +220,8 @@ export class AuthController {
             role: result.user.role,
           },
         },
-      };
+        API_MESSAGES.AUTH.LOGIN_SUCCESS,
+      );
     } catch (error) {
       if (error instanceof InvalidCredentialsError) {
         throw new UnauthorizedException(API_MESSAGES.AUTH.INVALID_CREDENTIALS);
@@ -255,7 +248,7 @@ export class AuthController {
     if (typeof refreshToken !== 'string' || !refreshToken) {
       response.clearCookie('ridezo_refresh', {
         httpOnly: true,
-        secure: this.configService.get<string>('NODE_ENV') === 'production',
+        secure: this._configService.get<string>('NODE_ENV') === 'production',
         sameSite: 'lax',
         path: '/api/auth',
       });
@@ -264,33 +257,33 @@ export class AuthController {
     }
 
     try {
-      const result = await this.refreshAccessTokenUseCase.execute(refreshToken);
+      const result =
+        await this._refreshAccessTokenUseCase.execute(refreshToken);
 
-      const refreshTtl = this.configService.getOrThrow<number>(
+      const refreshTtl = this._configService.getOrThrow<number>(
         'JWT_REFRESH_TTL_SECONDS',
       );
 
       response.cookie('ridezo_refresh', result.refreshToken, {
         httpOnly: true,
-        secure: this.configService.get<string>('NODE_ENV') === 'production',
+        secure: this._configService.get<string>('NODE_ENV') === 'production',
         sameSite: 'lax',
         path: '/api/auth',
         maxAge: refreshTtl * 1000,
       });
 
-      return {
-        success: true,
-        message: API_MESSAGES.AUTH.REFRESH_SUCCESS,
-        data: {
+      return ApiResponseHelper.success(
+        {
           accessToken: result.accessToken,
-          expiresIn: this.tokenService.getAccessTokenTtl(),
+          expiresIn: this._tokenService.getAccessTokenTtl(),
         },
-      };
+        API_MESSAGES.AUTH.REFRESH_SUCCESS,
+      );
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         response.clearCookie('ridezo_refresh', {
           httpOnly: true,
-          secure: this.configService.get<string>('NODE_ENV') === 'production',
+          secure: this._configService.get<string>('NODE_ENV') === 'production',
           sameSite: 'lax',
           path: '/api/auth',
         });
@@ -313,17 +306,16 @@ export class AuthController {
       );
     }
 
-    return {
-      success: true,
-      message: API_MESSAGES.USERS.USER_RETRIEVED_SUCCESS,
-      data: {
+    return ApiResponseHelper.success(
+      {
         user: {
           id: user.sub,
           email: user.email,
           role: user.role,
         },
       },
-    };
+      API_MESSAGES.USERS.USER_RETRIEVED_SUCCESS,
+    );
   }
 
   @Post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD)
@@ -331,31 +323,27 @@ export class AuthController {
   async forgotPassword(
     @Body() input: ForgotPasswordDto,
   ): Promise<ApiResponse<ForgotPasswordResponseDto>> {
-    await this.requestPasswordResetOtpUseCase.execute(input.email);
+    await this._requestPasswordResetOtpUseCase.execute(input.email);
 
-    return {
-      success: true,
-      message: 'If an account exists, a password reset code will be sent.',
-      data: {
-        otpSent: true,
-      },
-    };
+    return ApiResponseHelper.success(
+      { otpSent: true },
+      'If an account exists, a password reset code will be sent.',
+    );
   }
 
   @Post(API_ENDPOINTS.AUTH.VERIFY_RESET_OTP)
   @HttpCode(HttpStatus.OK)
   async verifyPasswordResetOtp(@Body() input: VerifyEmailOtpDto) {
     try {
-      const result = await this.verifyPasswordResetOtpUseCase.execute(
+      const result = await this._verifyPasswordResetOtpUseCase.execute(
         input.email,
         input.otp,
       );
 
-      return {
-        success: true,
-        message: API_MESSAGES.AUTH.PASSWORD_RESET_OTP_SUCCESS,
-        data: result,
-      };
+      return ApiResponseHelper.success(
+        result,
+        API_MESSAGES.AUTH.PASSWORD_RESET_OTP_SUCCESS,
+      );
     } catch (error) {
       if (
         error instanceof InvalidPasswordResetOtpError ||
@@ -369,17 +357,19 @@ export class AuthController {
 
   @Post(API_ENDPOINTS.AUTH.RESET_PASSWORD)
   @HttpCode(HttpStatus.OK)
-  async resetPassword(@Body() input: ResetPasswordDto): Promise<ApiResponse> {
+  async resetPassword(
+    @Body() input: ResetPasswordDto,
+  ): Promise<ApiResponse<null>> {
     try {
-      await this.resetPasswordUseCase.execute(
+      await this._resetPasswordUseCase.execute(
         input.resetToken,
         input.newPassword,
       );
 
-      return {
-        success: true,
-        message: API_MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
-      };
+      return ApiResponseHelper.success(
+        null,
+        API_MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
+      );
     } catch (error) {
       if (error instanceof InvalidPasswordResetTokenError) {
         throw new BadRequestException(API_MESSAGES.AUTH.SESSION_EXPIRED);
@@ -411,23 +401,24 @@ export class AuthController {
     }
 
     try {
-      const result = await this.googleAuthUseCase.execute(profile);
+      const result = await this._googleAuthUseCase.execute(profile);
 
       response.cookie('ridezo_refresh', result.refreshToken, {
         httpOnly: true,
-        secure: this.configService.get<string>('NODE_ENV') === 'production',
+        secure: this._configService.get<string>('NODE_ENV') === 'production',
         sameSite: 'lax',
         path: '/api/auth',
         maxAge: result.refreshTtl * 1000,
       });
 
-      const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
+      const frontendUrl =
+        this._configService.getOrThrow<string>('FRONTEND_URL');
 
       return response.redirect(`${frontendUrl}/auth/google/callback`);
     } catch (error) {
       if (error instanceof GoogleAccountLinkRequiredError) {
         return response.redirect(
-          `${this.configService.getOrThrow<string>('FRONTEND_URL')}/login?error=google-account-link-required`,
+          `${this._configService.getOrThrow<string>('FRONTEND_URL')}/login?error=google-account-link-required`,
         );
       }
 
@@ -440,23 +431,20 @@ export class AuthController {
   async logout(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<ApiResponse> {
+  ): Promise<ApiResponse<null>> {
     const refreshToken = request.cookies?.ridezo_refresh;
 
-    await this.logoutUserUseCase.execute(
+    await this._logoutUserUseCase.execute(
       typeof refreshToken === 'string' ? refreshToken : undefined,
     );
 
     response.clearCookie('ridezo_refresh', {
       httpOnly: true,
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      secure: this._configService.get<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
       path: '/api/auth',
     });
 
-    return {
-      success: true,
-      message: API_MESSAGES.AUTH.LOGOUT_SUCCESS,
-    };
+    return ApiResponseHelper.success(null, API_MESSAGES.AUTH.LOGOUT_SUCCESS);
   }
 }

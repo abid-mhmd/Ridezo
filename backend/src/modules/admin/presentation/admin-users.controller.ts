@@ -14,6 +14,7 @@ import { AdminUserListQueryDto } from '../application/dto/admin-user-list-query.
 import { AccountStatus } from '../../users/domain/enums/user.enums';
 import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants';
 import { API_MESSAGES } from '../../../common/constants/message.constants';
+import { ApiResponseHelper } from '../../../common/helpers/api-response.helper';
 import type { ApiResponse } from '../../../common/interfaces/api-responce.interface';
 import { AdminUserMapper } from './mappers/admin-user.mapper';
 import type { AdminUserListItem } from './dto/admin-user-response.dto';
@@ -30,53 +31,53 @@ import {
   IChangeUserAccountStatusUseCase,
 } from '../application/interfaces/change-user-account-status.use-case.interface';
 import { ReviewUserIdentityDto } from '../application/dto/review-user-identity.dto';
-import { REVIEW_USER_IDENTITY_USE_CASE } from '../application/interfaces/review-user-identity.use-case.interface';
-import { ReviewUserIdentityUseCase } from '../application/use-cases/review-user-identity.use-case';
+import {
+  IReviewUserIdentityUseCase,
+  REVIEW_USER_IDENTITY_USE_CASE,
+} from '../application/interfaces/review-user-identity.use-case.interface';
 
 @Controller(API_ENDPOINTS.ADMIN.USERS)
 @UseGuards(JwtAuthGuard, AdminRoleGuard)
 export class AdminUsersController {
   constructor(
     @Inject(LIST_USERS_USE_CASE)
-    private readonly listUsersUseCase: IListUsersUseCase,
+    private readonly _listUsersUseCase: IListUsersUseCase,
 
     @Inject(GET_USER_DETAILS_USE_CASE)
-    private readonly getUserDetailsUseCase: IGetUserDetailsUseCase,
+    private readonly _getUserDetailsUseCase: IGetUserDetailsUseCase,
 
     @Inject(CHANGE_USER_ACCOUNT_STATUS_USE_CASE)
-    private readonly changeUserAccountStatusUseCase: IChangeUserAccountStatusUseCase,
+    private readonly _changeUserAccountStatusUseCase: IChangeUserAccountStatusUseCase,
 
     @Inject(REVIEW_USER_IDENTITY_USE_CASE)
-    private readonly reviewUserIdentityUseCase: ReviewUserIdentityUseCase,
+    private readonly _reviewUserIdentityUseCase: IReviewUserIdentityUseCase,
   ) {}
 
   @Get()
   async listUsers(
     @Query() query: AdminUserListQueryDto,
   ): Promise<ApiResponse<AdminUserListItem[]>> {
-    const result = await this.listUsersUseCase.execute({
+    const result = await this._listUsersUseCase.execute({
       page: query.page,
       limit: query.limit,
       search: query.search,
     });
 
-    return {
-      success: true,
-      message: API_MESSAGES.ADMIN.USER_RETRIEVED_SUCCESS,
-      data: AdminUserMapper.toListResponse(result.users),
-      meta: result.pagination,
-    };
+    return ApiResponseHelper.paginated(
+      AdminUserMapper.toListResponse(result.users),
+      result.pagination,
+      API_MESSAGES.ADMIN.USER_RETRIEVED_SUCCESS,
+    );
   }
 
   @Get(API_ENDPOINTS.ADMIN.USER_BY_ID)
   async getUserDetails(@Param('userId') userId: string) {
-    const user = await this.getUserDetailsUseCase.execute(userId);
+    const user = await this._getUserDetailsUseCase.execute(userId);
 
-    return {
-      success: true,
-      message: API_MESSAGES.ADMIN.USER_RETRIEVED_SUCCESS,
-      data: AdminUserMapper.toDetailsResponse(user),
-    };
+    return ApiResponseHelper.success(
+      AdminUserMapper.toDetailsResponse(user),
+      API_MESSAGES.ADMIN.USER_RETRIEVED_SUCCESS,
+    );
   }
 
   @Patch(API_ENDPOINTS.ADMIN.UPDATE_USER_STATUS)
@@ -84,16 +85,15 @@ export class AdminUsersController {
     @Param('userId') userId: string,
     @Body() body: { status: AccountStatus },
   ) {
-    const result = await this.changeUserAccountStatusUseCase.execute(
+    const result = await this._changeUserAccountStatusUseCase.execute(
       userId,
       body.status,
     );
 
-    return {
-      success: true,
-      message: API_MESSAGES.ADMIN.USER_ACCOUNT_STATUS,
-      data: result,
-    };
+    return ApiResponseHelper.success(
+      result,
+      API_MESSAGES.ADMIN.USER_ACCOUNT_STATUS,
+    );
   }
 
   @Patch(API_ENDPOINTS.ADMIN.REVIEW_USER_IDENTITY)
@@ -101,15 +101,14 @@ export class AdminUsersController {
     @Param('userId') userId: string,
     @Body() dto: ReviewUserIdentityDto,
   ) {
-    const updatedUser = await this.reviewUserIdentityUseCase.execute(
+    const updatedUser = await this._reviewUserIdentityUseCase.execute(
       userId,
       dto,
     );
 
-    return {
-      success: true,
-      message: API_MESSAGES.ADMIN.USER_IDENTITY_REVIEWED,
-      data: AdminUserMapper.toDetailsResponse(updatedUser),
-    };
+    return ApiResponseHelper.success(
+      AdminUserMapper.toDetailsResponse(updatedUser),
+      API_MESSAGES.ADMIN.USER_IDENTITY_REVIEWED,
+    );
   }
 }

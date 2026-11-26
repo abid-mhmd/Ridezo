@@ -22,6 +22,17 @@ import { getDriverBookingRequests } from '../../bookings/api/booking.api';
 import type { Ride } from '../types/ride.types';
 import type { Booking } from '../../bookings/types/booking-types';
 
+function extractBookings(payload: unknown): Booking[] {
+  if (Array.isArray(payload)) return payload as Booking[];
+  if (typeof payload === 'object' && payload !== null) {
+    const record = payload as Record<string, unknown>;
+    if (Array.isArray(record.bookings)) return record.bookings as Booking[];
+    if (Array.isArray(record.requests)) return record.requests as Booking[];
+    if (Array.isArray(record.data)) return record.data as Booking[];
+  }
+  return [];
+}
+
 function formatDepartureTime(value: string): string {
   return new Date(value).toLocaleString('en-IN', {
     dateStyle: 'full',
@@ -84,18 +95,27 @@ export default function DriverRideDetailsPage() {
         setIsLoading(true);
         setError('');
 
-        const [rideResponse, requestsResponse] = await Promise.all([
+        const [rideResult, requestsResult] = await Promise.allSettled([
           getRideDetails(rideId),
           getDriverBookingRequests(1, 50),
         ]);
 
         if (!isMounted) return;
 
-        setRide(rideResponse);
+        if (rideResult.status === 'rejected') {
+          throw rideResult.reason instanceof Error
+            ? rideResult.reason
+            : new Error('Unable to load ride details.');
+        }
 
-        const rideRequests = requestsResponse.bookings.filter(
-          (b) => b.rideId === rideId,
-        );
+        setRide(rideResult.value);
+
+        const allRequests =
+          requestsResult.status === 'fulfilled'
+            ? extractBookings(requestsResult.value)
+            : [];
+        const rideRequests = allRequests.filter((b) => b.rideId === rideId);
+
         setBookedPassengers(
           rideRequests.filter((b) => b.status === 'accepted'),
         );
@@ -181,7 +201,9 @@ export default function DriverRideDetailsPage() {
 
   const routePoints = [
     { ...ride.origin, type: 'origin' },
-    ...ride.stops.map((stop) => ({ ...stop, type: 'stop' })),
+    ...(Array.isArray(ride.stops)
+      ? ride.stops.map((stop) => ({ ...stop, type: 'stop' }))
+      : []),
     { ...ride.destination, type: 'destination' },
   ];
 
@@ -475,15 +497,15 @@ export default function DriverRideDetailsPage() {
 
             <div className="grid grid-cols-2 gap-2.5">
               {[
-                { label: 'Smoking', value: ride.preferences.smoking },
-                { label: 'Pets', value: ride.preferences.pets },
+                { label: 'Smoking', value: ride.preferences?.smoking },
+                { label: 'Pets', value: ride.preferences?.pets },
                 {
                   label: 'Seating Comfort',
-                  value: ride.preferences.seatingComfort,
+                  value: ride.preferences?.seatingComfort,
                 },
                 {
                   label: 'Climate Control',
-                  value: ride.preferences.climateControl,
+                  value: ride.preferences?.climateControl,
                 },
               ].map((pref) => (
                 <div

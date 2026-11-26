@@ -29,6 +29,17 @@ import Pagination from '../../../components/layout/Pagination';
 type TimeFilter = 'upcoming' | 'past' | 'all';
 type RoleFilter = 'all' | 'riding' | 'driving';
 
+function extractArray<T>(value: unknown, keys: string[]): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (typeof value === 'object' && value !== null) {
+    for (const key of keys) {
+      const candidate = (value as Record<string, unknown>)[key];
+      if (Array.isArray(candidate)) return candidate as T[];
+    }
+  }
+  return [];
+}
+
 export default function MyRidesPage() {
   const navigate = useNavigate();
 
@@ -70,8 +81,8 @@ export default function MyRidesPage() {
         setIsLoading(true);
         setError('');
 
-        const [rideResponse, bookingResponse, requestResponse] =
-          await Promise.all([
+        const [rideResult, bookingResult, requestResult] =
+          await Promise.allSettled([
             getMyRides(page, limit),
             getMyBookings(page, limit),
             getDriverBookingRequests(1, 50),
@@ -79,11 +90,43 @@ export default function MyRidesPage() {
 
         if (!isMounted) return;
 
-        setRides(rideResponse.rides);
-        setMyBookings(bookingResponse.bookings);
-        setReceivedRequests(requestResponse.bookings);
+        if (
+          rideResult.status === 'rejected' &&
+          bookingResult.status === 'rejected'
+        ) {
+          const reason = rideResult.reason ?? bookingResult.reason;
+          throw reason instanceof Error
+            ? reason
+            : new Error('Unable to load your rides.');
+        }
+
+        const ridePayload =
+          rideResult.status === 'fulfilled' ? rideResult.value : null;
+        const bookingPayload =
+          bookingResult.status === 'fulfilled' ? bookingResult.value : null;
+        const requestPayload =
+          requestResult.status === 'fulfilled' ? requestResult.value : null;
+
+        const nextRides = extractArray<Ride>(ridePayload, ['rides', 'data']);
+        const nextBookings = extractArray<Booking>(bookingPayload, [
+          'bookings',
+          'data',
+        ]);
+        const nextRequests = extractArray<Booking>(requestPayload, [
+          'bookings',
+          'requests',
+          'data',
+        ]);
+
+        setRides(nextRides);
+        setMyBookings(nextBookings);
+        setReceivedRequests(nextRequests);
         setTotalPages(
-          Math.max(1, rideResponse.totalPages, bookingResponse.totalPages),
+          Math.max(
+            1,
+            Number(ridePayload?.totalPages) || 1,
+            Number(bookingPayload?.totalPages) || 1,
+          ),
         );
       } catch (err) {
         if (isMounted) {
@@ -147,7 +190,12 @@ export default function MyRidesPage() {
     const grouped: Record<string, { pending: Booking[]; accepted: Booking[] }> =
       {};
 
+    if (!Array.isArray(receivedRequests)) {
+      return grouped;
+    }
+
     for (const booking of receivedRequests) {
+      if (!booking?.rideId) continue;
       if (!grouped[booking.rideId]) {
         grouped[booking.rideId] = { pending: [], accepted: [] };
       }
@@ -174,7 +222,7 @@ export default function MyRidesPage() {
 
       if (normalizedQuery) {
         const text =
-          `${ride.origin.name} ${ride.destination.name}`.toLowerCase();
+          `${ride.origin?.name ?? ''} ${ride.destination?.name ?? ''}`.toLowerCase();
         if (!text.includes(normalizedQuery)) return false;
       }
 
@@ -196,7 +244,7 @@ export default function MyRidesPage() {
 
       if (normalizedQuery) {
         const text =
-          `${booking.rideSnapshot.origin.name} ${booking.rideSnapshot.destination.name}`.toLowerCase();
+          `${booking.rideSnapshot?.origin?.name ?? ''} ${booking.rideSnapshot?.destination?.name ?? ''}`.toLowerCase();
         if (!text.includes(normalizedQuery)) return false;
       }
 

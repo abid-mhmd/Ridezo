@@ -11,16 +11,15 @@ import {
   UseGuards,
   UnauthorizedException,
   NotFoundException,
+  ForbiddenException,
   BadRequestException,
-  // ForbiddenException,
   ConflictException,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard';
 import type { AccessTokenPayload } from '../../auth/presentation/guards/jwt-auth.guard';
 import type { ApiResponse } from '../../../common/interfaces/api-responce.interface';
+import { ApiResponseHelper } from '../../../common/helpers/api-response.helper';
 import { API_MESSAGES } from '../../../common/constants/message.constants';
 import { RIDE_ENDPOINTS } from './constants/ride-endpoints.constants';
 import { RIDE_MESSAGES } from './constants/ride-messages.constats';
@@ -51,11 +50,11 @@ import {
 } from '../application/interfaces/cancel-ride.use-case';
 import {
   DriverNotFoundError,
-  //   DriverAccountInactiveError,
-  //   DriverIdentityNotVerifiedError,
+  DriverAccountInactiveError,
+  DriverIdentityNotVerifiedError,
   VehicleNotFoundError,
-  //   VehicleInactiveError,
-  //   VehicleNotApprovedError,
+  VehicleInactiveError,
+  VehicleNotApprovedError,
   InvalidPassengerSeatCountError,
   InvalidDepartureTimeError as CreateInvalidDepartureTimeError,
   InvalidRideLocationsError as CreateInvalidRideLocationsError,
@@ -83,22 +82,22 @@ import { InvalidRideSearchError } from '../application/use-cases/search-rides.us
 export class RidesController {
   constructor(
     @Inject(CREATE_RIDE_USE_CASE)
-    private readonly createRideUseCase: ICreateRideUseCase,
+    private readonly _createRideUseCase: ICreateRideUseCase,
 
     @Inject(GET_MY_RIDES_USE_CASE)
-    private readonly getMyRidesUseCase: IGetMyRidesUseCase,
+    private readonly _getMyRidesUseCase: IGetMyRidesUseCase,
 
     @Inject(GET_RIDE_DETAILS_USE_CASE)
-    private readonly getRideDetailsUseCase: IGetRideDetailsUseCase,
+    private readonly _getRideDetailsUseCase: IGetRideDetailsUseCase,
 
     @Inject(UPDATE_RIDE_USE_CASE)
-    private readonly updateRideUseCase: IUpdateRideUseCase,
+    private readonly _updateRideUseCase: IUpdateRideUseCase,
 
     @Inject(CANCEL_RIDE_USE_CASE)
-    private readonly cancelRideUseCase: ICancelRideUseCase,
+    private readonly _cancelRideUseCase: ICancelRideUseCase,
 
     @Inject(SEARCH_RIDES_USE_CASE)
-    private readonly searchRidesUseCase: ISearchRidesUseCase,
+    private readonly _searchRidesUseCase: ISearchRidesUseCase,
   ) {}
 
   @Post(RIDE_ENDPOINTS.ROOT)
@@ -113,15 +112,14 @@ export class RidesController {
     }
 
     try {
-      const ride = await this.createRideUseCase.execute(request.user.sub, dto);
+      const ride = await this._createRideUseCase.execute(request.user.sub, dto);
 
-      return {
-        success: true,
-        message: RIDE_MESSAGES.CREATED,
-        data: RideMapper.toResponse(ride),
-      };
+      return ApiResponseHelper.success(
+        RideMapper.toResponse(ride),
+        RIDE_MESSAGES.CREATED,
+      );
     } catch (error) {
-      this.handleCreateRideError(error);
+      this._handleCreateRideError(error);
       throw error;
     }
   }
@@ -139,22 +137,21 @@ export class RidesController {
       totalPages: number;
     }>
   > {
-    const result = await this.getMyRidesUseCase.execute(request.user.sub, {
+    const result = await this._getMyRidesUseCase.execute(request.user.sub, {
       page: query.page,
       limit: query.limit,
     });
 
-    return {
-      success: true,
-      message: RIDE_MESSAGES.LIST_RETRIEVED,
-      data: {
+    return ApiResponseHelper.success(
+      {
         rides: RideMapper.toResponseList(result.rides),
         total: result.total,
         page: query.page,
         limit: query.limit,
         totalPages: Math.ceil(result.total / query.limit),
       },
-    };
+      RIDE_MESSAGES.LIST_RETRIEVED,
+    );
   }
 
   @Get(RIDE_ENDPOINTS.SEARCH)
@@ -171,22 +168,21 @@ export class RidesController {
     }>
   > {
     try {
-      const result = await this.searchRidesUseCase.execute(
+      const result = await this._searchRidesUseCase.execute(
         request.user.sub,
         query,
       );
 
-      return {
-        success: true,
-        message: RIDE_MESSAGES.LIST_RETRIEVED,
-        data: {
+      return ApiResponseHelper.success(
+        {
           rides: RideMapper.toResponseList(result.rides),
           total: result.total,
           page: query.page,
           limit: query.limit,
           totalPages: Math.ceil(result.total / query.limit),
         },
-      };
+        RIDE_MESSAGES.LIST_RETRIEVED,
+      );
     } catch (error) {
       if (error instanceof InvalidRideSearchError) {
         throw new BadRequestException(error.message);
@@ -201,13 +197,12 @@ export class RidesController {
     @Param('rideId') rideId: string,
   ): Promise<ApiResponse<RideResponseDto>> {
     try {
-      const ride = await this.getRideDetailsUseCase.execute(rideId);
+      const ride = await this._getRideDetailsUseCase.execute(rideId);
 
-      return {
-        success: true,
-        message: RIDE_MESSAGES.RETRIEVED,
-        data: RideMapper.toResponse(ride),
-      };
+      return ApiResponseHelper.success(
+        RideMapper.toResponse(ride),
+        RIDE_MESSAGES.RETRIEVED,
+      );
     } catch (error) {
       if (error instanceof GetRideNotFoundError) {
         throw new NotFoundException(error.message);
@@ -225,17 +220,16 @@ export class RidesController {
     @Body() dto: UpdateRideDto,
   ): Promise<ApiResponse<RideResponseDto>> {
     try {
-      const ride = await this.updateRideUseCase.execute(
+      const ride = await this._updateRideUseCase.execute(
         request.user.sub,
         rideId,
         dto,
       );
 
-      return {
-        success: true,
-        message: RIDE_MESSAGES.UPDATED,
-        data: RideMapper.toResponse(ride),
-      };
+      return ApiResponseHelper.success(
+        RideMapper.toResponse(ride),
+        RIDE_MESSAGES.UPDATED,
+      );
     } catch (error) {
       if (error instanceof UpdateRideNotFoundError) {
         throw new NotFoundException(error.message);
@@ -258,18 +252,14 @@ export class RidesController {
 
   // Cancel ride
   @Patch(RIDE_ENDPOINTS.CANCEL)
-  @HttpCode(HttpStatus.OK)
   async cancelRide(
     @Param('rideId') rideId: string,
     @Req() request: Request & { user: AccessTokenPayload },
-  ): Promise<ApiResponse<undefined>> {
+  ): Promise<ApiResponse<null>> {
     try {
-      await this.cancelRideUseCase.execute(request.user.sub, rideId);
+      await this._cancelRideUseCase.execute(request.user.sub, rideId);
 
-      return {
-        success: true,
-        message: RIDE_MESSAGES.CANCELLED,
-      };
+      return ApiResponseHelper.success(null, RIDE_MESSAGES.CANCELLED);
     } catch (error) {
       if (error instanceof RideNotFoundOrNotOwnedError) {
         throw new NotFoundException(error.message);
@@ -283,7 +273,7 @@ export class RidesController {
     }
   }
 
-  private handleCreateRideError(error: unknown): void {
+  private _handleCreateRideError(error: unknown): void {
     if (error instanceof DriverNotFoundError) {
       throw new NotFoundException(error.message);
     }
@@ -292,14 +282,14 @@ export class RidesController {
       throw new NotFoundException(error.message);
     }
 
-    // if (
-    //   error instanceof DriverAccountInactiveError ||
-    //   error instanceof DriverIdentityNotVerifiedError ||
-    //   error instanceof VehicleInactiveError ||
-    //   error instanceof VehicleNotApprovedError
-    // ) {
-    //   throw new ForbiddenException(error.message);
-    // }
+    if (
+      error instanceof DriverAccountInactiveError ||
+      error instanceof DriverIdentityNotVerifiedError ||
+      error instanceof VehicleInactiveError ||
+      error instanceof VehicleNotApprovedError
+    ) {
+      throw new ForbiddenException(error.message);
+    }
 
     if (
       error instanceof InvalidPassengerSeatCountError ||

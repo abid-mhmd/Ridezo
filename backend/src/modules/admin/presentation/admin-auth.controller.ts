@@ -16,6 +16,7 @@ import { REFRESH_TOKEN_STORAGE } from '../../auth/application/ports/refresh-toke
 import type { IRefreshTokenStorage } from '../../auth/application/ports/refresh-token-storage';
 import { API_MESSAGES } from '../../../common/constants/message.constants';
 import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants';
+import { ApiResponseHelper } from '../../../common/helpers/api-response.helper';
 import {
   ADMIN_LOGIN_USE_CASE,
   IAdminLoginUseCase,
@@ -33,18 +34,18 @@ import {
 export class AdminAuthController {
   constructor(
     @Inject(ADMIN_LOGIN_USE_CASE)
-    private readonly adminLoginUseCase: IAdminLoginUseCase,
+    private readonly _adminLoginUseCase: IAdminLoginUseCase,
 
     @Inject(REFRESH_ADMIN_TOKEN_USE_CASE)
-    private readonly refreshAdminTokenUseCase: IRefreshAdminTokenUseCase,
+    private readonly _refreshAdminTokenUseCase: IRefreshAdminTokenUseCase,
 
-    private readonly configService: ConfigService,
+    private readonly _configService: ConfigService,
 
     @Inject(ADMIN_LOGOUT_USE_CASE)
-    private readonly adminLogoutUseCase: IAdminLogoutUseCase,
+    private readonly _adminLogoutUseCase: IAdminLogoutUseCase,
 
     @Inject(REFRESH_TOKEN_STORAGE)
-    private readonly refreshTokenStorage: IRefreshTokenStorage,
+    private readonly _refreshTokenStorage: IRefreshTokenStorage,
   ) {}
 
   @Post(API_ENDPOINTS.ADMIN.LOGIN)
@@ -53,20 +54,18 @@ export class AdminAuthController {
     @Body() input: AdminLoginDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const result = await this.adminLoginUseCase.execute(input);
+    const result = await this._adminLoginUseCase.execute(input);
 
     response.cookie('ridezo_admin_refresh', result.refreshToken, {
       httpOnly: true,
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      secure: this._configService.get<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
       path: '/api/admin',
       maxAge: result.refreshTtl * 1000,
     });
 
-    return {
-      success: true,
-      message: API_MESSAGES.ADMIN.LOGIN_SUCCESS,
-      data: {
+    return ApiResponseHelper.success(
+      {
         accessToken: result.accessToken,
         expiresIn: result.expiresIn,
         user: {
@@ -77,7 +76,8 @@ export class AdminAuthController {
           role: result.user.role,
         },
       },
-    };
+      API_MESSAGES.ADMIN.LOGIN_SUCCESS,
+    );
   }
 
   @Post(API_ENDPOINTS.ADMIN.REFRESH)
@@ -91,7 +91,7 @@ export class AdminAuthController {
     const clearAdminCookie = () => {
       response.clearCookie('ridezo_admin_refresh', {
         httpOnly: true,
-        secure: this.configService.get<string>('NODE_ENV') === 'production',
+        secure: this._configService.get<string>('NODE_ENV') === 'production',
         sameSite: 'lax',
         path: '/api/admin',
       });
@@ -104,24 +104,23 @@ export class AdminAuthController {
     }
 
     try {
-      const result = await this.refreshAdminTokenUseCase.execute(refreshToken);
+      const result = await this._refreshAdminTokenUseCase.execute(refreshToken);
 
       response.cookie('ridezo_admin_refresh', result.refreshToken, {
         httpOnly: true,
-        secure: this.configService.get<string>('NODE_ENV') === 'production',
+        secure: this._configService.get<string>('NODE_ENV') === 'production',
         sameSite: 'lax',
         path: '/api/admin',
         maxAge: result.expiresIn * 1000,
       });
 
-      return {
-        success: true,
-        message: API_MESSAGES.ADMIN.LOGIN_SUCCESS,
-        data: {
+      return ApiResponseHelper.success(
+        {
           accessToken: result.accessToken,
           expiresIn: result.expiresIn,
         },
-      };
+        API_MESSAGES.ADMIN.LOGIN_SUCCESS,
+      );
     } catch (error) {
       clearAdminCookie();
       throw error;
@@ -136,20 +135,17 @@ export class AdminAuthController {
   ) {
     const refreshToken = request.cookies?.ridezo_admin_refresh;
 
-    await this.adminLogoutUseCase.execute(
+    await this._adminLogoutUseCase.execute(
       typeof refreshToken === 'string' ? refreshToken : undefined,
     );
 
     response.clearCookie('ridezo_admin_refresh', {
       httpOnly: true,
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      secure: this._configService.get<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
       path: '/api/admin',
     });
 
-    return {
-      success: true,
-      message: API_MESSAGES.ADMIN.LOGOUT_SUCCESS,
-    };
+    return ApiResponseHelper.success(null, API_MESSAGES.ADMIN.LOGOUT_SUCCESS);
   }
 }

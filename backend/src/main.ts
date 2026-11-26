@@ -3,11 +3,13 @@ import { AppModule } from './app.module';
 import { Logger } from 'nestjs-pino';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import { GlobalExceptionFilter } from './common/filters/globel-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   app.useLogger(app.get(Logger));
 

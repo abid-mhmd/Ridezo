@@ -12,6 +12,7 @@ import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard';
 import { AdminRoleGuard } from './guards/admin-role.guard';
 import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants';
 import { API_MESSAGES } from '../../../common/constants/message.constants';
+import { ApiResponseHelper } from '../../../common/helpers/api-response.helper';
 import type { ApiResponse } from '../../../common/interfaces/api-responce.interface';
 import { AdminVehicleListQueryDto } from '../application/dto/admin-vehicle-query.dto';
 import { ReviewVehicleDocumentDto } from '../application/dto/review-vehicle-document.dto';
@@ -44,43 +45,41 @@ import type {
 export class AdminVehiclesController {
   constructor(
     @Inject(LIST_ADMIN_VEHICLES_USE_CASE)
-    private readonly listAdminVehiclesUseCase: IListAdminVehiclesUseCase,
+    private readonly _listAdminVehiclesUseCase: IListAdminVehiclesUseCase,
 
     @Inject(GET_ADMIN_VEHICLE_DETAILS_USE_CASE)
-    private readonly getAdminVehicleDetailsUseCase: IGetAdminVehicleDetailsUseCase,
+    private readonly _getAdminVehicleDetailsUseCase: IGetAdminVehicleDetailsUseCase,
 
     @Inject(REVIEW_ADMIN_VEHICLE_DOCUMENT_USE_CASE)
-    private readonly reviewAdminVehicleDocumentUseCase: IReviewAdminVehicleDocumentUseCase,
+    private readonly _reviewAdminVehicleDocumentUseCase: IReviewAdminVehicleDocumentUseCase,
 
     @Inject(UPDATE_ADMIN_VEHICLE_STATUS_USE_CASE)
-    private readonly updateAdminVehicleStatusUseCase: IUpdateAdminVehicleStatusUseCase,
+    private readonly _updateAdminVehicleStatusUseCase: IUpdateAdminVehicleStatusUseCase,
   ) {}
 
   @Get()
   async listVehicles(
     @Query() query: AdminVehicleListQueryDto,
   ): Promise<ApiResponse<AdminVehicleListItemDto[]>> {
-    const result = await this.listAdminVehiclesUseCase.execute(query);
+    const result = await this._listAdminVehiclesUseCase.execute(query);
 
-    return {
-      success: true,
-      message: API_MESSAGES.ADMIN.VEHICLES_RETRIEVED_SUCCESS,
-      data: AdminVehicleMapper.toListResponse(result.vehicles),
-      meta: result.pagination,
-    };
+    return ApiResponseHelper.paginated(
+      AdminVehicleMapper.toListResponse(result.vehicles),
+      result.pagination,
+      API_MESSAGES.ADMIN.VEHICLES_RETRIEVED_SUCCESS,
+    );
   }
 
   @Get(API_ENDPOINTS.ADMIN.VEHICLE_BY_ID)
   async getVehicleDetails(
     @Param('vehicleId') vehicleId: string,
   ): Promise<ApiResponse<AdminVehicleDetailsDto>> {
-    const result = await this.getAdminVehicleDetailsUseCase.execute(vehicleId);
+    const result = await this._getAdminVehicleDetailsUseCase.execute(vehicleId);
 
-    return {
-      success: true,
-      message: API_MESSAGES.ADMIN.VEHICLE_RETRIEVED_SUCCESS,
-      data: AdminVehicleMapper.toDetailsResponse(result),
-    };
+    return ApiResponseHelper.success(
+      AdminVehicleMapper.toDetailsResponse(result),
+      API_MESSAGES.ADMIN.VEHICLE_RETRIEVED_SUCCESS,
+    );
   }
 
   @Patch(API_ENDPOINTS.ADMIN.REVIEW_VEHICLE_DOCUMENT)
@@ -95,21 +94,20 @@ export class AdminVehiclesController {
       rejectionReason: string | null;
     }>
   > {
-    const updated = await this.reviewAdminVehicleDocumentUseCase.execute(
+    const updated = await this._reviewAdminVehicleDocumentUseCase.execute(
       vehicleId,
       documentId,
       dto,
     );
 
-    return {
-      success: true,
-      message: API_MESSAGES.ADMIN.VEHICLE_DOCUMENT_REVIEWED_SUCCESS,
-      data: {
+    return ApiResponseHelper.success(
+      {
         id: updated.id,
         verificationStatus: updated.verificationStatus,
         rejectionReason: updated.rejectionReason,
       },
-    };
+      API_MESSAGES.ADMIN.VEHICLE_DOCUMENT_REVIEWED_SUCCESS,
+    );
   }
 
   @Patch(API_ENDPOINTS.ADMIN.UPDATE_VEHICLE_STATUS)
@@ -117,15 +115,14 @@ export class AdminVehiclesController {
     @Param('vehicleId') vehicleId: string,
     @Body() dto: UpdateVehicleStatusDto,
   ): Promise<ApiResponse<UpdateAdminVehicleStatusResult>> {
-    const result = await this.updateAdminVehicleStatusUseCase.execute(
+    const result = await this._updateAdminVehicleStatusUseCase.execute(
       vehicleId,
       dto.status,
     );
 
-    return {
-      success: true,
-      message: API_MESSAGES.ADMIN.VEHICLE_STATUS_UPDATED_SUCCESS,
-      data: result,
-    };
+    return ApiResponseHelper.success(
+      result,
+      API_MESSAGES.ADMIN.VEHICLE_STATUS_UPDATED_SUCCESS,
+    );
   }
 }

@@ -11,6 +11,7 @@ import {
   BadRequestException,
   UploadedFile,
   UseInterceptors,
+  Inject,
 } from '@nestjs/common';
 
 import { memoryStorage } from 'multer';
@@ -28,7 +29,7 @@ import {
   GET_USER_PROFILE_USE_CASE,
   IGetUserProfileUseCase,
 } from '../application/interfaces/get-user-profile.use-case.interface';
-import { Inject } from '@nestjs/common';
+import { ApiResponseHelper } from '../../../common/helpers/api-response.helper';
 import {
   IUpdateProfileUseCase,
   UPDATE_PROFILE_USE_CASE,
@@ -52,19 +53,19 @@ import { SubmitIdentityVerificationDto } from '../application/dto/submit-identit
 export class UsersController {
   constructor(
     @Inject(GET_USER_PROFILE_USE_CASE)
-    private readonly getUserProfileUseCase: IGetUserProfileUseCase,
+    private readonly _getUserProfileUseCase: IGetUserProfileUseCase,
 
     @Inject(SUBMIT_IDENTITY_VERIFICATION_USE_CASE)
-    private readonly submitIdentityVerificationUseCase: ISubmitIdentityVerificationUseCase,
+    private readonly _submitIdentityVerificationUseCase: ISubmitIdentityVerificationUseCase,
 
     @Inject(UPDATE_PROFILE_USE_CASE)
-    private readonly updateProfileUseCase: IUpdateProfileUseCase,
+    private readonly _updateProfileUseCase: IUpdateProfileUseCase,
 
     @Inject(UPLOAD_PROFILE_PHOTO_USE_CASE)
-    private readonly uploadProfilePhotoUseCase: IUploadProfilePhotoUseCase,
+    private readonly _uploadProfilePhotoUseCase: IUploadProfilePhotoUseCase,
 
     @Inject(REMOVE_PROFILE_PHOTO_USE_CASE)
-    private readonly removeProfilePhotUseCase: IRemoveProfilePhotoUseCase,
+    private readonly _removeProfilePhotoUseCase: IRemoveProfilePhotoUseCase,
   ) {}
 
   @Get(API_ENDPOINTS.USERS.PROFILE)
@@ -80,13 +81,12 @@ export class UsersController {
       );
     }
 
-    const profile = await this.getUserProfileUseCase.execute(user.sub);
+    const profile = await this._getUserProfileUseCase.execute(user.sub);
 
-    return {
-      success: true,
-      message: API_MESSAGES.USERS.USER_RETRIEVED_SUCCESS,
-      data: UserProfileMapper.toResponse(profile),
-    };
+    return ApiResponseHelper.success(
+      UserProfileMapper.toResponse(profile),
+      API_MESSAGES.USERS.USER_RETRIEVED_SUCCESS,
+    );
   }
 
   @Patch(API_ENDPOINTS.USERS.PROFILE)
@@ -101,16 +101,15 @@ export class UsersController {
       );
     }
 
-    const updatedUser = await this.updateProfileUseCase.execute(
+    const updatedUser = await this._updateProfileUseCase.execute(
       request.user.sub,
       dto,
     );
 
-    return {
-      success: true,
-      message: API_MESSAGES.USERS.PROFILE_UPDATED,
-      data: UserProfileMapper.toResponse(updatedUser),
-    };
+    return ApiResponseHelper.success(
+      UserProfileMapper.toResponse(updatedUser),
+      API_MESSAGES.USERS.PROFILE_UPDATED,
+    );
   }
 
   @Post(API_ENDPOINTS.USERS.PROFILE_PHOTO)
@@ -149,7 +148,16 @@ export class UsersController {
     if (!file) {
       throw new BadRequestException(API_MESSAGES.USERS.INVALID_PHOTO_TYPE);
     }
-    return this.uploadProfilePhotoUseCase.execute(request.user.sub, file);
+
+    const result = await this._uploadProfilePhotoUseCase.execute(
+      request.user.sub,
+      file,
+    );
+
+    return ApiResponseHelper.success(
+      result,
+      API_MESSAGES.USERS.PROFILE_UPDATED,
+    );
   }
 
   @Delete(API_ENDPOINTS.USERS.PROFILE_PHOTO)
@@ -162,7 +170,12 @@ export class UsersController {
         API_MESSAGES.AUTH.AUTHENTICATION_REQUIRED,
       );
     }
-    return this.removeProfilePhotUseCase.execute(request.user.sub);
+
+    const result = await this._removeProfilePhotoUseCase.execute(
+      request.user.sub,
+    );
+
+    return ApiResponseHelper.success(result, API_MESSAGES.USERS.PHOTO_REMOVED);
   }
 
   @Post(API_ENDPOINTS.USERS.IDENTITY_VERIFICATION)
@@ -206,16 +219,15 @@ export class UsersController {
       throw new BadRequestException('Please upload a document image.');
     }
 
-    const updatedUser = await this.submitIdentityVerificationUseCase.execute(
+    const updatedUser = await this._submitIdentityVerificationUseCase.execute(
       request.user.sub,
       dto,
       file,
     );
 
-    return {
-      success: true,
-      message: API_MESSAGES.USERS.IDENTITY_VERIFICATION_SUBMITTED,
-      data: UserProfileMapper.toResponse(updatedUser),
-    };
+    return ApiResponseHelper.success(
+      UserProfileMapper.toResponse(updatedUser),
+      API_MESSAGES.USERS.IDENTITY_VERIFICATION_SUBMITTED,
+    );
   }
 }

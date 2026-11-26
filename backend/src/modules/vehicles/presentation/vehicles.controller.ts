@@ -32,6 +32,7 @@ import type { VehicleDocumentResponseDto } from './dto/vehicle-document-response
 import { VEHICLE_ENDPOINTS } from './constants/vehicle-endpoints.constants';
 import { VEHICLE_MESSAGES } from './constants/vehicle-messages.constants';
 import type { ApiResponse } from '../../../common/interfaces/api-responce.interface';
+import { ApiResponseHelper } from '../../../common/helpers/api-response.helper';
 import { API_MESSAGES } from '../../../common/constants/message.constants';
 import type { VerifyVehicleDocumentResult } from '../application/interfaces/verify-vehicle-document.use-case.interface';
 import { VehicleRegistrationAlreadyExistsError } from '../application/use-cases/add-vehicle.use-case';
@@ -77,31 +78,31 @@ import {
 export class VehicleController {
   constructor(
     @Inject(ADD_VEHICLE_USE_CASE)
-    private readonly addVehicleUseCase: IAddVehicleUseCase,
+    private readonly _addVehicleUseCase: IAddVehicleUseCase,
 
     @Inject(GET_MY_VEHICLES_USE_CASE)
-    private readonly getMyVehiclesUseCase: IGetMyVehiclesUseCase,
+    private readonly _getMyVehiclesUseCase: IGetMyVehiclesUseCase,
 
     @Inject(GET_VEHICLE_BY_ID_USE_CASE)
-    private readonly getVehicleByIdUseCase: IGetVehicleByIdUseCase,
+    private readonly _getVehicleByIdUseCase: IGetVehicleByIdUseCase,
 
     @Inject(UPDATE_VEHICLE_USE_CASE)
-    private readonly updateVehicleUseCase: IUpdateVehicleUseCase,
+    private readonly _updateVehicleUseCase: IUpdateVehicleUseCase,
 
     @Inject(DEACTIVATE_VEHICLE_USE_CASE)
-    private readonly deactivateVehicleUseCase: IDeactivateVehicleUseCase,
+    private readonly _deactivateVehicleUseCase: IDeactivateVehicleUseCase,
 
     @Inject(UPLOAD_VEHICLE_PHOTO_USE_CASE)
-    private readonly uploadVehiclePhotoUseCase: IUploadVehiclePhotoUseCase,
+    private readonly _uploadVehiclePhotoUseCase: IUploadVehiclePhotoUseCase,
 
     @Inject(UPLOAD_VEHICLE_DOCUMENT_USE_CASE)
-    private readonly uploadVehicleDocumentUseCase: IUploadVehicleDocumentUseCase,
+    private readonly _uploadVehicleDocumentUseCase: IUploadVehicleDocumentUseCase,
 
     @Inject(GET_VEHICLE_DOCUMENTS_USE_CASE)
-    private readonly getVehicleDocumentsUseCase: IGetVehicleDocumentsUseCase,
+    private readonly _getVehicleDocumentsUseCase: IGetVehicleDocumentsUseCase,
 
     @Inject(VERIFY_VEHICLE_DOCUMENT_USE_CASE)
-    private readonly verifyVehicleDocumentUseCase: IVerifyVehicleDocumentUseCase,
+    private readonly _verifyVehicleDocumentUseCase: IVerifyVehicleDocumentUseCase,
   ) {}
 
   @Post(VEHICLE_ENDPOINTS.ROOT)
@@ -117,16 +118,15 @@ export class VehicleController {
     }
 
     try {
-      const vehicle = await this.addVehicleUseCase.execute(
+      const vehicle = await this._addVehicleUseCase.execute(
         request.user.sub,
         dto,
       );
 
-      return {
-        success: true,
-        message: VEHICLE_MESSAGES.CREATED,
-        data: VehicleMapper.toResponse(vehicle),
-      };
+      return ApiResponseHelper.success(
+        VehicleMapper.toResponse(vehicle),
+        VEHICLE_MESSAGES.CREATED,
+      );
     } catch (error) {
       if (error instanceof VehicleRegistrationAlreadyExistsError) {
         throw new ConflictException(error.message);
@@ -141,13 +141,12 @@ export class VehicleController {
   async getMyVehicles(
     @Req() request: Request & { user: AccessTokenPayload },
   ): Promise<ApiResponse<VehicleResponseDto[]>> {
-    const vehicles = await this.getMyVehiclesUseCase.execute(request.user.sub);
+    const vehicles = await this._getMyVehiclesUseCase.execute(request.user.sub);
 
-    return {
-      success: true,
-      message: VEHICLE_MESSAGES.RETRIEVED,
-      data: VehicleMapper.toRepsoseList(vehicles),
-    };
+    return ApiResponseHelper.success(
+      VehicleMapper.toRepsoseList(vehicles),
+      VEHICLE_MESSAGES.RETRIEVED,
+    );
   }
 
   @Get(VEHICLE_ENDPOINTS.BY_ID)
@@ -156,16 +155,15 @@ export class VehicleController {
     @Param('vehicleId') vehicleId: string,
     @Req() request: Request & { user: AccessTokenPayload },
   ): Promise<ApiResponse<VehicleResponseDto>> {
-    const vehicle = await this.getVehicleByIdUseCase.execute(
+    const vehicle = await this._getVehicleByIdUseCase.execute(
       vehicleId,
       request.user.sub,
     );
 
-    return {
-      success: true,
-      message: VEHICLE_MESSAGES.RETRIEVED,
-      data: VehicleMapper.toResponse(vehicle),
-    };
+    return ApiResponseHelper.success(
+      VehicleMapper.toResponse(vehicle),
+      VEHICLE_MESSAGES.RETRIEVED,
+    );
   }
 
   @Patch(VEHICLE_ENDPOINTS.BY_ID)
@@ -176,17 +174,16 @@ export class VehicleController {
     @Body() dto: UpdateVehicleDto,
   ): Promise<ApiResponse<VehicleResponseDto>> {
     try {
-      const vehicle = await this.updateVehicleUseCase.execute(
+      const vehicle = await this._updateVehicleUseCase.execute(
         vehicleId,
         request.user.sub,
         dto,
       );
 
-      return {
-        success: true,
-        message: VEHICLE_MESSAGES.UPDATED,
-        data: VehicleMapper.toResponse(vehicle),
-      };
+      return ApiResponseHelper.success(
+        VehicleMapper.toResponse(vehicle),
+        VEHICLE_MESSAGES.UPDATED,
+      );
     } catch (error) {
       if (error instanceof VehicleRegistrationAlreadyExistsError) {
         throw new ConflictException(VEHICLE_MESSAGES.DUPLICATE_REGISTRATION);
@@ -203,12 +200,9 @@ export class VehicleController {
     @Param('vehicleId') vehicleId: string,
     @Req() request: Request & { user: AccessTokenPayload },
   ): Promise<ApiResponse<undefined>> {
-    await this.deactivateVehicleUseCase.execute(vehicleId, request.user.sub);
+    await this._deactivateVehicleUseCase.execute(vehicleId, request.user.sub);
 
-    return {
-      success: true,
-      message: VEHICLE_MESSAGES.DEACTIVATED,
-    };
+    return ApiResponseHelper.success(undefined, VEHICLE_MESSAGES.DEACTIVATED);
   }
 
   @Post(VEHICLE_ENDPOINTS.PHOTO)
@@ -229,13 +223,12 @@ export class VehicleController {
     )
     file: Express.Multer.File,
   ): Promise<ApiResponse<{ vehiclePhoto: string }>> {
-    const result = await this.uploadVehiclePhotoUseCase.execute(file);
+    const result = await this._uploadVehiclePhotoUseCase.execute(file);
 
-    return {
-      success: true,
-      message: 'Vehicle photo uploaded successfully.',
-      data: result,
-    };
+    return ApiResponseHelper.success(
+      result,
+      'Vehicle photo uploaded successfully.',
+    );
   }
 
   @Post(VEHICLE_ENDPOINTS.DOCUMENTS)
@@ -259,18 +252,17 @@ export class VehicleController {
     )
     file: Express.Multer.File,
   ): Promise<ApiResponse<VehicleDocumentResponseDto>> {
-    const result = await this.uploadVehicleDocumentUseCase.execute(
+    const result = await this._uploadVehicleDocumentUseCase.execute(
       request.user.sub,
       vehicleId,
       dto,
       file,
     );
 
-    return {
-      success: true,
-      message: VEHICLE_MESSAGES.DOCUMENT_UPLOADED,
-      data: result,
-    };
+    return ApiResponseHelper.success(
+      result,
+      VEHICLE_MESSAGES.DOCUMENT_UPLOADED,
+    );
   }
 
   @Get(VEHICLE_ENDPOINTS.DOCUMENTS)
@@ -279,16 +271,12 @@ export class VehicleController {
     @Param('vehicleId') vehicleId: string,
     @Req() request: Request & { user: AccessTokenPayload },
   ): Promise<ApiResponse<VehicleDocumentListResult[]>> {
-    const documents = await this.getVehicleDocumentsUseCase.execute(
+    const documents = await this._getVehicleDocumentsUseCase.execute(
       request.user.sub,
       vehicleId,
     );
 
-    return {
-      success: true,
-      message: VEHICLE_MESSAGES.RETRIEVED,
-      data: documents,
-    };
+    return ApiResponseHelper.success(documents, VEHICLE_MESSAGES.RETRIEVED);
   }
 
   @Post(VEHICLE_ENDPOINTS.VERIFY_DOCUMENT)
@@ -297,15 +285,14 @@ export class VehicleController {
     @Param('documentId') documentId: string,
     @Req() request: Request & { user: AccessTokenPayload },
   ): Promise<ApiResponse<VerifyVehicleDocumentResult>> {
-    const result = await this.verifyVehicleDocumentUseCase.execute(
+    const result = await this._verifyVehicleDocumentUseCase.execute(
       documentId,
       request.user.sub,
     );
 
-    return {
-      success: true,
-      message: VEHICLE_MESSAGES.DOCUMENT_VERIFIED,
-      data: result,
-    };
+    return ApiResponseHelper.success(
+      result,
+      VEHICLE_MESSAGES.DOCUMENT_VERIFIED,
+    );
   }
 }
