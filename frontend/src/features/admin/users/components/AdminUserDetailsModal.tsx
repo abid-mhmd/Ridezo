@@ -157,7 +157,8 @@ export default function AdminUserDetailsModal({
 
   const handleKycReview = async (decision: 'approve' | 'reject') => {
     if (!user) return;
-    if (decision === 'reject' && !rejectionReason.trim()) {
+    const trimmedReason = rejectionReason.trim();
+    if (decision === 'reject' && !trimmedReason) {
       setActionError('Please enter a reason before rejecting verification.');
       return;
     }
@@ -168,9 +169,7 @@ export default function AdminUserDetailsModal({
     try {
       const updated = await reviewUserIdentity(accessToken, user.id, {
         decision,
-        ...(decision === 'reject'
-          ? { rejectionReason: rejectionReason.trim() }
-          : {}),
+        ...(decision === 'reject' ? { rejectionReason: trimmedReason } : {}),
       });
 
       const nextKyc = updated?.identityVerification ?? {
@@ -181,7 +180,7 @@ export default function AdminUserDetailsModal({
         submittedAt: kycInfo?.submittedAt ?? null,
         verifiedAt: decision === 'approve' ? new Date().toISOString() : null,
         documentUrl: null,
-        rejectionReason: decision === 'reject' ? rejectionReason.trim() : null,
+        rejectionReason: decision === 'reject' ? trimmedReason : null,
       };
 
       setUser((prev) =>

@@ -22,7 +22,7 @@ export class ListUsersUseCase implements IListUsersUseCase {
 
     await Promise.all(
       users.map(async (user) => {
-        if (user.profilePhoto) {
+        if (user.profilePhoto && !user.profilePhoto.startsWith('http')) {
           user.profilePhoto = await this.profilePhotoStorage.getUrl(
             user.profilePhoto,
           );

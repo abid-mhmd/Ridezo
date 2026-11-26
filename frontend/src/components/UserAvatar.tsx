@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 interface UserAvatarProps {
   firstName?: string | null;
   lastName?: string | null;
@@ -11,6 +13,12 @@ export default function UserAvatar({
   profilePhoto,
   size = 'small',
 }: UserAvatarProps) {
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [profilePhoto]);
+
   const sizeClasses = {
     small: 'h-9 w-9 rounded-xl text-xs',
     large: 'h-20 w-20 rounded-2xl text-2xl',
@@ -21,11 +29,13 @@ export default function UserAvatar({
   const safeLastName = (lastName ?? '').trim();
   const fullName = `${safeFirstName} ${safeLastName}`.trim() || 'User';
 
-  if (profilePhoto) {
+  if (profilePhoto && !imgError) {
     return (
       <img
         src={profilePhoto}
         alt={fullName}
+        referrerPolicy="no-referrer"
+        onError={() => setImgError(true)}
         className={`shrink-0 border border-[#263044] object-cover ${sizeClasses}`}
       />
     );

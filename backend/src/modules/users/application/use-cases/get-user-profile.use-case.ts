@@ -27,7 +27,7 @@ export class GetUserProfileUseCase implements IGetUserProfileUseCase {
       throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
-    if (user.profilePhoto) {
+    if (user.profilePhoto && !user.profilePhoto.startsWith('http')) {
       user.profilePhoto = await this.profilePhotoStorage.getUrl(
         user.profilePhoto,
       );

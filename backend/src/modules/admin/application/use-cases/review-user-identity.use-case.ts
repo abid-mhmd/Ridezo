@@ -40,12 +40,12 @@ export class ReviewUserIdentityUseCase implements IReviewUserIdentityUseCase {
 
     const user = await this.userRepository.findById(userId);
 
-    if (!user || user.role !== 'admin') {
+    if (!user || user.role === 'admin') {
       throw new NotFoundException(API_MESSAGES.USERS.NOT_FOUND);
     }
 
     if (
-      user.identityVerification.status !== IdentityVerificationStatus.PENDING
+      user.identityVerification?.status !== IdentityVerificationStatus.PENDING
     ) {
       throw new BadRequestException(
         'Only pending identity verification request can be reviewed',
@@ -58,11 +58,12 @@ export class ReviewUserIdentityUseCase implements IReviewUserIdentityUseCase {
       throw new BadRequestException('Please provide a rejection reason');
     }
 
-    if (!isApproved && user.identityVerification.documentKey) {
+    if (user.identityVerification.documentKey) {
       await this.identityDocumentStorage
         .delete(user.identityVerification.documentKey)
         .catch(() => undefined);
     }
+
     const now = new Date();
     const updatedUser = await this.userRepository.updateIdentityVerification(
       userId,
@@ -71,7 +72,7 @@ export class ReviewUserIdentityUseCase implements IReviewUserIdentityUseCase {
         status: isApproved
           ? IdentityVerificationStatus.VERIFIED
           : IdentityVerificationStatus.REJECTED,
-        documentKey: isApproved ? user.identityVerification.documentKey : null,
+        documentKey: null,
         documentHash: isApproved
           ? user.identityVerification.documentHash
           : null,
