@@ -1,3 +1,5 @@
+import type { IdentityVerificationInfo } from "../../../identity-verification/types/identity-verification.types";
+
 export type AccountStatus = 'active' | 'suspended' | 'deactivated';
 
 export interface AdminUserListItem {
@@ -12,6 +14,7 @@ export interface AdminUserListItem {
   emailVerified: boolean;
   phoneVerified: boolean;
   idVerified: boolean;
+  identityVerification?: IdentityVerificationInfo;
   createdAt: string;
 }
 
@@ -50,6 +53,7 @@ export interface AdminUserDetails {
   emailVerified: boolean;
   phoneVerified: boolean;
   idVerified: boolean;
+  identityVerification?: IdentityVerificationInfo;
   languages: string[];
   location?: AdminUserLocation | null;
   completedRideCount: number;

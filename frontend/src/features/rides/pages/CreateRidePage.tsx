@@ -13,6 +13,11 @@ import {
 
 import { getMyVehicles } from '../../vehicles/api/vehicle.api';
 import type { Vehicle } from '../../vehicles/types/vehicle.types';
+import { getMyProfile } from '../../user/api/profile.api';
+import type { UserProfile } from '../../user/types/profile.type';
+import IdentityVerificationModal from '../../identity-verification/components/IdentityVerificationModal';
+import { useOfferRideGate } from '../../identity-verification/hooks/useOfferRideGate';
+import type { IdentityVerificationInfo } from '../../identity-verification/types/identity-verification.types';
 
 import LocationPicker from '../components/LocationPicker';
 import { createRide } from '../api/ride.api';
@@ -31,6 +36,8 @@ function getTodayDate(): string {
 
 export default function CreateRidePage() {
   const navigate = useNavigate();
+
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
   // Vehicle state
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -72,17 +79,52 @@ export default function CreateRidePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  const handleSyncVerification = (info: IdentityVerificationInfo) => {
+    setProfile((prev) =>
+      prev
+        ? {
+            ...prev,
+            idVerified: info.status === 'verified',
+            identityVerification: info,
+          }
+        : prev,
+    );
+  };
+
+  const verificationGate = useOfferRideGate(
+    profile?.identityVerification ??
+      (profile
+        ? {
+            status: profile.idVerified ? 'verified' : 'not_started',
+            documentType: null,
+            maskedDocumentNumber: null,
+            expiryDate: null,
+            rejectionReason: null,
+            submittedAt: null,
+            verifiedAt: null,
+          }
+        : null),
+    handleSyncVerification,
+  );
+
   useEffect(() => {
     let isMounted = true;
 
-    const fetchVehicles = async () => {
+    const loadPageData = async () => {
       try {
         setIsLoading(true);
         setVehicleError('');
 
-        const data = await getMyVehicles();
+        const [userProfile, data] = await Promise.all([
+          getMyProfile().catch(() => null),
+          getMyVehicles(),
+        ]);
 
         if (!isMounted) return;
+
+        if (userProfile) {
+          setProfile(userProfile);
+        }
 
         const eligibleVehicles = data.filter(
           (vehicle) =>
@@ -107,7 +149,7 @@ export default function CreateRidePage() {
       }
     };
 
-    fetchVehicles();
+    loadPageData();
 
     return () => {
       isMounted = false;
@@ -157,6 +199,11 @@ export default function CreateRidePage() {
     event.preventDefault();
 
     setError('');
+
+    if (profile && !verificationGate.isVerified) {
+      verificationGate.openModal();
+      return;
+    }
 
     if (!origin) {
       setError('Please select your pickup location.');
@@ -269,6 +316,17 @@ export default function CreateRidePage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 pb-20 font-sans text-gray-100">
+      <IdentityVerificationModal
+        isOpen={verificationGate.isModalOpen}
+        currentVerification={profile?.identityVerification}
+        onClose={verificationGate.closeModal}
+        onVerified={(info) => {
+          handleSyncVerification(info);
+          verificationGate.closeModal();
+        }}
+        onStatusUpdated={handleSyncVerification}
+      />
+
       {/* Back button */}
       <button
         type="button"

@@ -19,11 +19,14 @@ import UserAvatar from '../../../components/UserAvatar';
 import VerificationStatus from '../../../components/VerificationStatus';
 import PreferenceItem from '../../../components/PrefrerenceItem';
 import RecentRideCard from '../../../components/RecentRideCard';
+import IdentityVerificationModal from '../../identity-verification/components/IdentityVerificationModal';
+import type { IdentityVerificationInfo } from '../../identity-verification/types/identity-verification.types';
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isKycModalOpen, setIsKycModalOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -54,6 +57,18 @@ export default function ProfilePage() {
       isMounted = false;
     };
   }, []);
+
+  const handleSyncVerification = (info: IdentityVerificationInfo) => {
+    setProfile((prev) =>
+      prev
+        ? {
+            ...prev,
+            idVerified: info.status === 'verified',
+            identityVerification: info,
+          }
+        : prev,
+    );
+  };
 
   if (isLoading) {
     return (
@@ -103,9 +118,23 @@ export default function ProfilePage() {
 
   const fullName =
     `${profile.firstName} ${profile.lastName}`.trim() || 'Ridezo Traveller';
+  const kycStatus =
+    profile.identityVerification?.status ??
+    (profile.idVerified ? 'verified' : 'not_started');
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 pb-12">
+      <IdentityVerificationModal
+        isOpen={isKycModalOpen}
+        currentVerification={profile.identityVerification}
+        onClose={() => setIsKycModalOpen(false)}
+        onVerified={(info) => {
+          handleSyncVerification(info);
+          setIsKycModalOpen(false);
+        }}
+        onStatusUpdated={handleSyncVerification}
+      />
+
       {/* Top Banner Profile Header Card */}
       <section className="relative overflow-hidden rounded-2xl border border-[#252e3e] bg-[#111722] p-6 sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -130,12 +159,12 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-1.5">
                   <span className="inline-flex items-center gap-1 rounded-full border border-[#36e0c0]/30 bg-[#36e0c0]/10 px-3 py-1 text-xs font-medium text-[#36e0c0]">
                     <BadgeCheck size={13} />
-                    {profile.idVerified ? 'Verified Member' : 'Not Verifed'}
+                    {kycStatus === 'verified'
+                      ? 'Verified Member'
+                      : kycStatus === 'pending'
+                        ? 'Verification Pending'
+                        : 'Not Verified'}
                   </span>
-
-                  {/* <span className="inline-flex items-center rounded-full border border-[#8b78ff]/30 bg-[#8b78ff]/10 px-3 py-1 text-xs font-medium text-[#b6a8ff]">
-                    P2P Traveller
-                  </span> */}
                 </div>
               </div>
 
@@ -247,20 +276,6 @@ export default function ProfilePage() {
               <span className="text-xs text-[#929bad]">trips</span>
             </div>
 
-            {/* Progress ratio bar */}
-            {/* <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-[#1b2030]">
-              <div className="flex h-full w-full">
-                <div
-                  className="bg-[#8b78ff] transition-all"
-                  style={{ width: '73%' }}
-                />
-                <div
-                  className="bg-[#36e0c0] transition-all"
-                  style={{ width: '27%' }}
-                />
-              </div>
-            </div> */}
-
             <div className="mt-3 flex items-center justify-between text-[11px]">
               <span className="flex items-center gap-1.5 text-[#929bad]">
                 <span className="h-2 w-2 rounded-full bg-[#8b78ff]" /> As
@@ -365,19 +380,37 @@ export default function ProfilePage() {
                 <VerificationStatus isVerified={profile.phoneVerified} />
               </div>
 
-              <div className="flex items-center justify-between rounded-xl border border-[#252e3e] bg-[#080b12] p-3">
-                <div className="flex items-center gap-2.5">
-                  <ShieldCheck size={16} className="text-[#8b78ff]" />
-                  <div>
-                    <p className="text-xs font-medium text-white">
-                      Govt. ID Document
-                    </p>
-                    <p className="text-[10px] text-[#929bad]">
-                      Aadhaar Card Linked
-                    </p>
+              <div className="rounded-xl border border-[#252e3e] bg-[#080b12] p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <ShieldCheck size={16} className="text-[#8b78ff]" />
+                    <div>
+                      <p className="text-xs font-medium text-white">
+                        Identity KYC
+                      </p>
+                      <p className="text-[10px] text-[#929bad]">
+                        {profile.identityVerification?.maskedDocumentNumber
+                          ? `ID: ${profile.identityVerification.maskedDocumentNumber}`
+                          : 'Driving License verification'}
+                      </p>
+                    </div>
                   </div>
+                  <VerificationStatus isVerified={kycStatus === 'verified'} />
                 </div>
-                <VerificationStatus isVerified={profile.idVerified} />
+
+                {kycStatus !== 'verified' && (
+                  <button
+                    type="button"
+                    onClick={() => setIsKycModalOpen(true)}
+                    className="mt-2.5 w-full cursor-pointer rounded-lg border border-[#8b78ff]/40 bg-[#8b78ff]/10 py-1.5 text-[11px] font-semibold text-[#b6a8ff] transition hover:bg-[#8b78ff]/20"
+                  >
+                    {kycStatus === 'pending'
+                      ? 'View Verification Status'
+                      : kycStatus === 'rejected'
+                        ? 'Retry Verification'
+                        : 'Verify Now'}
+                  </button>
+                )}
               </div>
             </div>
           </section>

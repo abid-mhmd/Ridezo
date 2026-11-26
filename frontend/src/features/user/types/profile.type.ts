@@ -1,3 +1,5 @@
+import type { IdentityVerificationInfo } from "../../identity-verification/types/identity-verification.types";
+
 export interface UserPreferences {
   smoking?: 'non-smoking' | 'smoking-allowed' | 'no-preference';
   pets?: 'allowed' | 'not-allowed' | 'no-preference';
@@ -21,6 +23,7 @@ export interface UserProfile {
   emailVerified: boolean;
   phoneVerified: boolean;
   idVerified: boolean;
+  identityVerification?: IdentityVerificationInfo;
   role: string;
   status: string;
   location?: {

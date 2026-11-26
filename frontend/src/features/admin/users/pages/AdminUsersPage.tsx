@@ -272,76 +272,83 @@ export default function AdminUsersPage({ accessToken }: AdminUsersPageProps) {
                 </td>
               </tr>
             ) : (
-              users.map((user) => (
-                <tr key={user.id} className="transition hover:bg-white/[0.01]">
-                  {/* User */}
-                  <td className="px-6 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <UserAvatar
-                        firstName={user.firstName}
-                        lastName={user.lastName}
-                        profilePhoto={user.profilePhoto}
-                      />
+              users.map((user) => {
+                const kycStatus =
+                  user.identityVerification?.status ??
+                  (user.idVerified ? 'verified' : 'not_started');
 
-                      <div className="min-w-0">
-                        <p className="whitespace-nowrap text-xs font-medium text-[#F8FAFC]">
-                          {user.firstName} {user.lastName}
-                        </p>
+                return (
+                  <tr
+                    key={user.id}
+                    className="transition hover:bg-white/[0.01]"
+                  >
+                    {/* User */}
+                    <td className="px-6 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <UserAvatar
+                          firstName={user.firstName}
+                          lastName={user.lastName}
+                          profilePhoto={user.profilePhoto}
+                        />
 
-                        <p className="mt-0.5 truncate text-[10px] text-[#707B8F]">
-                          {user.email}
-                        </p>
+                        <div className="min-w-0">
+                          <p className="whitespace-nowrap text-xs font-medium text-[#F8FAFC]">
+                            {user.firstName} {user.lastName}
+                          </p>
+
+                          <p className="mt-0.5 truncate text-[10px] text-[#707B8F]">
+                            {user.email}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  {/* Account status */}
-                  <td className="px-6 py-3.5">
-                    <StatusBadge status={user.accountStatus} />
-                  </td>
+                    {/* Account status */}
+                    <td className="px-6 py-3.5">
+                      <StatusBadge status={user.accountStatus} />
+                    </td>
 
-                  {/* Identity Verification */}
-                  <td className="px-6 py-3.5">
-                    <StatusBadge
-                      status={user.idVerified ? 'verified' : 'pending'}
-                    />
-                  </td>
+                    {/* Identity Verification */}
+                    <td className="px-6 py-3.5">
+                      <StatusBadge status={kycStatus} />
+                    </td>
 
-                  {/* Phone */}
-                  <td className="px-6 py-3.5">
-                    <div className="space-y-1">
-                      <p className="whitespace-nowrap text-xs text-[#F8FAFC]">
-                        {user.phone || '—'}
-                      </p>
+                    {/* Phone */}
+                    <td className="px-6 py-3.5">
+                      <div className="space-y-1">
+                        <p className="whitespace-nowrap text-xs text-[#F8FAFC]">
+                          {user.phone || '—'}
+                        </p>
 
-                      {user.phone ? (
-                        <VerificationBadge verified={user.phoneVerified} />
-                      ) : (
-                        <span className="text-[10px] text-[#707B8F]">
-                          Not provided
-                        </span>
-                      )}
-                    </div>
-                  </td>
+                        {user.phone ? (
+                          <VerificationBadge verified={user.phoneVerified} />
+                        ) : (
+                          <span className="text-[10px] text-[#707B8F]">
+                            Not provided
+                          </span>
+                        )}
+                      </div>
+                    </td>
 
-                  {/* Joined */}
-                  <td className="whitespace-nowrap px-6 py-3.5 text-xs text-[#A7B0C0]">
-                    {formatDate(user.createdAt)}
-                  </td>
+                    {/* Joined */}
+                    <td className="whitespace-nowrap px-6 py-3.5 text-xs text-[#A7B0C0]">
+                      {formatDate(user.createdAt)}
+                    </td>
 
-                  {/* Actions */}
-                  <td className="whitespace-nowrap px-6 py-3.5 text-right">
-                    <button
-                      type="button"
-                      onClick={() => handleSelectUser(user.id)}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-[#263044] bg-[#080B12] px-3 py-1.5 text-xs font-medium text-[#C37DF5] transition hover:bg-[#C37DF5]/10"
-                    >
-                      <FiEye size={13} />
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))
+                    {/* Actions */}
+                    <td className="whitespace-nowrap px-6 py-3.5 text-right">
+                      <button
+                        type="button"
+                        onClick={() => handleSelectUser(user.id)}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#263044] bg-[#080B12] px-3 py-1.5 text-xs font-medium text-[#C37DF5] transition hover:bg-[#C37DF5]/10"
+                      >
+                        <FiEye size={13} />
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
