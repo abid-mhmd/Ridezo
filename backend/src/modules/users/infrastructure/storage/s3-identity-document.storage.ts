@@ -16,7 +16,7 @@ export class S3IdentityDocumentStorage implements IIdentityDocumentStorage {
   private readonly bucket: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.bucket = this.configService.getOrThrow<string>('AWS_S3_BUCKET');
+    this.bucket = this.configService.getOrThrow<string>('AWS_S3_BUCKET_NAME');
     this.s3Client = new S3Client({
       region: this.configService.getOrThrow<string>('AWS_REGION'),
       credentials: {

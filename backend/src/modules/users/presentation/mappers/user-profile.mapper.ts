@@ -4,6 +4,8 @@ import type { UserProfileResponseDto } from '../dto/user-profile-responce.dto';
 
 export class UserProfileMapper {
   static toResponse(user: UserEntity): UserProfileResponseDto {
+    const kyc = user.identityVerification;
+
     return {
       id: user.id,
       firstName: user.firstName,
@@ -20,9 +22,16 @@ export class UserProfileMapper {
       reviewCount: user.reviewCount,
       emailVerified: user.emailVerified,
       phoneVerified: user.phoneVerified,
-      idVerified:
-        user.identityVerification.status ===
-        IdentityVerificationStatus.VERIFIED,
+      idVerified: kyc?.status === IdentityVerificationStatus.VERIFIED,
+      identityVerification: {
+        status: kyc?.status ?? IdentityVerificationStatus.NOT_STARTED,
+        documentType: kyc?.documentType ?? null,
+        maskedDocumentNumber: kyc?.maskedDocumentNumber ?? null,
+        expiryDate: kyc?.expiryDate ?? null,
+        rejectionReason: kyc?.rejectionReason ?? null,
+        submittedAt: kyc?.submittedAt ?? null,
+        verifiedAt: kyc?.verifiedAt ?? null,
+      },
       role: user.role,
       status: user.accountStatus,
     };

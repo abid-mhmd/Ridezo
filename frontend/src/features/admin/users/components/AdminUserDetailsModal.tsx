@@ -34,7 +34,7 @@ interface AdminUserDetailsModalProps {
 type TabType =
   'overview' | 'rides' | 'bookings' | 'vehicles' | 'reviews' | 'safety';
 
-function formatDate(value?: string): string {
+function formatDate(value?: string | null): string {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
@@ -166,18 +166,24 @@ export default function AdminUserDetailsModal({
     setActionError('');
 
     try {
-      const updated = await reviewUserIdentity(user.id, {
+      const updated = await reviewUserIdentity(accessToken, user.id, {
         decision,
         ...(decision === 'reject'
           ? { rejectionReason: rejectionReason.trim() }
           : {}),
       });
+
       const nextKyc = updated?.identityVerification ?? {
-        ...kycInfo,
         status: decision === 'approve' ? 'verified' : 'rejected',
+        documentType: kycInfo?.documentType ?? null,
+        maskedDocumentNumber: kycInfo?.maskedDocumentNumber ?? null,
+        expiryDate: kycInfo?.expiryDate ?? null,
+        submittedAt: kycInfo?.submittedAt ?? null,
+        verifiedAt: decision === 'approve' ? new Date().toISOString() : null,
         documentUrl: null,
         rejectionReason: decision === 'reject' ? rejectionReason.trim() : null,
       };
+
       setUser((prev) =>
         prev
           ? {
@@ -532,7 +538,7 @@ export default function AdminUserDetailsModal({
 
                         {kycStatus === 'pending' && (
                           <div className="space-y-2 border-t border-[#263044] pt-2">
-                            {kycInfo?.documentUrl && (
+                            {kycInfo?.documentUrl ? (
                               <a
                                 href={kycInfo.documentUrl}
                                 target="_blank"
@@ -542,9 +548,13 @@ export default function AdminUserDetailsModal({
                                 <img
                                   src={kycInfo.documentUrl}
                                   alt="Submitted identity document"
-                                  className="max-h-36 w-full object-contain bg-[#111722]"
+                                  className="max-h-36 w-full bg-[#111722] object-contain"
                                 />
                               </a>
+                            ) : (
+                              <p className="rounded-lg border border-[#263044] bg-[#111722] p-2 text-[11px] text-[#707B8F]">
+                                Preview unavailable for this submission.
+                              </p>
                             )}
 
                             <input
@@ -562,7 +572,7 @@ export default function AdminUserDetailsModal({
                                 type="button"
                                 disabled={isReviewingKyc}
                                 onClick={() => void handleKycReview('approve')}
-                                className="flex-1 rounded-lg bg-[#34D399] px-2.5 py-1.5 text-[11px] font-semibold text-[#080B12] transition hover:opacity-90 disabled:opacity-50"
+                                className="flex-1 cursor-pointer rounded-lg bg-[#34D399] px-2.5 py-1.5 text-[11px] font-semibold text-[#080B12] transition hover:opacity-90 disabled:opacity-50"
                               >
                                 Approve
                               </button>
@@ -570,19 +580,20 @@ export default function AdminUserDetailsModal({
                                 type="button"
                                 disabled={isReviewingKyc}
                                 onClick={() => void handleKycReview('reject')}
-                                className="flex-1 rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 py-1.5 text-[11px] font-semibold text-red-400 transition hover:bg-red-500/20 disabled:opacity-50"
+                                className="flex-1 cursor-pointer rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 py-1.5 text-[11px] font-semibold text-red-400 transition hover:bg-red-500/20 disabled:opacity-50"
                               >
                                 Reject
                               </button>
                             </div>
                           </div>
                         )}
-                      </div>
-                    </div>
 
-                    <div className="space-y-1.5 border-t border-[#263044] pt-3 text-[11px] text-[#707B8F]">
-                      <p>Created: {formatDate(user.createdAt)}</p>
-                      <p>Updated: {formatDate(user.updatedAt)}</p>
+                        {kycStatus === 'verified' && (
+                          <p className="text-[10px] text-[#707B8F]">
+                            Document image is not retained after verification.
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -6,6 +6,7 @@ import {
   ListUsersQuery,
   IUserRepository,
 } from '../../../domain/repositories/user.repository';
+import { IdentityVerificationStatus } from '../../../domain/enums/user.enums';
 import type {
   IdentityVerification,
   UserEntity,
@@ -58,6 +59,8 @@ export class MongooseUserRepository
   }
 
   private toEntity(user: UserDocument): UserEntity {
+    const kyc = user.identityVerification;
+
     return {
       id: user._id.toString(),
       firstName: user.firstName,
@@ -74,10 +77,28 @@ export class MongooseUserRepository
       emailVerified: user.emailVerified,
       phoneVerified: user.phoneVerified,
 
-      identityVerification: user.identityVerification,
-      location: user.location,
-      preferences: user.preferences,
+      identityVerification: {
+        status: kyc?.status ?? IdentityVerificationStatus.NOT_STARTED,
+        documentType: kyc?.documentType ?? null,
+        maskedDocumentNumber: kyc?.maskedDocumentNumber ?? null,
+        documentHash: kyc?.documentHash ?? null,
+        documentKey: kyc?.documentKey ?? null,
+        expiryDate: kyc?.expiryDate ?? null,
+        rejectionReason: kyc?.rejectionReason ?? null,
+        consentGivenAt: kyc?.consentGivenAt ?? null,
+        submittedAt: kyc?.submittedAt ?? null,
+        verifiedAt: kyc?.verifiedAt ?? null,
+        reviewedAt: kyc?.reviewedAt ?? null,
+      },
 
+      location: user.location
+        ? {
+            city: user.location.city,
+            state: user.location.state,
+            country: user.location.country,
+          }
+        : undefined,
+      preferences: user.preferences,
       languages: user.languages,
 
       completedRideCount: user.completedRideCount,
