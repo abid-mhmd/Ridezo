@@ -39,6 +39,8 @@ import { CANCEL_ADMIN_RIDE_USE_CASE } from './application/interfaces/cancel-admi
 import { CancelAdminRideUseCase } from './application/use-cases/cancel-admin-ride.use-case';
 import { RidesModule } from '../rides/rides.module';
 import { AdminRidesController } from './presentation/admin-rides.controller';
+import { REVIEW_USER_IDENTITY_USE_CASE } from './application/interfaces/review-user-identity.use-case.interface';
+import { ReviewUserIdentityUseCase } from './application/use-cases/review-user-identity.use-case';
 
 @Module({
   imports: [
@@ -113,6 +115,10 @@ import { AdminRidesController } from './presentation/admin-rides.controller';
     {
       provide: UPDATE_ADMIN_VEHICLE_STATUS_USE_CASE,
       useClass: UpdateAdminVehicleStatusUseCase,
+    },
+    {
+      provide: REVIEW_USER_IDENTITY_USE_CASE,
+      useClass: ReviewUserIdentityUseCase,
     },
   ],
 })

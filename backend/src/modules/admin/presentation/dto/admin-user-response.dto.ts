@@ -1,3 +1,19 @@
+import type {
+  IdentityDocumentType,
+  IdentityVerificationStatus,
+} from '../../../users/domain/enums/user.enums';
+
+export interface AdminIdentityVerificationResponse {
+  status: IdentityVerificationStatus;
+  documentType: IdentityDocumentType | null;
+  maskedDocumentNumber: string | null;
+  expiryDate: Date | null;
+  rejectionReason: string | null;
+  submittedAt: Date | null;
+  verifiedAt: Date | null;
+  documentUrl?: string | null;
+}
+
 export interface AdminUserListItem {
   id: string;
   firstName: string;
@@ -9,6 +25,8 @@ export interface AdminUserListItem {
   accountStatus: string;
   emailVerified: boolean;
   phoneVerified: boolean;
+  idVerified: boolean;
+  identityVerification: AdminIdentityVerificationResponse;
   createdAt: Date;
 }
 
@@ -24,7 +42,8 @@ export interface AdminUserDetailsResponse {
   accountStatus: string;
   emailVerified: boolean;
   phoneVerified: boolean;
-  idVerified: string;
+  idVerified: boolean;
+  identityVerification: AdminIdentityVerificationResponse;
   languages: string[];
   location?: {
     city?: string;

@@ -1,11 +1,14 @@
-export interface ApiResponse<T = undefined> {
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface ApiResponse<T = null> {
   success: boolean;
-  message?: string;
+  message: string;
   data?: T;
-  meta?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+  meta?: PaginationMeta;
+  statusCode?: number;
 }

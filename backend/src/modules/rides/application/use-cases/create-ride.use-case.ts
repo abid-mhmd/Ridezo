@@ -14,7 +14,7 @@ import type { CreateRideDto } from '../dto/create-ride.dto';
 import type { ICreateRideUseCase } from '../interfaces/create-ride.use-case.interface';
 import {
   AccountStatus,
-  // IdentityVerificationStatus,
+  IdentityVerificationStatus,
 } from '../../../users/domain/enums/user.enums';
 import { VehicleVerificationStatus } from '../../../vehicles/domain/enums/vehicle.enums';
 
@@ -32,12 +32,12 @@ export class DriverAccountInactiveError extends Error {
   }
 }
 
-// export class DriverIdentityNotVerifiedError extends Error {
-//   constructor() {
-//     super('Identity verification is required to create a ride.');
-//     this.name = 'DriverIdentityNotVerifiedError';
-//   }
-// }
+export class DriverIdentityNotVerifiedError extends Error {
+  constructor() {
+    super('Identity verification is required to create a ride.');
+    this.name = 'DriverIdentityNotVerifiedError';
+  }
+}
 
 export class VehicleNotFoundError extends Error {
   constructor() {
@@ -106,11 +106,12 @@ export class CreateRideUseCase implements ICreateRideUseCase {
       throw new DriverAccountInactiveError();
     }
 
-    // if (
-    //   driver.identityVerification.status !== IdentityVerificationStatus.VERIFIED
-    // ) {
-    //   throw new DriverIdentityNotVerifiedError();
-    // }
+    if (
+      driver.identityVerification?.status !==
+      IdentityVerificationStatus.VERIFIED
+    ) {
+      throw new DriverIdentityNotVerifiedError();
+    }
 
     // 2. Verify vehicle ownership
     const vehicle = await this.vehicleRepository.findByIdAndOwner(

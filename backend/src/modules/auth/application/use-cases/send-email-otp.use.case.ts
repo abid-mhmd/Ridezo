@@ -9,6 +9,7 @@ import type { IUserRepository } from '../../../users/domain/repositories/user.re
 import { OtpHasherService } from '../services/otp-hasher.service';
 import { PinoLogger } from 'nestjs-pino';
 import type { ISendEmailOtpUseCase } from '../interfaces/send-email-otp.use-case.interface';
+import { Email } from '../../../../common/domain/value-objects/email.vo';
 
 const OTP_EXPIRY_SECONDS = 300;
 const OTP_RESEND_COOLDOWN_SECONDS = 60;
@@ -35,7 +36,7 @@ export class SendEmailOtpUseCase implements ISendEmailOtpUseCase {
   }
 
   async execute(email: string): Promise<void> {
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = Email.create(email).getValue();
 
     const user = await this.userRepository.findByEmail(normalizedEmail);
 

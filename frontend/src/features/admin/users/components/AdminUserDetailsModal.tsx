@@ -21,6 +21,7 @@ import {
   getAdminUserDetails,
   updateAdminUserStatus,
 } from '../api/admin-users.api';
+import { reviewUserIdentity } from '../../../identity-verification/api/identity-verification.api';
 import type { AdminUserDetails } from '../types/admin-user.types';
 
 interface AdminUserDetailsModalProps {
@@ -33,7 +34,7 @@ interface AdminUserDetailsModalProps {
 type TabType =
   'overview' | 'rides' | 'bookings' | 'vehicles' | 'reviews' | 'safety';
 
-function formatDate(value?: string): string {
+function formatDate(value?: string | null): string {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
@@ -66,6 +67,11 @@ export default function AdminUserDetailsModal({
   >(null);
   const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
 
+  // Identity KYC review state
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [kycError, setKycError] = useState('');
+  const [isReviewingKyc, setIsReviewingKyc] = useState(false);
+
   useEffect(() => {
     if (!userId) return;
 
@@ -76,7 +82,9 @@ export default function AdminUserDetailsModal({
         setIsLoading(true);
         setError('');
         setActionError('');
+        setKycError('');
         setConfirmAction(null);
+        setRejectionReason('');
         const response = await getAdminUserDetails(accessToken, userId!);
         if (isActive) {
           setUser(response.user);
@@ -120,6 +128,10 @@ export default function AdminUserDetailsModal({
 
   if (!userId) return null;
 
+  const kycInfo = user?.identityVerification;
+  const kycStatus =
+    kycInfo?.status ?? (user?.idVerified ? 'verified' : 'not_started');
+
   const handleStatusChange = async (newStatus: 'active' | 'suspended') => {
     if (!user) return;
     setIsSubmittingStatus(true);
@@ -142,6 +154,56 @@ export default function AdminUserDetailsModal({
       );
     } finally {
       setIsSubmittingStatus(false);
+    }
+  };
+
+  const handleKycReview = async (decision: 'approve' | 'reject') => {
+    if (!user) return;
+    const trimmedReason = rejectionReason.trim();
+    if (decision === 'reject' && !trimmedReason) {
+      setKycError('Please enter a reason before rejecting verification.');
+      return;
+    }
+
+    setIsReviewingKyc(true);
+    setKycError('');
+
+    try {
+      const updated = await reviewUserIdentity(accessToken, user.id, {
+        decision,
+        ...(decision === 'reject' ? { rejectionReason: trimmedReason } : {}),
+      });
+
+      const nextKyc = updated?.identityVerification ?? {
+        status: decision === 'approve' ? 'verified' : 'rejected',
+        documentType: kycInfo?.documentType ?? null,
+        maskedDocumentNumber: kycInfo?.maskedDocumentNumber ?? null,
+        expiryDate: kycInfo?.expiryDate ?? null,
+        submittedAt: kycInfo?.submittedAt ?? null,
+        verifiedAt: decision === 'approve' ? new Date().toISOString() : null,
+        documentUrl: null,
+        rejectionReason: decision === 'reject' ? trimmedReason : null,
+      };
+
+      setUser((prev) =>
+        prev
+          ? {
+              ...prev,
+              idVerified: decision === 'approve',
+              identityVerification: nextKyc,
+            }
+          : prev,
+      );
+      setRejectionReason('');
+      onUpdated();
+    } catch (err: unknown) {
+      setKycError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to review identity verification.',
+      );
+    } finally {
+      setIsReviewingKyc(false);
     }
   };
 
@@ -326,14 +388,9 @@ export default function AdminUserDetailsModal({
 
                   <div className="rounded-xl border border-[#263044] bg-[#080B12] p-3.5">
                     <p className="text-[10px] text-[#707B8F]">Identity / KYC</p>
-                    <p
-                      className={`mt-1.5 flex items-center gap-1 text-xs font-semibold ${
-                        user.idVerified ? 'text-[#34D399]' : 'text-amber-400'
-                      }`}
-                    >
-                      <FiCheckCircle size={13} />
-                      {user.idVerified ? 'Verified' : 'Pending'}
-                    </p>
+                    <div className="mt-1">
+                      <StatusBadge status={kycStatus} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -456,21 +513,99 @@ export default function AdminUserDetailsModal({
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between rounded-xl border border-[#263044] bg-[#080B12] p-3">
-                        <span className="text-[#A7B0C0]">Identity KYC</span>
-                        <span
-                          className={`font-semibold ${
-                            user.idVerified ? 'text-[#34D399]' : 'text-gray-400'
-                          }`}
-                        >
-                          {user.idVerified ? 'Verified' : 'Unverified'}
-                        </span>
-                      </div>
-                    </div>
+                      <div className="space-y-2 rounded-xl border border-[#263044] bg-[#080B12] p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[#A7B0C0]">Identity KYC</span>
+                          <StatusBadge status={kycStatus} />
+                        </div>
 
-                    <div className="space-y-1.5 border-t border-[#263044] pt-3 text-[11px] text-[#707B8F]">
-                      <p>Created: {formatDate(user.createdAt)}</p>
-                      <p>Updated: {formatDate(user.updatedAt)}</p>
+                        {kycInfo?.maskedDocumentNumber && (
+                          <p className="font-mono text-[11px] text-[#A7B0C0]">
+                            ID: {kycInfo.maskedDocumentNumber}
+                          </p>
+                        )}
+
+                        {kycInfo?.expiryDate && (
+                          <p className="text-[11px] text-[#707B8F]">
+                            Expiry: {formatDate(kycInfo.expiryDate)}
+                          </p>
+                        )}
+
+                        {kycInfo?.rejectionReason && (
+                          <p className="text-[11px] text-red-400">
+                            Reason: {kycInfo.rejectionReason}
+                          </p>
+                        )}
+
+                        {kycStatus === 'pending' && (
+                          <div className="space-y-2 border-t border-[#263044] pt-2">
+                            {kycInfo?.documentUrl ? (
+                              <a
+                                href={kycInfo.documentUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="block overflow-hidden rounded-lg border border-[#263044]"
+                              >
+                                <img
+                                  src={kycInfo.documentUrl}
+                                  alt="Submitted identity document"
+                                  className="max-h-36 w-full bg-[#111722] object-contain"
+                                />
+                              </a>
+                            ) : (
+                              <p className="rounded-lg border border-[#263044] bg-[#111722] p-2 text-[11px] text-[#707B8F]">
+                                Preview unavailable for this submission.
+                              </p>
+                            )}
+
+                            <input
+                              type="text"
+                              value={rejectionReason}
+                              onChange={(e) => {
+                                setRejectionReason(e.target.value);
+                                if (kycError) setKycError('');
+                              }}
+                              placeholder="Rejection reason (required to reject)"
+                              className="w-full rounded-lg border border-[#263044] bg-[#111722] px-2.5 py-1.5 text-[11px] text-[#F8FAFC] outline-none focus:border-[#C37DF5]"
+                            />
+
+                            {kycError && (
+                              <p
+                                role="alert"
+                                className="flex items-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/10 px-2.5 py-1.5 text-[11px] text-red-300"
+                              >
+                                <FiAlertCircle size={13} className="shrink-0" />
+                                <span>{kycError}</span>
+                              </p>
+                            )}
+
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                disabled={isReviewingKyc}
+                                onClick={() => void handleKycReview('approve')}
+                                className="flex-1 cursor-pointer rounded-lg bg-[#34D399] px-2.5 py-1.5 text-[11px] font-semibold text-[#080B12] transition hover:opacity-90 disabled:opacity-50"
+                              >
+                                Approve
+                              </button>
+                              <button
+                                type="button"
+                                disabled={isReviewingKyc}
+                                onClick={() => void handleKycReview('reject')}
+                                className="flex-1 cursor-pointer rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 py-1.5 text-[11px] font-semibold text-red-400 transition hover:bg-red-500/20 disabled:opacity-50"
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {kycStatus === 'verified' && (
+                          <p className="text-[10px] text-[#707B8F]">
+                            Document image is not retained after verification.
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

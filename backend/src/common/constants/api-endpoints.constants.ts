@@ -22,6 +22,7 @@ export const API_ENDPOINTS = {
     ME: '/users/me',
     PROFILE: '/users/profile',
     PROFILE_PHOTO: '/users/profile/photo',
+    IDENTITY_VERIFICATION: '/users/me/identity-verification',
   },
 
   ADMIN: {
@@ -32,6 +33,7 @@ export const API_ENDPOINTS = {
     USERS: '/admin/users',
     USER_BY_ID: '/:userId',
     UPDATE_USER_STATUS: '/:userId/status',
+    REVIEW_USER_IDENTITY: '/:userId/identity-verification',
     RIDES: '/admin/rides',
     RIDE_BY_ID: ':rideId',
     CANCEL_RIDE: ':rideId/cancel',

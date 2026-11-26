@@ -22,6 +22,7 @@ export const API_MESSAGES = {
     SESSION_INVALID: 'Admin session is no longer valid.',
     USER_RETRIEVED_SUCCESS: 'Users retrieved successfully.',
     USER_ACCOUNT_STATUS: 'User account status updated successfully.',
+    USER_IDENTITY_REVIEWED: 'User identity verification reviewed successfully.',
     INVALID_USER_ID: 'Invalid user ID.',
     RIDES_RETRIEVED_SUCCESS: 'Rides retrieved successfully.',
     RIDE_RETRIEVED_SUCCESS: 'Ride details retrieved successfully.',
@@ -42,7 +43,10 @@ export const API_MESSAGES = {
     INVALID_PHOTO_TYPE: 'Only JPEG, PNG, and WebP images are allowed.',
     PROFILE_PHOTO_REQUIRED: 'Profile photo is required.',
     USER_RETRIEVED_SUCCESS: 'User details retrieved successfully.',
-    OTP_SENT: 'If the request is eligible, a verfication code will be sent.',
+    OTP_SENT: 'If the request is eligible, a verification code will be sent.',
+    IDENTITY_VERIFICATION_SUBMITTED:
+      'Identity verification submitted successfully.',
+    IDENTITY_DOCUMENT_REQUIRED: 'Identity document image is required.',
   },
 
   COMMON: {

@@ -21,6 +21,7 @@ import {
   VEHICLE_PHOTO_STORAGE,
   type IVehiclePhotoStorage,
 } from '../../../vehicles/application/ports/vehicle-photo-storage';
+import { Money } from '../../../../common/domain/value-objects/money.vo';
 
 export class RideNotFoundError extends Error {
   constructor() {
@@ -115,7 +116,8 @@ export class CreateBookingUseCase implements ICreateBookingUseCase {
       throw new DuplicateBookingError();
     }
 
-    const totalPrice = ride.pricePerSeat * dto.seatsRequested;
+    const pricePerSeat = Money.create(ride.pricePerSeat);
+    const totalPrice = pricePerSeat.multiply(dto.seatsRequested);
 
     if (!ride.driver || !ride.vehicle) {
       throw new RideDetailsUnavailableError();
@@ -126,8 +128,8 @@ export class CreateBookingUseCase implements ICreateBookingUseCase {
       passengerId,
       driverId: ride.driverId,
       seatsRequested: dto.seatsRequested,
-      pricePerSeat: ride.pricePerSeat,
-      totalPrice,
+      pricePerSeat: pricePerSeat.getAmount(),
+      totalPrice: totalPrice.getAmount(),
       message: dto.message,
       status: BookingStatus.PENDING,
 

@@ -1,3 +1,7 @@
+import type {
+  IdentityVerificationStatus,
+  IdentityDocumentType,
+} from '../../domain/enums/user.enums';
 export interface UserProfileResponseDto {
   id: string;
   firstName: string;
@@ -13,6 +17,15 @@ export interface UserProfileResponseDto {
   emailVerified: boolean;
   phoneVerified: boolean;
   idVerified: boolean;
+  identityVerification: {
+    status: IdentityVerificationStatus;
+    documentType: IdentityDocumentType | null;
+    maskedDocumentNumber: string | null;
+    expiryDate: Date | null;
+    rejectionReason: string | null;
+    submittedAt: Date | null;
+    verifiedAt: Date | null;
+  };
   role: string;
   preferences?: {
     smoking?: string;

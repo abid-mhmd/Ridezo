@@ -6,7 +6,11 @@ import {
   ListUsersQuery,
   IUserRepository,
 } from '../../../domain/repositories/user.repository';
-import type { UserEntity } from '../../../domain/entities/user.entity';
+import { IdentityVerificationStatus } from '../../../domain/enums/user.enums';
+import type {
+  IdentityVerification,
+  UserEntity,
+} from '../../../domain/entities/user.entity';
 import { User, type UserDocument } from './user.schema';
 import { UserRole } from '../../../domain/enums/user.enums';
 import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository';
@@ -55,6 +59,8 @@ export class MongooseUserRepository
   }
 
   private toEntity(user: UserDocument): UserEntity {
+    const kyc = user.identityVerification;
+
     return {
       id: user._id.toString(),
       firstName: user.firstName,
@@ -71,10 +77,28 @@ export class MongooseUserRepository
       emailVerified: user.emailVerified,
       phoneVerified: user.phoneVerified,
 
-      identityVerification: user.identityVerification,
-      location: user.location,
-      preferences: user.preferences,
+      identityVerification: {
+        status: kyc?.status ?? IdentityVerificationStatus.NOT_STARTED,
+        documentType: kyc?.documentType ?? null,
+        maskedDocumentNumber: kyc?.maskedDocumentNumber ?? null,
+        documentHash: kyc?.documentHash ?? null,
+        documentKey: kyc?.documentKey ?? null,
+        expiryDate: kyc?.expiryDate ?? null,
+        rejectionReason: kyc?.rejectionReason ?? null,
+        consentGivenAt: kyc?.consentGivenAt ?? null,
+        submittedAt: kyc?.submittedAt ?? null,
+        verifiedAt: kyc?.verifiedAt ?? null,
+        reviewedAt: kyc?.reviewedAt ?? null,
+      },
 
+      location: user.location
+        ? {
+            city: user.location.city,
+            state: user.location.state,
+            country: user.location.country,
+          }
+        : undefined,
+      preferences: user.preferences,
       languages: user.languages,
 
       completedRideCount: user.completedRideCount,
@@ -226,5 +250,29 @@ export class MongooseUserRepository
       .exec();
 
     return users.map((user) => this.toEntity(user));
+  }
+
+  async findByIdentityDocumentHash(
+    documentHash: string,
+  ): Promise<UserEntity | null> {
+    const doc = await this.model
+      .findOne({ 'identityVerification.documentHash': documentHash })
+      .exec();
+    return doc ? this.toEntity(doc) : null;
+  }
+
+  async updateIdentityVerification(
+    userId: string,
+    data: IdentityVerification,
+  ): Promise<UserEntity | null> {
+    const doc = await this.model
+      .findByIdAndUpdate(
+        userId,
+        { $set: { identityVerification: data } },
+        { new: true },
+      )
+      .exec();
+
+    return doc ? this.toEntity(doc) : null;
   }
 }

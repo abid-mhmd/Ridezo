@@ -11,6 +11,7 @@ import { JwtAuthGuard } from '../../auth/presentation/guards/jwt-auth.guard';
 import { AdminRoleGuard } from './guards/admin-role.guard';
 import { API_ENDPOINTS } from '../../../common/constants/api-endpoints.constants';
 import { API_MESSAGES } from '../../../common/constants/message.constants';
+import { ApiResponseHelper } from '../../../common/helpers/api-response.helper';
 import type { ApiResponse } from '../../../common/interfaces/api-responce.interface';
 import { AdminRideListQueryDto } from '../application/dto/admin-ride-query.dto';
 import {
@@ -37,52 +38,51 @@ import type {
 export class AdminRidesController {
   constructor(
     @Inject(LIST_ADMIN_RIDES_USE_CASE)
-    private readonly listAdminRidesUseCase: IListAdminRidesUseCase,
+    private readonly _listAdminRidesUseCase: IListAdminRidesUseCase,
 
     @Inject(GET_ADMIN_RIDE_DETAILS_USE_CASE)
-    private readonly getAdminRideDetailsUseCase: IGetAdminRideDetailsUseCase,
+    private readonly _getAdminRideDetailsUseCase: IGetAdminRideDetailsUseCase,
 
     @Inject(CANCEL_ADMIN_RIDE_USE_CASE)
-    private readonly cancelAdminRideUseCase: ICancelAdminRideUseCase,
+    private readonly _cancelAdminRideUseCase: ICancelAdminRideUseCase,
   ) {}
 
   @Get()
   async listRides(
     @Query() query: AdminRideListQueryDto,
   ): Promise<ApiResponse<AdminRideListItemDto[]>> {
-    const result = await this.listAdminRidesUseCase.execute(query);
+    const result = await this._listAdminRidesUseCase.execute(query);
+    const items = AdminRideMapper.toListResponse(result.rides);
 
-    return {
-      success: true,
-      message: API_MESSAGES.ADMIN.RIDES_RETRIEVED_SUCCESS,
-      data: AdminRideMapper.toListResponse(result.rides),
-      meta: result.pagination,
-    };
+    return ApiResponseHelper.paginated(
+      items,
+      result.pagination,
+      API_MESSAGES.ADMIN.RIDES_RETRIEVED_SUCCESS,
+    );
   }
 
   @Get(API_ENDPOINTS.ADMIN.RIDE_BY_ID)
   async getRideDetails(
     @Param('rideId') rideId: string,
   ): Promise<ApiResponse<AdminRideDetailsDto>> {
-    const result = await this.getAdminRideDetailsUseCase.execute(rideId);
+    const result = await this._getAdminRideDetailsUseCase.execute(rideId);
+    const details = AdminRideMapper.toDetailsResponse(result);
 
-    return {
-      success: true,
-      message: API_MESSAGES.ADMIN.RIDE_RETRIEVED_SUCCESS,
-      data: AdminRideMapper.toDetailsResponse(result),
-    };
+    return ApiResponseHelper.success(
+      details,
+      API_MESSAGES.ADMIN.RIDE_RETRIEVED_SUCCESS,
+    );
   }
 
   @Patch(API_ENDPOINTS.ADMIN.CANCEL_RIDE)
   async cancelRide(
     @Param('rideId') rideId: string,
   ): Promise<ApiResponse<CancelAdminRideResult>> {
-    const result = await this.cancelAdminRideUseCase.execute(rideId);
+    const result = await this._cancelAdminRideUseCase.execute(rideId);
 
-    return {
-      success: true,
-      message: API_MESSAGES.ADMIN.RIDE_CANCELLED_SUCCESS,
-      data: result,
-    };
+    return ApiResponseHelper.success(
+      result,
+      API_MESSAGES.ADMIN.RIDE_CANCELLED_SUCCESS,
+    );
   }
 }
