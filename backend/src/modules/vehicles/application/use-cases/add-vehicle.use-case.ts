@@ -4,6 +4,7 @@ import type { IVehicleRepository } from '../../domain/repositories/vehicle.repos
 import type { AddVehicleDto } from '../dto/add-vehicle.dto';
 import type { VehicleEntity } from '../../domain/entities/vehicle.entity';
 import type { IAddVehicleUseCase } from '../interfaces/add-vehicle.use-case.interface';
+import { RegistrationNumber } from '../../domain/value-objects/registration-number.vo';
 
 export class VehicleRegistrationAlreadyExistsError extends Error {
   constructor() {
@@ -20,9 +21,9 @@ export class AddVehicleUseCase implements IAddVehicleUseCase {
   ) {}
 
   async execute(ownerId: string, dto: AddVehicleDto): Promise<VehicleEntity> {
-    const registrationNumber = dto.registrationNumber
-      .replace(/[\s-]/g, '')
-      .toUpperCase();
+    const registrationNumber = RegistrationNumber.create(
+      dto.registrationNumber,
+    ).getValue();
 
     const registrationExists =
       await this.vehicleRepository.existsByRegistrationNumber(

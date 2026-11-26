@@ -10,6 +10,7 @@ import { PinoLogger } from 'nestjs-pino';
 import type { RegisterUserDto } from '../dto/register-user.dto';
 import type { IPasswordHasher } from '../ports/passwordhasher';
 import { IRegisterUserUseCase } from '../interfaces/register-user.use-case.interface';
+import { Email } from '../../../../common/domain/value-objects/email.vo';
 
 export class EmailAlreadyRegisteredError extends Error {
   constructor() {
@@ -33,7 +34,7 @@ export class RegisterUserUseCase implements IRegisterUserUseCase {
   }
 
   async execute(input: RegisterUserDto): Promise<UserEntity> {
-    const email = input.email.trim().toLowerCase();
+    const email = Email.create(input.email).getValue();
     const emailExists = await this.userRepository.existsByEmail(email);
 
     if (emailExists) {
