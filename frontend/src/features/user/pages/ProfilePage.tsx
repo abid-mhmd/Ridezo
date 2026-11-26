@@ -22,8 +22,35 @@ import RecentRideCard from '../../../components/RecentRideCard';
 import IdentityVerificationModal from '../../identity-verification/components/IdentityVerificationModal';
 import type { IdentityVerificationInfo } from '../../identity-verification/types/identity-verification.types';
 
+interface RecentRideItem {
+  id: string;
+  from: string;
+  to: string;
+  date: string;
+  role: 'Driver' | 'Passenger';
+  detail: string;
+  status: string;
+}
+
+function formatShortDate(value?: string): string {
+  if (!value) return '—';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return '—';
+  return new Intl.DateTimeFormat('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(parsed);
+}
+
+function formatStatusLabel(status?: string): string {
+  if (!status) return 'Completed';
+  return status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ');
+}
+
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [recentRides, setRecentRides] = useState<RecentRideItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isKycModalOpen, setIsKycModalOpen] = useState(false);
@@ -35,9 +62,10 @@ export default function ProfilePage() {
       try {
         const user = await getMyProfile();
 
-        if (isMounted) {
-          setProfile(user);
-        }
+        if (!isMounted) return;
+        setProfile(user);
+
+        setRecentRides([]);
       } catch (err: unknown) {
         if (isMounted) {
           setError(
@@ -139,7 +167,6 @@ export default function ProfilePage() {
       <section className="relative overflow-hidden rounded-2xl border border-[#252e3e] bg-[#111722] p-6 sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            {/* Avatar with status badge */}
             <div className="relative">
               <UserAvatar
                 firstName={profile.firstName}
@@ -149,7 +176,6 @@ export default function ProfilePage() {
               />
             </div>
 
-            {/* Details */}
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-2xl font-bold tracking-tight text-white">
@@ -185,7 +211,7 @@ export default function ProfilePage() {
 
                 <span className="flex items-center gap-1.5">
                   <CalendarDays size={14} className="text-[#8b78ff]" />
-                  Member since Feb 2026
+                  Member since {formatShortDate(profile.createdAt)}
                 </span>
 
                 <span className="flex items-center gap-1.5">
@@ -198,7 +224,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Top Actions */}
           <div className="flex items-center gap-2.5 shrink-0">
             <Link
               to="/profile/edit"
@@ -249,7 +274,6 @@ export default function ProfilePage() {
 
       {/* Main Two-Column Content Grid */}
       <div className="grid gap-6 lg:grid-cols-12">
-        {/* Left Column (Ride Participation & Reviews) */}
         <div className="space-y-6 lg:col-span-8">
           {/* Ride Participation */}
           <section className="rounded-2xl border border-[#252e3e] bg-[#111722] p-5 sm:p-6">
@@ -276,37 +300,24 @@ export default function ProfilePage() {
               <span className="text-xs text-[#929bad]">trips</span>
             </div>
 
-            <div className="mt-3 flex items-center justify-between text-[11px]">
-              <span className="flex items-center gap-1.5 text-[#929bad]">
-                <span className="h-2 w-2 rounded-full bg-[#8b78ff]" /> As
-                passenger (94)
-              </span>
-              <span className="flex items-center gap-1.5 text-[#929bad]">
-                <span className="h-2 w-2 rounded-full bg-[#36e0c0]" /> As driver
-                (34)
-              </span>
-            </div>
-
-            {/* Recent Journeys sub-section */}
-
             <div className="mt-3 space-y-2.5">
-              <RecentRideCard
-                from="Kasaragod"
-                to="Kochi"
-                date="Oct 1, 2026"
-                role="Passenger"
-                detail="₹350"
-                status="Completed"
-              />
-
-              <RecentRideCard
-                from="Kochi"
-                to="Kasaragod"
-                date="Sep 28, 2026"
-                role="Driver"
-                detail="3 passengers"
-                status="Completed"
-              />
+              {recentRides.length > 0 ? (
+                recentRides.map((ride) => (
+                  <RecentRideCard
+                    key={ride.id}
+                    from={ride.from}
+                    to={ride.to}
+                    date={ride.date}
+                    role={ride.role}
+                    detail={ride.detail}
+                    status={formatStatusLabel(ride.status)}
+                  />
+                ))
+              ) : (
+                <p className="rounded-xl border border-[#252e3e] bg-[#080b12] p-4 text-center text-xs text-[#929bad]">
+                  No recent journeys found.
+                </p>
+              )}
             </div>
           </section>
 

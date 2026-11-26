@@ -30,6 +30,7 @@ export interface UserProfile {
     city?: string;
     state?: string;
   };
+  createdAt: string;
 }
 
 export interface UpdateProfilePayload {
