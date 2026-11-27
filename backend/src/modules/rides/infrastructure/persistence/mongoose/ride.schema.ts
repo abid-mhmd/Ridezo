@@ -9,6 +9,7 @@ import {
   SeatingComfortPreference,
   ClimateControlPreference,
 } from '../../../../users/domain/enums/user.enums';
+import { string } from 'joi';
 
 export type RideDocument = HydratedDocument<Ride> & {
   createdAt: Date;
@@ -109,6 +110,20 @@ export class Ride {
   vehicleId: Types.ObjectId;
 
   @Prop({
+    type: Types.ObjectId,
+    ref: 'RecurringRide',
+    required: false,
+  })
+  recurringRideId?: Types.ObjectId;
+
+  @Prop({
+    type: string,
+    required: false,
+    trim: true,
+  })
+  occurrenceDate?: string;
+
+  @Prop({
     type: RideLocationSchema,
     required: true,
   })
@@ -187,3 +202,7 @@ RideSchema.index({ driverId: 1, departureTime: -1 });
 RideSchema.index({ status: 1, departureTime: 1 });
 RideSchema.index({ 'origin.coordinates': '2dsphere' });
 RideSchema.index({ 'destination.coordinates': '2dsphere' });
+RideSchema.index(
+  { recurringRideId: 1, occurencedate: 1 },
+  { unique: true, sparse: true },
+);

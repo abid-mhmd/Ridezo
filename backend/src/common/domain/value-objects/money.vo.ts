@@ -11,7 +11,9 @@ export class Money {
 
   static create(amount: number, currency = 'INR'): Money {
     if (!Number.isFinite(amount) || amount < 0) {
-      throw new BadRequestException('Amount must be a valid non-negative number.');
+      throw new BadRequestException(
+        'Amount must be a valid non-negative number.',
+      );
     }
 
     return new Money(Math.round(amount * 100) / 100, currency);

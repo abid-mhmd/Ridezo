@@ -34,10 +34,15 @@ export class MongooseRideRepository
   }
 
   async create(data: CreateRideData): Promise<RideEntity> {
+    const { driverId, vehicleId, recurringRideId, ...rest } = data;
+
     const ride = await this.createDocument({
-      ...data,
-      driverId: new Types.ObjectId(data.driverId),
-      vehicleId: new Types.ObjectId(data.vehicleId),
+      ...rest,
+      driverId: new Types.ObjectId(driverId),
+      vehicleId: new Types.ObjectId(vehicleId),
+      ...(recurringRideId
+        ? { recurringRideId: new Types.ObjectId(recurringRideId) }
+        : {}),
     });
 
     return this.toEntity(ride);
@@ -420,6 +425,63 @@ export class MongooseRideRepository
       .exec();
   }
 
+  async findUpcomingByRecurringRideId(
+    recurringRideId: string,
+    limit = 14,
+  ): Promise<RideEntity[]> {
+    if (!Types.ObjectId.isValid(recurringRideId)) {
+      return [];
+    }
+
+    const documents = await this.model
+      .find({
+        recurringRideId: new Types.ObjectId(recurringRideId),
+        departureTime: { $gte: new Date() },
+        status: { $in: [RideStatus.SCHEDULED, RideStatus.FULL] },
+      })
+      .sort({ departuredAt: 1 })
+      .limit(limit)
+      .exec();
+
+    return documents.map((ride) => this.toEntity(ride));
+  }
+
+  async existsByRecurringRideAndDate(
+    recurringRideId: string,
+    occurrenceDate: string,
+  ): Promise<boolean> {
+    if (!Types.ObjectId.isValid(recurringRideId)) {
+      return false;
+    }
+    const exists = await this.model.exists({
+      recurringRideId: new Types.ObjectId(recurringRideId),
+      occurrenceDate,
+    });
+
+    return exists !== null;
+  }
+
+  async cancelFutureUnbookedByRecurringRideId(
+    recurringRideId: string,
+  ): Promise<number> {
+    if (!Types.ObjectId.isValid(recurringRideId)) {
+      return 0;
+    }
+    const result = await this.model
+      .updateMany(
+        {
+          recurringRideId: new Types.ObjectId(recurringRideId),
+          departureTime: { $gt: new Date() },
+          status: RideStatus.SCHEDULED,
+          $expr: { $eq: ['$availableSeats', '$totalSeats'] },
+        },
+        { $set: { status: RideStatus.CANCELLED } },
+      )
+      .exec();
+
+    return result.modifiedCount;
+  }
+
   private toEntity(ride: RideDocument): RideEntity {
     const driver = ride.populated('driverId')
       ? (ride.driverId as any)
@@ -465,7 +527,10 @@ export class MongooseRideRepository
           verificationStatus: vehicle.verificationStatus,
         },
       }),
-
+      recurringRideId: ride.recurringRideId
+        ? ride.recurringRideId.toString()
+        : undefined,
+      occurrenceDate: ride.occurrenceDate,
       origin: ride.origin,
       destination: ride.destination,
       stops: ride.stops,

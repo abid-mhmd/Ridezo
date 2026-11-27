@@ -30,6 +30,8 @@ export interface RideEntity {
   id: string;
   driverId: string;
   vehicleId: string;
+  recurringRideId?: string;
+  occurrenceDate?: string;
   driver?: RideDriverSummary;
   vehicle?: RideVehicleSummary;
   origin: RideLocation;
@@ -50,6 +52,7 @@ export interface RideDriverSummary {
   id: string;
   firstName: string;
   lastName: string;
+  phone?: string;
   profilePhoto: string;
   rating: number;
   reviewCount: number;

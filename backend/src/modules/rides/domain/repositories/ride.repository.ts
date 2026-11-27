@@ -86,4 +86,15 @@ export interface IRideRepository {
   }>;
   reserveSeats(rideId: string, seats: number): Promise<boolean>;
   releaseSeats(rideId: string, seats: number): Promise<void>;
+  findUpcomingByRecurringRideId(
+    recurringRideId: string,
+    limit?: number,
+  ): Promise<RideEntity[]>;
+  existsByRecurringRideAndDate(
+    recurringRideId: string,
+    occurrenceDate: string,
+  ): Promise<boolean>;
+  cancelFutureUnbookedByRecurringRideId(
+    recurringRideId: string,
+  ): Promise<number>;
 }
