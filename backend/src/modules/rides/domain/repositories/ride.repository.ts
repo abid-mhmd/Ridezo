@@ -88,13 +88,18 @@ export interface IRideRepository {
   releaseSeats(rideId: string, seats: number): Promise<void>;
   findUpcomingByRecurringRideId(
     recurringRideId: string,
-    limit?: number,
+    fromDate?: Date,
   ): Promise<RideEntity[]>;
-  existsByRecurringRideAndDate(
+  cancelFutureByRecurringRideId(
     recurringRideId: string,
-    occurrenceDate: string,
-  ): Promise<boolean>;
-  cancelFutureUnbookedByRecurringRideId(
+    fromDate?: Date,
+  ): Promise<number>;
+  updateFutureByRecurringRideId(
     recurringRideId: string,
+    data: Pick<
+      UpdateRideData,
+      'pricePerSeat' | 'preferences' | 'pickupInstructions'
+    >,
+    fromDate?: Date,
   ): Promise<number>;
 }

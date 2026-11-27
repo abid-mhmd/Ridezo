@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Types, type Model } from 'mongoose';
 import type {
+  AdminListRidesQuery,
   CreateRideData,
   IRideRepository,
   ListRidesQuery,
@@ -11,7 +12,6 @@ import type {
 import type { RideEntity } from '../../../domain/entities/ride.entity';
 import { Ride, type RideDocument } from './ride.schema';
 import { BaseMongooseRepository } from '../../../../../infrastructure/persistence/mongoose/base-mongoose.repository';
-import type { AdminListRidesQuery } from '../../../domain/repositories/ride.repository';
 import { RideStatus } from '../../../domain/enums/ride.enums';
 import { User } from '../../../../users/infrastructure/persistence/mongoose/user.schema';
 import { Vehicle } from '../../../../vehicles/infrastructure/persistence/mongoose/vehicle.schema';
@@ -40,9 +40,9 @@ export class MongooseRideRepository
       ...rest,
       driverId: new Types.ObjectId(driverId),
       vehicleId: new Types.ObjectId(vehicleId),
-      ...(recurringRideId
-        ? { recurringRideId: new Types.ObjectId(recurringRideId) }
-        : {}),
+      ...(recurringRideId && {
+        recurringRideId: new Types.ObjectId(recurringRideId),
+      }),
     });
 
     return this.toEntity(ride);
@@ -59,13 +59,13 @@ export class MongooseRideRepository
         path: 'driverId',
         model: User.name,
         select:
-          'firstName lastName profilePhoto phone  rating reviewCount completedRideCount identityVerification languages',
+          'firstName lastName profilePhoto phone rating reviewCount completedRideCount identityVerification languages',
       })
       .populate({
         path: 'vehicleId',
         model: Vehicle.name,
         select:
-          'brand model year color vehiclePhoto registrationNumber  verificationStatus',
+          'brand model year color vehiclePhoto registrationNumber verificationStatus',
       })
       .exec();
 
@@ -241,7 +241,9 @@ export class MongooseRideRepository
     total: number;
   }> {
     const now = new Date();
-    const dateStr = new Date(query.departureDate).toISOString().slice(0, 10);
+    const dateStr = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Kolkata',
+    }).format(new Date(query.departureDate));
 
     // Full day in IST (00:00:00 to 23:59:59.999 IST)
     const startOfDayIST = new Date(`${dateStr}T00:00:00.000+05:30`);
@@ -392,7 +394,7 @@ export class MongooseRideRepository
             },
           },
         ],
-        { new: true, updatePipeline: true }, // <-- ADD updatePipeline: true
+        { new: true, updatePipeline: true },
       )
       .exec();
 
@@ -427,53 +429,38 @@ export class MongooseRideRepository
 
   async findUpcomingByRecurringRideId(
     recurringRideId: string,
-    limit = 14,
+    fromDate: Date = new Date(),
   ): Promise<RideEntity[]> {
     if (!Types.ObjectId.isValid(recurringRideId)) {
       return [];
     }
 
-    const documents = await this.model
+    const rides = await this.model
       .find({
         recurringRideId: new Types.ObjectId(recurringRideId),
-        departureTime: { $gte: new Date() },
         status: { $in: [RideStatus.SCHEDULED, RideStatus.FULL] },
+        departureTime: { $gte: fromDate },
       })
-      .sort({ departuredAt: 1 })
-      .limit(limit)
+      .sort({ departureTime: 1 })
       .exec();
 
-    return documents.map((ride) => this.toEntity(ride));
+    return rides.map((ride) => this.toEntity(ride));
   }
 
-  async existsByRecurringRideAndDate(
+  async cancelFutureByRecurringRideId(
     recurringRideId: string,
-    occurrenceDate: string,
-  ): Promise<boolean> {
-    if (!Types.ObjectId.isValid(recurringRideId)) {
-      return false;
-    }
-    const exists = await this.model.exists({
-      recurringRideId: new Types.ObjectId(recurringRideId),
-      occurrenceDate,
-    });
-
-    return exists !== null;
-  }
-
-  async cancelFutureUnbookedByRecurringRideId(
-    recurringRideId: string,
+    fromDate: Date = new Date(),
   ): Promise<number> {
     if (!Types.ObjectId.isValid(recurringRideId)) {
       return 0;
     }
+
     const result = await this.model
       .updateMany(
         {
           recurringRideId: new Types.ObjectId(recurringRideId),
-          departureTime: { $gt: new Date() },
-          status: RideStatus.SCHEDULED,
-          $expr: { $eq: ['$availableSeats', '$totalSeats'] },
+          status: { $in: [RideStatus.SCHEDULED, RideStatus.FULL] },
+          departureTime: { $gte: fromDate },
         },
         { $set: { status: RideStatus.CANCELLED } },
       )
@@ -482,30 +469,55 @@ export class MongooseRideRepository
     return result.modifiedCount;
   }
 
-  private toEntity(ride: RideDocument): RideEntity {
-    const driver = ride.populated('driverId')
-      ? (ride.driverId as any)
-      : undefined;
+  async updateFutureByRecurringRideId(
+    recurringRideId: string,
+    data: Pick<
+      UpdateRideData,
+      'pricePerSeat' | 'preferences' | 'pickupInstructions'
+    >,
+    fromDate: Date = new Date(),
+  ): Promise<number> {
+    if (!Types.ObjectId.isValid(recurringRideId)) {
+      return 0;
+    }
 
-    const vehicle = ride.populated('vehicleId')
-      ? (ride.vehicleId as any)
-      : undefined;
+    const result = await this.model
+      .updateMany(
+        {
+          recurringRideId: new Types.ObjectId(recurringRideId),
+          status: RideStatus.SCHEDULED,
+          departureTime: { $gte: fromDate },
+        },
+        { $set: data },
+      )
+      .exec();
+
+    return result.modifiedCount;
+  }
+
+  private toEntity(ride: RideDocument): RideEntity {
+    const populatedDriver = ride.populated('driverId');
+    const populatedVehicle = ride.populated('vehicleId');
+
+    const driver =
+      populatedDriver && ride.driverId ? (ride.driverId as any) : undefined;
+    const vehicle =
+      populatedVehicle && ride.vehicleId ? (ride.vehicleId as any) : undefined;
 
     return {
       id: ride._id.toString(),
       driverId: driver
         ? driver._id.toString()
-        : (ride.driverId?.toString() ?? ''),
+        : (populatedDriver?.toString() ?? ride.driverId?.toString() ?? ''),
       vehicleId: vehicle
         ? vehicle._id.toString()
-        : (ride.vehicleId?.toString() ?? ''),
+        : (populatedVehicle?.toString() ?? ride.vehicleId?.toString() ?? ''),
 
       ...(driver && {
         driver: {
           id: driver._id.toString(),
           firstName: driver.firstName,
           lastName: driver.lastName,
-          phone: driver.phone,
           profilePhoto: driver.profilePhoto,
           rating: driver.rating,
           reviewCount: driver.reviewCount,
@@ -527,10 +539,14 @@ export class MongooseRideRepository
           verificationStatus: vehicle.verificationStatus,
         },
       }),
-      recurringRideId: ride.recurringRideId
-        ? ride.recurringRideId.toString()
-        : undefined,
-      occurrenceDate: ride.occurrenceDate,
+
+      ...(ride.recurringRideId && {
+        recurringRideId: ride.recurringRideId.toString(),
+      }),
+      ...(ride.occurrenceDate && {
+        occurrenceDate: ride.occurrenceDate,
+      }),
+
       origin: ride.origin,
       destination: ride.destination,
       stops: ride.stops,
