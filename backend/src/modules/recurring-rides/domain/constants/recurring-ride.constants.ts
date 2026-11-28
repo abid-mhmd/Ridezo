@@ -1,8 +1,8 @@
-export const RECURRING_RIDE_DEFAULTS = {
-  TIMEZONE: 'Asia/Kolkata',
-  IST_OFFSET: '+05:30',
-  GENERATE_AHEAD_DAYS: 7,
+export const RECURRING_RIDE_CONSTANTS = {
+  DEFAULT_TIMEZONE: 'Asia/Kolkata',
+  DEFAULT_GENERATE_AHEAD_DAYS: 7,
+  MIN_GENERATE_AHEAD_DAYS: 1,
   MAX_GENERATE_AHEAD_DAYS: 14,
-  MIN_WEEKDAY: 0, // Sunday
-  MAX_WEEKDAY: 6, // Saturday
+  CRON_LOCK_KEY: 'lock:recurring-rides:generate',
+  CRON_LOCK_TTL_SECONDS: 120,
 } as const;
